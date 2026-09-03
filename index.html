@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pratagy Placas</title>
+  <meta name="description" content="Gerador de placas oficiais do Pratagy Beach — Alimentos & Bebidas, Manutenção e Governança." />
+
+  <link rel="preload" href="./assets/fonts/FibraOne-Regular.otf" as="font" type="font/otf" crossorigin />
+  <link rel="preload" href="./assets/fonts/FibraOne-SemiBold.otf" as="font" type="font/otf" crossorigin />
+  <link rel="preload" href="./assets/fonts/FibraOne-Bold.otf" as="font" type="font/otf" crossorigin />
+  <link rel="preload" href="./assets/fonts/FibraOne-Heavy.otf" as="font" type="font/otf" crossorigin />
+
+  <link rel="stylesheet" href="./css/fonts.css" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            fibra: ['Fibra One', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              deep: '#004F9F',
+              blue: '#008BCE',
+              light: '#C0E5FB',
+              vivid: '#4CC2F1',
+              coral: '#E95029',
+            },
+            status: {
+              amber: '#F7A600',
+              yellow: '#FDD945',
+              olive: '#E9E792',
+              lime: '#B3CA63',
+              green: '#8FB82A',
+              peach: '#FDD491',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <img src="./assets/logo/logo-grupo-cinza.png" alt="Grupo Pratagy" class="h-8 w-auto object-contain" />
+        <div class="hidden sm:block h-7 w-px bg-slate-200"></div>
+        <div class="hidden sm:block leading-tight">
+          <span class="block font-fibra font-extrabold text-brand-deep text-sm">Sistema de Placas</span>
+          <span class="block text-[11px] text-slate-400">Pratagy Beach All Inclusive Resort</span>
+        </div>
+      </div>
+      <button type="button" id="btn-nova-placa"
+        class="hidden items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:border-brand-coral hover:text-brand-coral">
+      </button>
+    </div>
+    <div id="stepper-container" class="border-t border-slate-100 bg-white"></div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_400px] gap-6 lg:gap-8 items-start">
+      <section id="step-container" aria-live="polite"></section>
+      <aside id="preview-container"></aside>
+    </div>
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-4 pb-8 pt-4 text-center text-xs text-slate-400">
+    Pratagy Beach &middot; Sistema interno de geração de placas
+  </footer>
+
+  <div id="modal-root" class="hidden"></div>
+  <div id="toast-root" class="hidden fixed bottom-6 right-6 z-[60]"></div>
+
+  <!-- Bibliotecas via CDN (sem necessidade de npm install), carregadas antes do app -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
+  <!-- Versão fixada: "@latest" no unpkg é mais lento e pode mudar sem aviso.
+        Se este CDN for bloqueado, js/ui/icons.js cai no fallback inline. -->
+  <script src="https://unpkg.com/lucide@1.40.0/dist/umd/lucide.min.js"></script>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

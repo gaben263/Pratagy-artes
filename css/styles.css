@@ -1,0 +1,64 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Fibra One', ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-fibra {
+  font-family: 'Fibra One', ui-sans-serif, system-ui, sans-serif;
+}
+
+.spinner svg,
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-enter {
+  animation: toast-in 0.22s ease-out;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-pop {
+  animation: modal-pop 0.18s ease-out;
+}
+
+/* Scrollbar discreta para o dropdown de autocomplete e áreas roláveis */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #c0e5fb;
+  border-radius: 999px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
