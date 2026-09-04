@@ -1,16 +1,21 @@
 # Arquivos que continuam versionados no GitHub, mas não precisam ir para o site.
 # O app consome apenas assets/, css/ e js/ — as pastas abaixo são os arquivos
 # de origem do design (PSDs) e pesam ~62 MB, deixando o deploy lento à toa.
+#
+# ATENÇÃO: este arquivo usa a mesma semântica do .gitignore, ou seja, um padrão
+# SEM barra inicial casa em qualquer profundidade. "logo-grupo-cinza.png"
+# excluiria também "assets/logo/logo-grupo-cinza.png", que o site usa. Por isso
+# todo padrão aqui começa com "/", ancorando na raiz do projeto.
 
-A&B/
-Fonte/
-Governança/
-Manutenção/
+/A&B/
+/Fonte/
+/Governança/
+/Manutenção/
 
-# Duplicatas dos arquivos que já estão em assets/
-logo-grupo-cinza.png
-biblioteca_pratos_bebidas_loucas_pratagy_pt_es.docx
+# Duplicatas da raiz — as versões usadas pelo site vivem em assets/ e ficam.
+/logo-grupo-cinza.png
+/biblioteca_pratos_bebidas_loucas_pratagy_pt_es.docx
 
 # Servidor de desenvolvimento local: não é usado pela Vercel e pode confundir
 # a detecção automática de framework.
-server.js
+/server.js
