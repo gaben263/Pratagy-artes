@@ -12,7 +12,7 @@ async function handleSelect(formatoId) {
     const ok = await confirmModal({
       title: 'Trocar de formato?',
       message:
-        'Ao trocar o formato, o texto já digitado será descartado, pois a área útil da placa muda de tamanho. Deseja continuar?',
+        'Ao trocar o formato, o texto já digitado será descartado, pois a área útil da arte muda de tamanho. Deseja continuar?',
       confirmLabel: 'Trocar formato',
       tone: 'danger',
     });
@@ -47,7 +47,7 @@ export function renderFormatoStep(container) {
           style="background:${setor.corDestaque}">${setor.sigla}</span>
         <span class="text-xs font-semibold text-slate-400">${setor.nome}</span>
       </div>
-      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Qual o formato da placa?</h1>
+      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Qual o formato da arte?</h1>
       <p class="mt-1 mb-5 text-slate-500">Escolha o tamanho que será impresso.</p>
 
       <div class="grid gap-3 sm:grid-cols-2 ${setor.formatos.length > 2 ? 'lg:grid-cols-3' : ''}">

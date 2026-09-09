@@ -1,14 +1,22 @@
 // Configuração estática dos setores, formatos e modelos oficiais.
 //
-// safeArea é expresso em porcentagem da imagem (0-100), medido a partir da
-// análise de pixels dos modelos oficiais (área branca/clara sem sobrepor
-// ondas, palmeiras, sol e demais ilustrações de fundo).
+// safeAreaMm expressa as margens em MILÍMETROS a partir de cada borda da arte.
+// A medida é física, não percentual: as imagens-base estão todas em 300 DPI
+// (945px = 80,01mm; 2480px = 209,97mm), então "6 mm de respiro" continua
+// valendo 6 mm no PNG e no PDF exportados, em qualquer formato.
 //
-// IMPORTANTE: as margens horizontais são sempre SIMÉTRICAS (left = 100 - right).
-// A medição bruta de espaço livre costuma ser assimétrica — o sol no canto
-// superior direito restringe mais que o lado esquerdo, por exemplo — mas usar
-// esses valores brutos como caixa de texto joga o texto para fora do centro da
-// placa. Por isso espelhamos sempre a margem mais restritiva dos dois lados.
+// Duas regras valem para esses valores:
+//
+// 1. As margens laterais são SIMÉTRICAS (left = right). A medição bruta de
+//    espaço livre costuma ser assimétrica — o sol no canto superior direito
+//    restringe mais que o lado esquerdo, por exemplo — mas usar esses valores
+//    brutos como caixa de texto joga o texto para fora do centro da arte.
+//    Por isso espelhamos sempre a margem mais restritiva dos dois lados.
+//
+// 2. A faixa vertical evita as ilustrações, em vez de cobrir toda a altura.
+//    O sol e as palmeiras ficam concentrados no topo e na base: incluí-los
+//    estrangula a caixa inteira e força quebras de linha desnecessárias no
+//    miolo, que está livre.
 
 export const SETORES = {
   ab: {
@@ -27,35 +35,40 @@ export const SETORES = {
       {
         id: '8x5',
         nome: '8x5 cm',
-        descricao: 'Placa pequena de balcão',
+        descricao: 'Arte pequena de balcão',
         imagem: 'assets/images/ab/8x5cm.png',
         largura: 945,
         altura: 591,
         mmLargura: 80,
         mmAltura: 50,
-        safeArea: { top: 9, bottom: 72, left: 16, right: 84 },
+        // Onda azul superior termina a 3,4mm do topo e a inferior a 12,1mm da
+        // base: +6mm de respiro em cada uma. Laterais a 10,8mm por causa das
+        // palmeiras e do sol, que restringem mais que a moldura azul.
+        safeAreaMm: { top: 9.4, bottom: 18.1, left: 10.8, right: 10.8 },
       },
       {
         id: '8x10',
         nome: '8x10 cm',
-        descricao: 'Placa média de buffet',
+        descricao: 'Arte média de buffet',
         imagem: 'assets/images/ab/8x10cm.png',
         largura: 945,
         altura: 1181,
         mmLargura: 80,
         mmAltura: 100,
-        safeArea: { top: 14, bottom: 70, left: 17, right: 83 },
+        // Onda superior a 11,9mm do topo e inferior a 16,3mm da base, +6mm de
+        // respiro. Laterais a 15,6mm (palmeiras, sol e as ondinhas decorativas).
+        safeAreaMm: { top: 17.9, bottom: 22.3, left: 15.6, right: 15.6 },
       },
       {
         id: '10x15',
         nome: '10x15 cm',
-        descricao: 'Placa grande de estação',
+        descricao: 'Arte grande de estação',
         imagem: 'assets/images/ab/10x15cm.png',
         largura: 1181,
         altura: 1772,
         mmLargura: 100,
         mmAltura: 150,
-        safeArea: { top: 22, bottom: 74, left: 18, right: 82 },
+        safeAreaMm: { top: 33, bottom: 39, left: 18, right: 18 },
       },
     ],
   },
@@ -78,7 +91,7 @@ export const SETORES = {
         altura: 3508,
         mmLargura: 420,
         mmAltura: 297,
-        safeArea: { top: 10, bottom: 74, left: 14, right: 86 },
+        safeAreaMm: { top: 29.7, bottom: 77.2, left: 58.8, right: 58.8 },
       },
       {
         id: 'a3-vertical',
@@ -89,7 +102,7 @@ export const SETORES = {
         altura: 4961,
         mmLargura: 297,
         mmAltura: 420,
-        safeArea: { top: 14, bottom: 70, left: 16, right: 84 },
+        safeAreaMm: { top: 58.8, bottom: 126, left: 47.5, right: 47.5 },
       },
       {
         id: 'a4-horizontal',
@@ -100,7 +113,7 @@ export const SETORES = {
         altura: 2480,
         mmLargura: 297,
         mmAltura: 210,
-        safeArea: { top: 18, bottom: 72, left: 15, right: 85 },
+        safeAreaMm: { top: 37.8, bottom: 58.8, left: 44.6, right: 44.6 },
       },
       {
         id: 'a4-vertical',
@@ -111,7 +124,7 @@ export const SETORES = {
         altura: 3508,
         mmLargura: 210,
         mmAltura: 297,
-        safeArea: { top: 14, bottom: 68, left: 13, right: 87 },
+        safeAreaMm: { top: 41.6, bottom: 95, left: 27.3, right: 27.3 },
       },
     ],
   },
@@ -124,6 +137,8 @@ export const SETORES = {
     permiteTraducao: false,
     tipoTexto: 'carta', // textarea longo com auto-shrink
     titleCase: false,
+    // Carta manuscrita: usa a Satisfy no Canvas, centralizada.
+    fonteManuscrita: true,
     formatos: [
       {
         id: 'a4-vertical-boas-vindas',
@@ -134,7 +149,10 @@ export const SETORES = {
         altura: 3508,
         mmLargura: 210,
         mmAltura: 297,
-        safeArea: { top: 14, bottom: 75, left: 10, right: 90 },
+        // Caixa estreita e alta, centralizada. A base para a 47mm da borda
+        // porque a logo Pratagy Beach começa a 263mm do topo (88,5% da altura)
+        // — a caixa termina bem antes dela.
+        safeAreaMm: { top: 41.6, bottom: 47, left: 40, right: 40 },
       },
     ],
   },

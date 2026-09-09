@@ -5,22 +5,26 @@
 import { toTitleCase } from '../utils.js';
 
 const FONT_FAMILY = "'Fibra One', sans-serif";
+const FONT_FAMILY_MANUSCRITA = "'Satisfy', cursive";
 
 // Pesos realmente usados no Canvas (precisam bater com os @font-face em fonts.css).
 const WEIGHT_PRINCIPAL = 800; // Fibra One Heavy
 const WEIGHT_SECUNDARIO = 600; // Fibra One SemiBold
-const WEIGHT_CORPO = 400; // Fibra One Regular
+const WEIGHT_CORPO = 400; // Fibra One Regular / Satisfy
 
 let fontsReadyPromise = null;
 
 /**
- * Garante que a Fibra One esteja de fato carregada na memória do navegador
+ * Garante que as fontes estejam de fato carregadas na memória do navegador
  * antes de qualquer desenho no Canvas.
  *
  * `document.fonts.ready` sozinho não basta: ele só espera as fontes que já
  * foram requisitadas, e uma fonte usada apenas via ctx.font pode nunca ter sido
  * solicitada — o Canvas então desenharia silenciosamente com a fonte fallback.
  * Por isso pedimos explicitamente cada peso antes de aguardar o ready.
+ *
+ * A Satisfy vem embutida em Base64 (css/satisfy-embedded.css), então não há
+ * requisição de rede envolvida: a exportação nunca sai com a fonte errada.
  */
 export function ensureFontsReady() {
   if (!fontsReadyPromise) {
@@ -28,6 +32,7 @@ export function ensureFontsReady() {
       document.fonts.load(`${WEIGHT_CORPO} 24px ${FONT_FAMILY}`),
       document.fonts.load(`${WEIGHT_SECUNDARIO} 24px ${FONT_FAMILY}`),
       document.fonts.load(`${WEIGHT_PRINCIPAL} 24px ${FONT_FAMILY}`),
+      document.fonts.load(`${WEIGHT_CORPO} 24px ${FONT_FAMILY_MANUSCRITA}`),
     ])
       .then(() => document.fonts.ready)
       .catch(() => document.fonts.ready);
@@ -35,16 +40,29 @@ export function ensureFontsReady() {
   return fontsReadyPromise;
 }
 
+/** Resolução de saída das artes. Todas as imagens-base estão nessa densidade. */
+export const DPI = 300;
+const PX_POR_MM = DPI / 25.4; // 11.8110…
+
+export const mmParaPx = (valorMm) => Math.round(valorMm * PX_POR_MM);
+
 /**
- * Converte a safeArea percentual do formato em pixels reais da imagem base.
+ * Converte a área segura (margens em MILÍMETROS a partir de cada borda da arte)
+ * em pixels reais da imagem base.
+ *
+ * A medida é física, não percentual: como as imagens-base estão em 300 DPI,
+ * "6 mm de respiro da onda azul" continua valendo 6 mm no PNG e no PDF
+ * exportados, sem sofrer distorção com o tamanho do formato.
  */
 export function computeSafeAreaPx(formato) {
-  const { largura, altura, safeArea } = formato;
+  const { largura, altura, safeAreaMm } = formato;
+  const x = mmParaPx(safeAreaMm.left);
+  const y = mmParaPx(safeAreaMm.top);
   return {
-    x: Math.round((safeArea.left / 100) * largura),
-    y: Math.round((safeArea.top / 100) * altura),
-    width: Math.round(((safeArea.right - safeArea.left) / 100) * largura),
-    height: Math.round(((safeArea.bottom - safeArea.top) / 100) * altura),
+    x,
+    y,
+    width: largura - x - mmParaPx(safeAreaMm.right),
+    height: altura - y - mmParaPx(safeAreaMm.bottom),
   };
 }
 
@@ -76,9 +94,14 @@ function wrapLines(ctx, text, maxWidth) {
  * Calcula o maior tamanho de fonte (dentro de [minSize, maxSize]) cujas
  * linhas resultantes cabem inteiramente em safeAreaPx.
  */
-function fitFontSize(ctx, text, safeAreaPx, { minSize, maxSize, weight, lineHeightRatio }) {
+function fitFontSize(
+  ctx,
+  text,
+  safeAreaPx,
+  { minSize, maxSize, weight, lineHeightRatio, fontFamily = FONT_FAMILY }
+) {
   for (let size = maxSize; size >= minSize; size -= 1) {
-    ctx.font = `${weight} ${size}px ${FONT_FAMILY}`;
+    ctx.font = `${weight} ${size}px ${fontFamily}`;
     const lines = wrapLines(ctx, text, safeAreaPx.width);
     const lineHeight = size * lineHeightRatio;
     const totalHeight = lines.length * lineHeight;
@@ -88,7 +111,7 @@ function fitFontSize(ctx, text, safeAreaPx, { minSize, maxSize, weight, lineHeig
     }
   }
   // Não coube nem no tamanho mínimo: usa o mínimo mesmo assim e reporta overflow.
-  ctx.font = `${weight} ${minSize}px ${FONT_FAMILY}`;
+  ctx.font = `${weight} ${minSize}px ${fontFamily}`;
   const lines = wrapLines(ctx, text, safeAreaPx.width);
   const lineHeight = minSize * lineHeightRatio;
   return { size: minSize, lines, lineHeight, fits: false };
@@ -96,9 +119,20 @@ function fitFontSize(ctx, text, safeAreaPx, { minSize, maxSize, weight, lineHeig
 
 function drawTextBlock(
   ctx,
-  { lines, lineHeight, size, weight, color, align, safeAreaPx, verticalAlign, canvasWidth }
+  {
+    lines,
+    lineHeight,
+    size,
+    weight,
+    color,
+    align,
+    safeAreaPx,
+    verticalAlign,
+    canvasWidth,
+    fontFamily = FONT_FAMILY,
+  }
 ) {
-  ctx.font = `${weight} ${size}px ${FONT_FAMILY}`;
+  ctx.font = `${weight} ${size}px ${fontFamily}`;
   ctx.fillStyle = color;
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = align;
@@ -113,7 +147,7 @@ function drawTextBlock(
     startY = safeAreaPx.y + (safeAreaPx.height - totalHeight) / 2 + size * 0.85;
   }
 
-  // Texto centralizado usa o eixo central da PLACA, não o da área segura, para
+  // Texto centralizado usa o eixo central da ARTE, não o da área segura, para
   // que o resultado fique opticamente centrado mesmo se a área segura precisar
   // ser assimétrica no futuro.
   const x = align === 'center' ? canvasWidth / 2 : safeAreaPx.x;
@@ -124,7 +158,7 @@ function drawTextBlock(
 }
 
 /**
- * Renderiza a placa completa no canvas informado.
+ * Renderiza a arte completa no canvas informado.
  *
  * Chame `await ensureFontsReady()` antes, senão o Canvas pode desenhar com a
  * fonte fallback do sistema.
@@ -132,7 +166,7 @@ function drawTextBlock(
  * @param {HTMLCanvasElement} canvas
  * @param {Object} opts
  * @param {HTMLImageElement} opts.image - imagem do modelo oficial, já carregada.
- * @param {Object} opts.formato - config do formato (com largura/altura/safeArea).
+ * @param {Object} opts.formato - config do formato (com largura/altura/safeAreaMm).
  * @param {string} opts.texto - texto principal (nome do prato ou texto livre).
  * @param {string} [opts.textoEs] - tradução em espanhol (apenas setor A&B).
  * @param {'ab'|'manutencao'|'governanca'} opts.tipo
@@ -207,22 +241,26 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
       fits = fits && esResult.fits;
     }
   } else if (tipo === 'governanca') {
-    // Carta longa: fonte reduz automaticamente até caber, alinhada à esquerda.
-    // Corpo de texto permanece em Regular — Heavy prejudicaria a leitura.
+    // Carta de boas-vindas: tipografia manuscrita (Satisfy), centralizada,
+    // com redução automática de corpo até caber na caixa.
+    // A entrelinha é maior que a das outras artes porque a Satisfy tem
+    // ascendentes e descendentes longos — 1.4 faria as linhas se tocarem.
     const result = fitFontSize(ctx, textoFinal, safeAreaPx, {
-      minSize: Math.max(14, Math.round(largura * 0.014)),
-      maxSize: Math.round(largura * 0.032),
+      minSize: Math.max(14, Math.round(largura * 0.016)),
+      maxSize: Math.round(largura * 0.048),
       weight: WEIGHT_CORPO,
-      lineHeightRatio: 1.4,
+      lineHeightRatio: 1.55,
+      fontFamily: FONT_FAMILY_MANUSCRITA,
     });
     drawTextBlock(ctx, {
       ...result,
       weight: WEIGHT_CORPO,
       color: '#004F9F',
-      align: 'left',
+      align: 'center',
       safeAreaPx,
-      verticalAlign: 'top',
+      verticalAlign: 'middle',
       canvasWidth: largura,
+      fontFamily: FONT_FAMILY_MANUSCRITA,
     });
     fits = result.fits;
   } else {

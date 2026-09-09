@@ -16,7 +16,7 @@ async function handleSelect(setorId) {
   if (trocandoComTextoPendente) {
     const ok = await confirmModal({
       title: 'Trocar de setor?',
-      message: 'Ao trocar de setor, o texto já digitado nesta placa será descartado. Deseja continuar?',
+      message: 'Ao trocar de setor, o texto já digitado nesta arte será descartado. Deseja continuar?',
       confirmLabel: 'Trocar setor',
       tone: 'danger',
     });
@@ -40,7 +40,7 @@ export function renderSetorStep(container) {
 
   container.innerHTML = `
     <div>
-      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Qual é o setor da placa?</h1>
+      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Qual é o setor da arte?</h1>
       <p class="mt-1 mb-5 text-slate-500">Cada setor tem seus próprios modelos oficiais já aprovados.</p>
 
       <div class="grid gap-3 sm:grid-cols-3">

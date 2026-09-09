@@ -32,12 +32,12 @@ const stepEl = document.getElementById('step-container');
 const previewEl = document.getElementById('preview-container');
 const novaPlacaBtn = document.getElementById('btn-nova-placa');
 
-novaPlacaBtn.innerHTML = `${icon('refresh', { size: 14 })} Nova placa`;
+novaPlacaBtn.innerHTML = `${icon('refresh', { size: 14 })} Nova arte`;
 novaPlacaBtn.addEventListener('click', async () => {
   const ok = await confirmModal({
-    title: 'Iniciar uma nova placa?',
+    title: 'Iniciar uma nova arte?',
     message: 'O setor, formato e texto atuais serão limpos. Baixe o arquivo antes, se ainda não baixou.',
-    confirmLabel: 'Iniciar nova placa',
+    confirmLabel: 'Iniciar nova arte',
     tone: 'danger',
   });
   if (ok) resetApp();
@@ -51,7 +51,7 @@ function render() {
   STEP_RENDERERS[state.step]?.(stepEl);
   updatePreview();
 
-  // O atalho "Nova placa" só faz sentido depois que algo foi escolhido.
+  // O atalho "Nova arte" só faz sentido depois que algo foi escolhido.
   novaPlacaBtn.classList.toggle('hidden', !state.setorId);
   novaPlacaBtn.classList.toggle('flex', Boolean(state.setorId));
 

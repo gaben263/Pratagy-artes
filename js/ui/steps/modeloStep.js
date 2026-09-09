@@ -20,7 +20,7 @@ export function renderModeloStep(container) {
       </button>
 
       <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Confirme o modelo oficial</h1>
-      <p class="mt-1 mb-5 text-slate-500">Este é o fundo aprovado da sua placa. Você só precisa preencher o texto.</p>
+      <p class="mt-1 mb-5 text-slate-500">Este é o fundo aprovado da sua arte. Você só precisa preencher o texto.</p>
 
       <div class="mb-4 flex flex-col items-center gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row">
         <img src="${formato.imagem}" alt="Modelo ${formato.nome}"

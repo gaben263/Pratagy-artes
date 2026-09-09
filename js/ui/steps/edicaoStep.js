@@ -27,7 +27,7 @@ function updateContinueState(container) {
   const hint = container.querySelector('[data-continue-hint]');
   if (hint) {
     hint.textContent = !hasText
-      ? 'Digite o texto da placa para continuar.'
+      ? 'Digite o texto da arte para continuar.'
       : !state.fits
       ? 'Reduza o texto: ele não cabe na área segura (veja o alerta na prévia).'
       : '';
@@ -47,7 +47,7 @@ function shell({ setor, formato, bodyHtml }) {
           style="background:${setor.corDestaque}">${setor.sigla}</span>
         <span class="text-xs font-semibold text-slate-400">${formato.nome} &middot; ${formato.mmLargura}×${formato.mmAltura} mm</span>
       </div>
-      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Preencha o texto da placa</h1>
+      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Preencha o texto da arte</h1>
       <p class="mt-1 mb-5 text-slate-500">A prévia é atualizada automaticamente conforme você digita.</p>
 
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -240,7 +240,7 @@ function bodyAB() {
 
       <p class="flex items-start gap-1.5 text-xs text-slate-400">
         ${icon('info', { size: 13, className: 'mt-0.5' })}
-        A placa aplica automaticamente as maiúsculas do padrão editorial (ex: "polvo grelhado" vira "Polvo Grelhado").
+        A arte aplica automaticamente as maiúsculas do padrão editorial (ex: "polvo grelhado" vira "Polvo Grelhado").
       </p>
     </div>
   `;
@@ -253,7 +253,7 @@ function bodyLivreOuCarta(setor) {
   return `
     <div>
       <label class="mb-1.5 block text-sm font-bold text-slate-600">
-        ${isCarta ? 'Texto da carta de boas-vindas' : 'Texto da placa'}
+        ${isCarta ? 'Texto da carta de boas-vindas' : 'Texto da arte'}
       </label>
       <textarea data-textarea rows="${isCarta ? 10 : 5}" maxlength="${isCarta ? 1200 : 240}"
         placeholder="${isCarta ? 'Escreva a mensagem de boas-vindas…' : 'Ex: Piscina em manutenção. Retornamos às 14h.'}"

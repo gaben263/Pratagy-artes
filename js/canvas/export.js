@@ -1,4 +1,4 @@
-// Exportação da placa renderizada em Canvas para PNG (blob nativo) e PDF (jsPDF).
+// Exportação da arte renderizada em Canvas para PNG (blob nativo) e PDF (jsPDF).
 
 import { slugify } from '../utils.js';
 

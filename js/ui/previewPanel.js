@@ -27,7 +27,7 @@ export function mountPreviewPanel(container) {
     <div class="flex flex-col gap-3 lg:sticky lg:top-24">
       <div class="flex items-center justify-between gap-3">
         <h2 class="flex items-center gap-1.5 font-fibra text-xs font-extrabold uppercase tracking-wider text-slate-500">
-          ${icon('eye', { size: 14 })} Prévia da placa
+          ${icon('eye', { size: 14 })} Prévia da arte
         </h2>
         <label class="flex cursor-pointer select-none items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-500 transition-colors hover:border-brand-coral hover:text-brand-coral">
           <input type="checkbox" id="toggle-safe-area" class="rounded accent-[#E95029]" />
@@ -67,7 +67,7 @@ function ensureCanvases(wrap) {
   const canvas = document.createElement('canvas');
   canvas.dataset.canvasMain = '';
   canvas.className = `${CANVAS_DISPLAY_CLASS} block shadow-inner`;
-  canvas.setAttribute('aria-label', 'Prévia da placa');
+  canvas.setAttribute('aria-label', 'Prévia da arte');
 
   // Canvas overlay exclusivo para o guia da área segura: nunca é exportado,
   // evitando que a linha pontilhada vaze para o PNG/PDF final.
@@ -94,7 +94,7 @@ export async function updatePreview() {
     wrap.innerHTML = emptyState({
       iconName: 'image',
       title: 'Nenhum modelo selecionado',
-      description: 'Escolha um setor e um formato para visualizar a prévia da placa aqui.',
+      description: 'Escolha um setor e um formato para visualizar a prévia da arte aqui.',
     });
     banner.innerHTML = '';
     return;

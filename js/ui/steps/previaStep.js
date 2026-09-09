@@ -24,7 +24,7 @@ export function renderPreviaStep(container) {
     return;
   }
 
-  // Mostra o texto exatamente como ele sai na placa.
+  // Mostra o texto exatamente como ele sai na arte.
   const aplicar = (t) => (setor.titleCase ? toTitleCase(t) : t);
 
   container.innerHTML = `

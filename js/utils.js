@@ -20,12 +20,12 @@ export function normalizeSearch(str) {
 }
 
 export function slugify(str) {
-  const base = stripDiacritics((str || 'placa').normalize('NFD'))
+  const base = stripDiacritics((str || 'arte').normalize('NFD'))
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
     .slice(0, 60);
-  return base || 'placa';
+  return base || 'arte';
 }
 
 // Palavras que permanecem em minúsculo no meio do título (PT e ES).

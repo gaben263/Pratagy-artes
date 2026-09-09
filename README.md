@@ -1,6 +1,6 @@
-# Pratagy Placas
+# Sistema de Artes — Pratagy
 
-Sistema interno para gerar as placas oficiais do Pratagy Beach (Alimentos & Bebidas, Manutenção e Governança) a partir dos modelos visuais aprovados.
+Sistema interno para gerar as artes oficiais do Pratagy Beach (Alimentos & Bebidas, Manutenção e Governança) a partir dos modelos visuais aprovados.
 
 ## Como rodar
 
@@ -22,8 +22,11 @@ Para usar outra porta: `node server.js 8080`.
 ```
 index.html              Página principal
 server.js                Servidor estático local (sem dependências)
+tools/
+  embed-font.js            regenera css/satisfy-embedded.css
 css/
   fonts.css               @font-face da Fibra One
+  satisfy-embedded.css     Satisfy em Base64 (GERADO — veja tools/)
   styles.css               estilos e animações auxiliares
 js/
   main.js                  bootstrap da aplicação
@@ -42,7 +45,7 @@ js/
 assets/
   images/{ab,manutencao,governanca}/   modelos oficiais (PNG)
   fonts/                                 Fibra One (.otf)
-  logo/                                  logo do cabeçalho (não aparece nas placas)
+  logo/                                  logo do cabeçalho (não aparece nas artes)
   docx/                                  biblioteca de pratos PT/ES
 ```
 
@@ -51,17 +54,24 @@ assets/
 - **Tailwind CSS** (play CDN) — estilos
 - **mammoth.js** — leitura do `.docx` da biblioteca de pratos
 - **idb** — cache da biblioteca no IndexedDB do navegador
-- **jsPDF** — exportação em PDF no tamanho físico real da placa
+- **jsPDF** — exportação em PDF no tamanho físico real da arte
 - **Lucide Icons** — ícones da interface (com fallback inline caso o CDN seja bloqueado)
+
+As tipografias são locais, não vêm de CDN: **Fibra One** (interface e artes) e **Satisfy** (carta de Governança).
 
 ## Atualizando os modelos oficiais
 
-Se um modelo (imagem de fundo) for atualizado pelo design, substitua o PNG correspondente em `assets/images/...` mantendo o mesmo nome de arquivo. Se as dimensões da imagem mudarem, ajuste `largura`/`altura` em `js/data/models.js`. A área segura (onde o texto pode ser escrito sem sobrepor as ilustrações) também está configurada ali, em porcentagem, por formato.
+Se um modelo (imagem de fundo) for atualizado pelo design, substitua o PNG correspondente em `assets/images/...` mantendo o mesmo nome de arquivo. Se as dimensões da imagem mudarem, ajuste `largura`/`altura` em `js/data/models.js`.
 
-Duas regras valem para esses valores:
+As áreas seguras ficam em `js/data/models.js`, no campo `safeAreaMm`: **margens em milímetros** a partir de cada borda da arte.
 
-1. **As margens horizontais são simétricas** (`left = 100 - right`). O texto centralizado usa o eixo central da placa; margens assimétricas deslocam a composição visualmente.
-2. **A faixa vertical evita as ilustrações**, em vez de cobrir toda a altura útil. O sol e as palmeiras ficam concentrados no topo e na base: incluí-los na faixa estrangula a caixa inteira e força quebras de linha desnecessárias no miolo, que está livre.
+A medida é física, não percentual. Todas as imagens-base estão em **300 DPI** (945px = 80,01mm; 2480px = 209,97mm), então a conversão mm↔px é exata e um respiro de 6 mm continua valendo 6 mm no PNG e no PDF exportados, em qualquer formato.
+
+Três regras valem para esses valores:
+
+1. **As margens laterais são simétricas** (`left = right`). O texto centralizado usa o eixo central da arte; margens assimétricas deslocam a composição visualmente.
+2. **A faixa vertical evita as ilustrações**, em vez de cobrir toda a altura útil. O sol e as palmeiras ficam concentrados no topo e na base: incluí-los estrangula a caixa inteira e força quebras de linha desnecessárias no miolo, que está livre.
+3. **Nas artes de A&B há 5–8 mm de respiro da onda azul.** A onda superior do 8x5 termina a 3,4 mm do topo e a inferior a 12,1 mm da base — daí `top: 9.4` e `bottom: 18.1` (6 mm de folga em cada).
 
 ## Atualizando a biblioteca de pratos (A&B)
 

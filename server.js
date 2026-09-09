@@ -55,7 +55,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log('');
-  console.log('  Pratagy Placas rodando em:');
+  console.log('  Sistema de Artes rodando em:');
   console.log(`  http://localhost:${PORT}`);
   console.log('');
   console.log('  Pressione Ctrl+C para encerrar.');

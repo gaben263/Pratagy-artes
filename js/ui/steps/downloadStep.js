@@ -26,10 +26,10 @@ async function handleExport(kind, canvas, formato, nomeArquivo, btn) {
 
 async function handleNovaPlaca() {
   const ok = await confirmModal({
-    title: 'Iniciar uma nova placa?',
+    title: 'Iniciar uma nova arte?',
     message:
-      'Isso vai limpar o setor, formato e texto atuais. Se ainda não baixou o arquivo desta placa, faça isso antes de continuar.',
-    confirmLabel: 'Iniciar nova placa',
+      'Isso vai limpar o setor, formato e texto atuais. Se ainda não baixou o arquivo desta arte, faça isso antes de continuar.',
+    confirmLabel: 'Iniciar nova arte',
     tone: 'danger',
   });
   if (ok) resetApp();
@@ -66,7 +66,7 @@ export function renderDownloadStep(container) {
     return;
   }
 
-  const nomeArquivo = `placa-${setor.sigla}-${formato.nome}-${state.texto}`.slice(0, 80);
+  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${state.texto}`.slice(0, 80);
 
   container.innerHTML = `
     <div>
@@ -75,7 +75,7 @@ export function renderDownloadStep(container) {
         ${icon('arrowLeft', { size: 16 })} Voltar
       </button>
 
-      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Baixe a sua placa</h1>
+      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Baixe a sua arte</h1>
       <p class="mt-1 mb-5 text-slate-500">Escolha o formato do arquivo.</p>
 
       ${
@@ -106,7 +106,7 @@ export function renderDownloadStep(container) {
 
       <button type="button" data-nova
         class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-bold text-slate-500 transition-colors hover:border-brand-coral hover:text-brand-coral">
-        ${icon('refresh', { size: 15 })} Iniciar uma nova placa
+        ${icon('refresh', { size: 15 })} Iniciar uma nova arte
       </button>
     </div>
   `;
