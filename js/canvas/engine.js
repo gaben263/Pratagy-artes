@@ -258,7 +258,9 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
       color: '#004F9F',
       align: 'center',
       safeAreaPx,
-      verticalAlign: 'middle',
+      // A carta começa no topo da caixa e cresce para baixo (como uma carta
+      // escrita à mão), mas cada linha continua centralizada na horizontal.
+      verticalAlign: 'top',
       canvasWidth: largura,
       fontFamily: FONT_FAMILY_MANUSCRITA,
     });

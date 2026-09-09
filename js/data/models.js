@@ -149,10 +149,11 @@ export const SETORES = {
         altura: 3508,
         mmLargura: 210,
         mmAltura: 297,
-        // Caixa estreita e alta, centralizada. A base para a 47mm da borda
-        // porque a logo Pratagy Beach começa a 263mm do topo (88,5% da altura)
-        // — a caixa termina bem antes dela.
-        safeAreaMm: { top: 41.6, bottom: 47, left: 40, right: 40 },
+        // Caixa estreita e alta, centralizada. A base para a 65,3mm da borda
+        // (78% da altura): a logo Pratagy Beach começa a 263mm do topo e o
+        // quiosque desenhado no canto inferior direito ocupa a faixa logo
+        // acima dela — a caixa termina antes dos dois.
+        safeAreaMm: { top: 41.6, bottom: 65.3, left: 40, right: 40 },
       },
     ],
   },
