@@ -247,9 +247,7 @@ function bodyAB() {
 
       <p class="flex items-start gap-1.5 text-xs text-slate-400">
         ${icon('info', { size: 13, className: 'mt-0.5' })}
-        O nome e a tradução vêm da biblioteca oficial e não podem ser digitados,
-        para garantir a grafia validada pelo time de A&amp;B. A arte aplica as
-        maiúsculas do padrão editorial (ex: "polvo grelhado" vira "Polvo Grelhado").
+        A arte aplica automaticamente as maiúsculas do padrão editorial (ex: "polvo grelhado" vira "Polvo Grelhado").
       </p>
     </div>
   `;
