@@ -128,10 +128,13 @@ function marcarBuscaComErro(container) {
   }
   if (loadingEl) {
     loadingEl.classList.remove('hidden');
+    // Sem biblioteca não há como preencher a arte: os campos de nome e tradução
+    // são somente leitura justamente para impedir grafia não validada.
     loadingEl.innerHTML = `
-      <p class="flex items-center gap-2 text-sm text-brand-coral">
-        ${icon('alertTriangle', { size: 15 })}
-        Não foi possível carregar a biblioteca. Você ainda pode digitar o nome manualmente.
+      <p class="flex items-start gap-2 text-sm text-brand-coral">
+        ${icon('alertTriangle', { size: 15, className: 'mt-0.5' })}
+        <span>Não foi possível carregar a biblioteca de pratos. Recarregue a página;
+        se o erro persistir, avise a equipe responsável pelo sistema.</span>
       </p>
     `;
   }
@@ -146,13 +149,9 @@ function wireBuscaAB(container, initialState) {
   ptInput.value = initialState.texto;
   esInput.value = initialState.textoEs;
 
-  const commit = debounce(() => {
-    setState({ texto: ptInput.value, textoEs: esInput.value });
-  }, 150);
-
-  ptInput.addEventListener('input', commit);
-  esInput.addEventListener('input', commit);
-
+  // Os campos de nome e tradução são somente leitura de propósito: o texto da
+  // arte de A&B só pode vir da biblioteca oficial, para não entrar no buffet
+  // uma grafia divergente da validada. Quem preenche é selectEntry().
   function selectEntry(entry) {
     ptInput.value = entry.pt;
     esInput.value = entry.es;
@@ -225,22 +224,32 @@ function bodyAB() {
       </div>
 
       <div class="border-t border-slate-100 pt-4">
-        <label class="mb-1.5 block text-sm font-bold text-slate-600">Nome do prato (português)</label>
-        <input type="text" data-pt-input maxlength="60" placeholder="Ex: Filé de peixe"
-          class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
+        <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
+          Nome do prato (português)
+          <span class="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+            ${icon('lock', { size: 10 })} preenchido pela busca
+          </span>
+        </label>
+        <input type="text" data-pt-input readonly tabindex="-1" placeholder="Selecione um item na busca acima"
+          class="w-full cursor-default select-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600 outline-none" />
       </div>
 
       <div>
         <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
           ${icon('globe', { size: 14, className: 'text-slate-400' })} Tradução em espanhol
+          <span class="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+            ${icon('lock', { size: 10 })} preenchido pela busca
+          </span>
         </label>
-        <input type="text" data-es-input maxlength="60" placeholder="Ex: Filete de pescado"
-          class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
+        <input type="text" data-es-input readonly tabindex="-1" placeholder="Selecione um item na busca acima"
+          class="w-full cursor-default select-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600 outline-none" />
       </div>
 
       <p class="flex items-start gap-1.5 text-xs text-slate-400">
         ${icon('info', { size: 13, className: 'mt-0.5' })}
-        A arte aplica automaticamente as maiúsculas do padrão editorial (ex: "polvo grelhado" vira "Polvo Grelhado").
+        O nome e a tradução vêm da biblioteca oficial e não podem ser digitados,
+        para garantir a grafia validada pelo time de A&amp;B. A arte aplica as
+        maiúsculas do padrão editorial (ex: "polvo grelhado" vira "Polvo Grelhado").
       </p>
     </div>
   `;

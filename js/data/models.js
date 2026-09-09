@@ -149,11 +149,15 @@ export const SETORES = {
         altura: 3508,
         mmLargura: 210,
         mmAltura: 297,
-        // Caixa estreita e alta, centralizada. A base para a 65,3mm da borda
-        // (78% da altura): a logo Pratagy Beach começa a 263mm do topo e o
-        // quiosque desenhado no canto inferior direito ocupa a faixa logo
-        // acima dela — a caixa termina antes dos dois.
-        safeAreaMm: { top: 41.6, bottom: 65.3, left: 40, right: 40 },
+        // Caixa alta e centralizada. A base para a 65,3mm da borda (78% da
+        // altura): a logo Pratagy Beach começa a 263mm do topo e o quiosque
+        // desenhado no canto inferior direito ocupa a faixa logo acima dela.
+        //
+        // A largura é o limite real do desenho: nessa faixa vertical, a maior
+        // caixa simétrica livre tem 24mm de margem (o traço das palmeiras e da
+        // cabana entra a partir daí, nos cantos de baixo). Usamos 26mm para
+        // deixar ~2mm de respiro em vez de encostar exatamente no desenho.
+        safeAreaMm: { top: 41.6, bottom: 65.3, left: 26, right: 26 },
       },
     ],
   },
