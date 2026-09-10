@@ -66,27 +66,71 @@ export function computeSafeAreaPx(formato) {
   };
 }
 
+/**
+ * Fatia uma palavra que não cabe inteira na largura disponível.
+ *
+ * Sem isso, uma sequência longa sem espaço (um endereço colado, um nome de
+ * arquivo, alguém digitando sem separar palavras) nunca quebraria: o
+ * `fitFontSize` iria reduzindo o corpo até o mínimo e a linha continuaria
+ * estourando a área segura na horizontal, virando um fiapo ilegível.
+ *
+ * A iteração é `for…of` para não partir pares substitutos (emoji, por exemplo)
+ * no meio de um caractere.
+ */
+function quebrarPalavraLonga(ctx, palavra, maxWidth) {
+  const pedacos = [];
+  let atual = '';
+  for (const caractere of palavra) {
+    const candidato = atual + caractere;
+    // `atual &&` evita laço infinito quando um único caractere já não cabe.
+    if (atual && ctx.measureText(candidato).width > maxWidth) {
+      pedacos.push(atual);
+      atual = caractere;
+    } else {
+      atual = candidato;
+    }
+  }
+  if (atual) pedacos.push(atual);
+  return pedacos;
+}
+
 function wrapLines(ctx, text, maxWidth) {
   const paragraphs = text.split('\n');
   const lines = [];
+
   for (const paragraph of paragraphs) {
     const words = paragraph.split(/\s+/).filter(Boolean);
     if (words.length === 0) {
       lines.push('');
       continue;
     }
-    let current = words[0];
-    for (let i = 1; i < words.length; i++) {
-      const candidate = `${current} ${words[i]}`;
+
+    let current = '';
+    for (const word of words) {
+      const candidate = current ? `${current} ${word}` : word;
+
       if (ctx.measureText(candidate).width <= maxWidth) {
         current = candidate;
+        continue;
+      }
+
+      // A palavra não cabe no resto da linha: fecha a linha atual.
+      if (current) lines.push(current);
+
+      if (ctx.measureText(word).width <= maxWidth) {
+        current = word;
       } else {
-        lines.push(current);
-        current = words[i];
+        // A palavra sozinha é mais larga que a linha inteira: fatia por
+        // caractere e leva só o último pedaço para a próxima iteração.
+        const pedacos = quebrarPalavraLonga(ctx, word, maxWidth);
+        lines.push(...pedacos.slice(0, -1));
+        current = pedacos[pedacos.length - 1] || '';
       }
     }
-    lines.push(current);
+
+    if (current) lines.push(current);
   }
+
   return lines;
 }
 
