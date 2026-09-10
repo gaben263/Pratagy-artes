@@ -6,27 +6,25 @@ import { confirmModal } from '../common.js';
 
 const DESCRICOES = {
   ab: 'Identificação de pratos e bebidas do buffet, com tradução em espanhol.',
-  manutencao: 'Catálogo de avisos e sinalizações já aprovados, prontos para imprimir.',
-  governanca: 'Carta de boas-vindas e materiais de apartamento e recepção.',
+  manutencao: 'Avisos e sinalizações do resort, já aprovados e prontos para imprimir.',
+  governanca: 'Cartões de hóspede, check-out e a carta de boas-vindas personalizável.',
   acquapark: 'Comunicados do parque aquático para WhatsApp e murais.',
 };
 
 /** Rodapé do cartão: o setor de catálogo conta artes prontas, os demais, formatos. */
 function resumoDoSetor(setor) {
   if (setor.fluxo === 'catalogo') {
-    return { iconName: 'layers', texto: `${CATALOGO.length} artes prontas` };
+    const total = CATALOGO.filter((item) => item.categoria === setor.categoriaCatalogo).length;
+    return { iconName: 'layers', texto: `${total} artes prontas` };
   }
-  const disponiveis = setor.formatos.filter((f) => !f.emBreve).length;
-  return {
-    iconName: 'layers',
-    texto: `${disponiveis} ${disponiveis === 1 ? 'modelo' : 'formatos'}`,
-  };
+  const total = setor.formatos.length;
+  return { iconName: 'layers', texto: `${total} ${total === 1 ? 'modelo' : 'formatos'}` };
 }
 
 async function handleSelect(setorId) {
   const state = getState();
-  const temTextoPendente = state.texto.trim() || state.corpo.trim();
-  const trocandoComTextoPendente = state.setorId && state.setorId !== setorId && temTextoPendente;
+  const trocandoComTextoPendente =
+    state.setorId && state.setorId !== setorId && state.texto.trim();
 
   if (trocandoComTextoPendente) {
     const ok = await confirmModal({
@@ -44,7 +42,6 @@ async function handleSelect(setorId) {
     modo: null,
     texto: '',
     textoEs: '',
-    corpo: '',
     libraryEntryId: null,
     fits: true,
     exported: false,

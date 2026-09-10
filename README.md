@@ -5,9 +5,12 @@ Sistema interno de artes oficiais do Pratagy Beach. Quatro módulos:
 | Módulo | O que faz |
 |---|---|
 | **Alimentos & Bebidas** | Gera a identificação de pratos a partir da biblioteca oficial (.docx), com tradução em espanhol |
-| **Institucionais Gerais** | Catálogo buscável de 35 artes prontas para baixar, mais um gerador de aviso personalizado em A3/A4 |
-| **Hospitalidade** | Carta de boas-vindas manuscrita (A4). Os cartões de hóspede 12×7 cm já têm o espaço reservado no fluxo |
+| **Institucionais Gerais** | Catálogo buscável de 27 avisos e sinalizações prontos para baixar. Só consulta — não gera arte |
+| **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) mais o gerador da carta de boas-vindas manuscrita em A4 |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
+
+> Cada setor de catálogo mostra uma categoria só, definida em `categoriaCatalogo`. Um setor
+> só oferece o gerador se declarar `acaoGerador` **e** tiver formatos — hoje, apenas Hospitalidade.
 
 > Os IDs internos dos dois módulos renomeados continuam `manutencao` (Institucionais Gerais) e `governanca` (Hospitalidade): eles indexam os caminhos dos assets e o cache já gravado no navegador dos usuários. Só os nomes de interface mudaram.
 
@@ -53,7 +56,7 @@ js/
     previewPanel.js          painel de prévia (canvas ao vivo)
     stepper.js, common.js, icons.js
 assets/
-  images/{ab,manutencao,governanca,acquapark}/  modelos oficiais do gerador (PNG)
+  images/{ab,governanca,acquapark}/             modelos oficiais do gerador (PNG)
   catalogo/{institucional,hospitalidade}/       artes prontas do catálogo (PNG, 300 DPI)
   catalogo/thumbs/                              miniaturas das artes prontas (JPG)
   fonts/                                        Fibra One (.otf) e Satisfy (.ttf)
@@ -103,8 +106,11 @@ Para adicionar uma arte:
    no modal; a busca continua insensível a acento.
 
 O campo `printMaterial` vem preenchido com o padrão `"PVC Adesivado"` e `materialConfirmado: false`,
-o que faz a interface exibir a informação como **sugestão a validar**. Quando o time de Design
+o que faz a interface exibir a informação como **sugestão a validar**. Quando o time de Marketing
 confirmar o material de um item, ajuste o valor e marque `materialConfirmado: true` para o aviso sumir.
+
+Para mover uma arte de categoria, troque o campo `categoria` no `catalogData.js` e mova o PNG e a
+miniatura para a pasta correspondente — os caminhos são derivados de `categoria` + `id`.
 
 As pastas de trabalho `Institucional/`, `Hospitalidade/` e `AcquaPark/` continuam versionadas
 no Git, mas ficam fora do deploy (`.vercelignore`) — o site consome só o que está em `assets/`.

@@ -6,8 +6,7 @@ import { preloadSetorImages } from '../previewPanel.js';
 
 async function handleSelect(formatoId) {
   const state = getState();
-  const temTexto = state.texto.trim() || state.corpo.trim();
-  const trocando = state.formatoId && state.formatoId !== formatoId && temTexto;
+  const trocando = state.formatoId && state.formatoId !== formatoId && state.texto.trim();
 
   if (trocando) {
     const ok = await confirmModal({
@@ -18,7 +17,7 @@ async function handleSelect(formatoId) {
       tone: 'danger',
     });
     if (!ok) return;
-    setState({ texto: '', textoEs: '', corpo: '', libraryEntryId: null });
+    setState({ texto: '', textoEs: '', libraryEntryId: null });
   }
 
   setState({ formatoId });
@@ -30,41 +29,6 @@ function medidaDoFormato(formato) {
   return formato.digital
     ? `${formato.largura}×${formato.altura} px`
     : `${formato.mmLargura}×${formato.mmAltura} mm`;
-}
-
-function cardEmBreve(formato) {
-  const campos = (formato.camposFuturos || [])
-    .map(
-      (campo) => `
-        <span class="inline-flex items-center gap-1 rounded-md bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
-          ${icon(campo.icone, { size: 11 })} ${campo.label}
-        </span>
-      `
-    )
-    .join('');
-
-  return `
-    <div aria-disabled="true"
-      class="relative overflow-hidden rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-left">
-      <span class="absolute right-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-status-amber px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow">
-        ${icon('clock', { size: 11 })} Em breve
-      </span>
-      <div class="flex h-28 items-center justify-center border-b border-slate-200 bg-white/60 p-3">
-        <img src="${formato.imagem}" alt="Prévia de ${formato.nome}"
-          class="max-h-full max-w-full rounded object-contain opacity-50 shadow-sm ring-1 ring-slate-200" loading="lazy" />
-      </div>
-      <div class="p-3.5">
-        <h3 class="font-fibra font-extrabold text-slate-500">${formato.nome}</h3>
-        <p class="mt-0.5 text-xs text-slate-400">${formato.descricao}</p>
-        ${
-          campos
-            ? `<p class="mt-2.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Vai pedir</p>
-               <div class="mt-1.5 flex flex-wrap gap-1.5">${campos}</div>`
-            : ''
-        }
-      </div>
-    </div>
-  `;
 }
 
 function cardFormato(formato, selected) {
@@ -138,22 +102,9 @@ export function renderFormatoStep(container) {
 
       <div class="grid gap-3 sm:grid-cols-2 ${setor.formatos.length > 2 ? 'lg:grid-cols-3' : ''}">
         ${setor.formatos
-          .map((formato) =>
-            formato.emBreve ? cardEmBreve(formato) : cardFormato(formato, state.formatoId === formato.id)
-          )
+          .map((formato) => cardFormato(formato, state.formatoId === formato.id))
           .join('')}
       </div>
-
-      ${
-        setor.id === 'governanca'
-          ? `<div class="mt-5 flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
-              ${icon('info', { size: 17, className: 'mt-0.5 text-slate-400' })}
-              <p>Procurando os cartões de hóspede, a carta de check-out ou os avisos de apartamento?
-              Essas artes já existem prontas no <strong class="font-bold text-brand-deep">catálogo de Institucionais Gerais</strong>,
-              no filtro "Hospitalidade".</p>
-            </div>`
-          : ''
-      }
     </div>
   `;
 

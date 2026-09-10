@@ -30,8 +30,6 @@ function initialState() {
     modo: null,
     texto: '',
     textoEs: '',
-    // Corpo do comunicado (Acqua Park); `texto` guarda o assunto.
-    corpo: '',
     libraryEntryId: null,
     fits: true,
     exported: false,
@@ -68,11 +66,7 @@ export function getStepOrder(s = state) {
 
 export function hasUnsavedWork() {
   return Boolean(
-    state.texto.trim() ||
-      state.textoEs.trim() ||
-      state.corpo.trim() ||
-      state.setorId ||
-      state.formatoId
+    state.texto.trim() || state.textoEs.trim() || state.setorId || state.formatoId
   );
 }
 
@@ -109,12 +103,18 @@ export function canReachStep(stepId) {
  *
  * Troca de fluxo e navega numa única atualização de estado: fazer as duas
  * coisas em `setState` separados dispararia um render intermediário em que o
- * passo 'formato' ainda não pertence à ordem vigente.
+ * passo de destino ainda não pertence à ordem vigente.
+ *
+ * @param {string|null} formatoId - quando o setor tem um formato só, ele já vem
+ *   escolhido e pulamos direto para a confirmação do modelo; a tela de formato
+ *   com um cartão único não acrescenta nada.
  */
-export function entrarNoGerador() {
+export function entrarNoGerador(formatoId = null) {
+  const destino = formatoId ? 'modelo' : 'formato';
   setState({
     modo: 'gerador',
-    step: 'formato',
-    maxStepIndex: Math.max(state.maxStepIndex, FLUXO_CATALOGO_GERADOR.indexOf('formato')),
+    formatoId: formatoId || state.formatoId,
+    step: destino,
+    maxStepIndex: Math.max(state.maxStepIndex, FLUXO_CATALOGO_GERADOR.indexOf(destino)),
   });
 }

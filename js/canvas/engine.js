@@ -167,17 +167,13 @@ function drawTextBlock(
  * @param {Object} opts
  * @param {HTMLImageElement} opts.image - imagem do modelo oficial, já carregada.
  * @param {Object} opts.formato - config do formato (com largura/altura/safeAreaMm).
- * @param {string} opts.texto - texto principal (nome do prato, texto livre ou assunto).
+ * @param {string} opts.texto - texto principal (nome do prato, texto livre ou comunicado).
  * @param {string} [opts.textoEs] - tradução em espanhol (apenas setor A&B).
- * @param {string} [opts.corpo] - corpo do comunicado (apenas Acqua Park).
  * @param {'ab'|'manutencao'|'governanca'|'comunicado'} opts.tipo
  * @param {boolean} [opts.titleCase] - aplica Title Case editorial ao texto.
  * @returns {{ fits: boolean, safeAreaPx: Object }}
  */
-export function renderCanvas(
-  canvas,
-  { image, formato, texto, textoEs, corpo, tipo, titleCase = false }
-) {
+export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, titleCase = false }) {
   const { largura, altura } = formato;
   canvas.width = largura;
   canvas.height = altura;
@@ -189,11 +185,8 @@ export function renderCanvas(
   const safeAreaPx = computeSafeAreaPx(formato);
   const raw = (texto || '').trim();
   const textoFinal = titleCase ? toTitleCase(raw) : raw;
-  const corpoFinal = (corpo || '').trim();
 
-  // O comunicado do Acqua Park é o único formato em que só o corpo já produz
-  // arte: nos demais, sem texto principal não há o que desenhar.
-  if (!textoFinal && !(tipo === 'comunicado' && corpoFinal)) {
+  if (!textoFinal) {
     return { fits: true, safeAreaPx };
   }
 
@@ -249,89 +242,27 @@ export function renderCanvas(
     }
   } else if (tipo === 'comunicado') {
     // Acqua Park: a arte-base já traz "COMUNICADO" impresso no topo, então o
-    // que entra aqui é o assunto + o corpo do texto, ambos em Fibra One
-    // SemiBold — a hierarquia vem do tamanho e não do peso.
-    const corTitulo = formato.corTitulo || '#FFFFFF';
-    const corCorpo = formato.corCorpo || corTitulo;
-    const temTitulo = textoFinal.length > 0;
-    const temCorpo = corpoFinal.length > 0;
-
-    // O assunto ocupa no máximo um terço da caixa quando há corpo, para o
-    // comunicado não virar um título gigante com duas linhas de texto embaixo.
-    let tituloResult = null;
-    let alturaTitulo = 0;
-    if (temTitulo) {
-      tituloResult = fitFontSize(
-        ctx,
-        textoFinal,
-        { ...safeAreaPx, height: temCorpo ? safeAreaPx.height * 0.34 : safeAreaPx.height },
-        {
-          minSize: Math.round(largura * 0.03),
-          maxSize: Math.round(largura * 0.075),
-          weight: WEIGHT_SECUNDARIO,
-          lineHeightRatio: 1.18,
-        }
-      );
-      alturaTitulo = tituloResult.lines.length * tituloResult.lineHeight;
-    }
-
-    const respiro = temTitulo && temCorpo ? tituloResult.size * 0.75 : 0;
-
-    let corpoResult = null;
-    let alturaCorpo = 0;
-    if (temCorpo) {
-      const areaCorpo = {
-        ...safeAreaPx,
-        height: Math.max(0, safeAreaPx.height - alturaTitulo - respiro),
-      };
-      corpoResult = fitFontSize(ctx, corpoFinal, areaCorpo, {
-        minSize: Math.round(largura * 0.021),
-        maxSize: Math.round(largura * 0.045),
-        weight: WEIGHT_SECUNDARIO,
-        lineHeightRatio: 1.4,
-      });
-      alturaCorpo = corpoResult.lines.length * corpoResult.lineHeight;
-    }
-
-    // Assunto e corpo são medidos separadamente, mas desenhados como um bloco
-    // único — daí as caixas sintéticas abaixo.
+    // que entra aqui é só o corpo do texto, em Fibra One SemiBold.
     //
     // O bloco começa no topo da caixa, e não centralizado nela: o "COMUNICADO"
-    // impresso na arte é o título, e o assunto é a continuação dele. Centralizar
-    // faria um comunicado curto flutuar no meio do cartão, com um vão de mais de
-    // 200px separando o assunto do título a que ele pertence.
-    const alturaTotal = alturaTitulo + respiro + alturaCorpo;
-    const inicioY = safeAreaPx.y;
-
-    if (tituloResult) {
-      drawTextBlock(ctx, {
-        ...tituloResult,
-        weight: WEIGHT_SECUNDARIO,
-        color: corTitulo,
-        align: 'center',
-        safeAreaPx: { ...safeAreaPx, y: inicioY, height: alturaTitulo },
-        verticalAlign: 'top',
-        canvasWidth: largura,
-      });
-      fits = fits && tituloResult.fits;
-    }
-
-    if (corpoResult) {
-      drawTextBlock(ctx, {
-        ...corpoResult,
-        weight: WEIGHT_SECUNDARIO,
-        color: corCorpo,
-        align: 'center',
-        safeAreaPx: { ...safeAreaPx, y: inicioY + alturaTitulo + respiro, height: alturaCorpo },
-        verticalAlign: 'top',
-        canvasWidth: largura,
-      });
-      fits = fits && corpoResult.fits;
-    }
-
-    // Cada bloco coube na sua sub-área, mas o conjunto ainda pode estourar a
-    // caixa — é esse total que trava a exportação.
-    fits = fits && alturaTotal <= safeAreaPx.height;
+    // impresso é o título, e o texto é a continuação dele. Centralizar faria um
+    // comunicado curto flutuar no meio do cartão, longe do título a que pertence.
+    const result = fitFontSize(ctx, textoFinal, safeAreaPx, {
+      minSize: Math.round(largura * 0.021),
+      maxSize: Math.round(largura * 0.058),
+      weight: WEIGHT_SECUNDARIO,
+      lineHeightRatio: 1.38,
+    });
+    drawTextBlock(ctx, {
+      ...result,
+      weight: WEIGHT_SECUNDARIO,
+      color: formato.corCorpo || '#FFFFFF',
+      align: 'center',
+      safeAreaPx,
+      verticalAlign: 'top',
+      canvasWidth: largura,
+    });
+    fits = result.fits;
   } else if (tipo === 'governanca') {
     // Carta de boas-vindas: tipografia manuscrita (Satisfy), centralizada,
     // com redução automática de corpo até caber na caixa.

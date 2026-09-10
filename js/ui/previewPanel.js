@@ -121,7 +121,6 @@ export async function updatePreview() {
       formato,
       texto: state.texto,
       textoEs: state.textoEs,
-      corpo: state.corpo,
       tipo: TIPO_RENDER[setor?.tipoTexto] || 'manutencao',
       titleCase: Boolean(setor?.titleCase),
     });

@@ -1,14 +1,19 @@
-// Catálogo de artes prontas (Institucionais Gerais e Hospitalidade).
+// Catálogo de artes prontas.
+//
+// Cada setor de catálogo mostra uma única categoria — Institucionais Gerais
+// mostra as institucionais, Hospitalidade mostra as de hospitalidade —, então
+// não há filtro de categoria na tela: o próprio setor já é o filtro.
 //
 // Diferente das demais telas, aqui não há Canvas: o usuário busca uma arte já
-// aprovada, confere as instruções de impressão e baixa o arquivo.
+// aprovada, confere as instruções de impressão e baixa o arquivo. Hospitalidade
+// ainda oferece o gerador da carta de boas-vindas, declarado em `acaoGerador`.
 //
-// O termo de busca e o filtro de categoria ficam em variáveis de módulo, não no
-// estado global: qualquer setState dispara um render completo da aplicação, o
-// que recriaria o campo de busca e faria o usuário perder o foco a cada letra
-// digitada. A grade é atualizada por manipulação direta do DOM.
+// O termo de busca fica em variável de módulo, não no estado global: qualquer
+// setState dispara um render completo da aplicação, o que recriaria o campo de
+// busca e faria o usuário perder o foco a cada letra digitada. A grade é
+// atualizada por manipulação direta do DOM.
 
-import { CATALOGO, CATEGORIAS, buscarCatalogo, getItemCatalogo, tamanhoMm } from '../../data/catalogData.js';
+import { CATEGORIAS, buscarCatalogo, getItemCatalogo, tamanhoMm } from '../../data/catalogData.js';
 import { getSetor } from '../../data/models.js';
 import { getState, goToStep, goBack, entrarNoGerador } from '../../state.js';
 import { icon } from '../icons.js';
@@ -17,15 +22,13 @@ import { openModal, showToast, emptyState } from '../common.js';
 import { exportCatalogPNG, exportCatalogPDF } from '../../canvas/export.js';
 
 let termo = '';
-let categoria = 'todos';
-
-const totalPorCategoria = (id) =>
-  id === 'todos' ? CATALOGO.length : CATALOGO.filter((item) => item.categoria === id).length;
 
 // ------------------------------------------------------------------ Cartões
 
+// O selo de categoria não entra no card: cada aba mostra uma categoria só, então
+// repeti-lo em todos os cards era ruído. Ele fica só no modal, onde identifica a
+// arte fora do contexto da grade.
 function cardCatalogo(item) {
-  const cat = CATEGORIAS[item.categoria];
   return `
     <button type="button" data-item="${item.id}"
       class="group flex flex-col overflow-hidden rounded-2xl border-2 border-slate-200 bg-white text-left shadow-sm transition-all duration-150
@@ -38,10 +41,11 @@ function cardCatalogo(item) {
       <div class="flex flex-1 flex-col p-3">
         <h3 class="font-fibra text-sm font-extrabold leading-snug text-brand-deep">${escapeHtml(item.titulo)}</h3>
         <div class="mt-auto flex flex-wrap items-center gap-1.5 pt-2.5">
-          <span class="rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white"
-            style="background:${cat.cor}">${cat.nome}</span>
           <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
             ${icon('ruler', { size: 11 })} ${escapeHtml(item.size)}
+          </span>
+          <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+            ${icon('sticker', { size: 11 })} ${escapeHtml(item.printMaterial)}
           </span>
         </div>
       </div>
@@ -49,14 +53,14 @@ function cardCatalogo(item) {
   `;
 }
 
-function gradeHtml() {
+function gradeHtml(categoria) {
   const itens = buscarCatalogo(termo, categoria);
 
   if (!itens.length) {
     return emptyState({
       iconName: 'search',
       title: 'Nenhuma arte encontrada',
-      description: `Nada corresponde a "${escapeHtml(termo)}". Tente outra palavra — a busca também procura por assunto, como "proibido", "piscina" ou "hóspede".`,
+      description: `Nada corresponde a "${escapeHtml(termo)}". Tente outra palavra — a busca também procura por assunto, e não só pelo nome da arte.`,
     });
   }
 
@@ -137,7 +141,7 @@ function modalHtml(item) {
                 ? ''
                 : `<p class="mt-3 flex items-start gap-1.5 border-t border-brand-vivid/25 pt-3 text-xs leading-relaxed text-slate-500">
                      ${icon('info', { size: 13, className: 'mt-0.5' })}
-                     <span>Material sugerido como padrão do sistema. Confirme com o time de Design antes de mandar imprimir em quantidade.</span>
+                     <span>Material sugerido como padrão do sistema. Confirme com o time de Marketing antes de mandar imprimir em quantidade.</span>
                    </p>`
             }
           </div>
@@ -210,35 +214,13 @@ function abrirDetalhe(itemId) {
 
 // --------------------------------------------------------------------- Passo
 
-function chipsHtml() {
-  const opcoes = [{ id: 'todos', nome: 'Todos' }, ...Object.values(CATEGORIAS)];
-  return opcoes
-    .map((op) => {
-      const ativo = op.id === categoria;
-      return `
-        <button type="button" data-categoria="${op.id}"
-          class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
-            ativo
-              ? 'border-brand-blue bg-brand-blue text-white shadow-sm'
-              : 'border-slate-200 bg-white text-slate-500 hover:border-brand-vivid hover:text-brand-blue'
-          }">
-          ${escapeHtml(op.nome)}
-          <span class="rounded-full px-1.5 text-[10px] tabular-nums ${
-            ativo ? 'bg-white/25' : 'bg-slate-100'
-          }">${totalPorCategoria(op.id)}</span>
-        </button>
-      `;
-    })
-    .join('');
-}
-
-function atualizarGrade(container) {
+function atualizarGrade(container, categoria) {
   const grade = container.querySelector('[data-grade]');
   const contador = container.querySelector('[data-contador]');
   if (!grade) return;
 
   const total = buscarCatalogo(termo, categoria).length;
-  grade.innerHTML = gradeHtml();
+  grade.innerHTML = gradeHtml(categoria);
   contador.textContent = total === 1 ? '1 arte encontrada' : `${total} artes encontradas`;
 
   grade.querySelectorAll('[data-item]').forEach((btn) => {
@@ -261,9 +243,12 @@ export function renderCatalogoStep(container) {
   if (container.dataset.sig === signature && container.querySelector('[data-catalogo-root]')) {
     return;
   }
+  // A busca não deve vazar de um setor para o outro.
+  if (container.dataset.sig !== signature) termo = '';
   container.dataset.sig = signature;
 
-  const temGerador = setor.formatos?.some((f) => !f.emBreve);
+  const categoria = setor.categoriaCatalogo || 'todos';
+  const gerador = setor.acaoGerador && setor.formatos.length ? setor.acaoGerador : null;
 
   container.innerHTML = `
     <div data-catalogo-root>
@@ -277,10 +262,44 @@ export function renderCatalogoStep(container) {
           style="background:${setor.corDestaque}">${setor.sigla}</span>
         <span class="text-xs font-semibold text-slate-400">${setor.nome}</span>
       </div>
-      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Catálogo de artes prontas</h1>
+      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">${
+        setor.tituloCatalogo || 'Catálogo de artes prontas'
+      }</h1>
       <p class="mt-1 mb-5 text-slate-500">
-        Artes já aprovadas pelo Design, prontas para baixar e imprimir. Busque pelo nome ou pelo assunto.
+        ${
+          gerador
+            ? 'Escreva uma carta personalizada ou baixe uma das artes já aprovadas.'
+            : 'Artes já aprovadas pelo Marketing, prontas para baixar e imprimir. Busque pelo nome ou pelo assunto.'
+        }
       </p>
+
+      ${
+        gerador
+          ? `
+        <button type="button" data-gerador
+          class="group mb-6 flex w-full items-center gap-3.5 rounded-2xl border-2 bg-white p-4 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
+          style="border-color:${setor.corDestaque}33">
+          <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
+            style="background:${setor.corDestaque}">
+            ${icon('edit', { size: 22 })}
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block font-fibra font-extrabold text-brand-deep">${gerador.titulo}</span>
+            <span class="block text-xs text-slate-500">${gerador.descricao}</span>
+          </span>
+          <span class="shrink-0 text-slate-300 transition-colors group-hover:text-brand-blue">
+            ${icon('arrowRight', { size: 20 })}
+          </span>
+        </button>
+
+        <div class="mb-4 flex items-center gap-3">
+          <span class="h-px flex-1 bg-slate-200"></span>
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">ou baixe uma arte pronta</span>
+          <span class="h-px flex-1 bg-slate-200"></span>
+        </div>
+      `
+          : ''
+      }
 
       <div class="mb-4 space-y-3">
         <div class="relative">
@@ -288,61 +307,35 @@ export function renderCatalogoStep(container) {
             ${icon('search', { size: 19 })}
           </span>
           <input type="search" data-busca value="${escapeHtml(termo)}"
-            placeholder="Ex: proibido fumar, poço, hóspede, academia…"
+            placeholder="${
+              categoria === 'hospitalidade'
+                ? 'Ex: cartão VIP, check-out, aniversariante…'
+                : 'Ex: proibido fumar, poço, academia, luvas…'
+            }"
             class="w-full rounded-xl border-2 border-slate-200 py-3 pl-11 pr-3 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
         </div>
-
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="mr-0.5 inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-            ${icon('filter', { size: 12 })} Filtrar
-          </span>
-          <span data-chips class="flex flex-wrap gap-2">${chipsHtml()}</span>
-        </div>
-
         <p data-contador class="text-xs font-semibold text-slate-400"></p>
       </div>
 
       <div data-grade></div>
-
-      ${
-        temGerador
-          ? `
-        <div class="mt-6 border-t border-slate-200 pt-6">
-          <p class="mb-3 text-sm text-slate-500">Não encontrou o que precisava?</p>
-          <button type="button" data-personalizado
-            class="group flex w-full items-center gap-3.5 rounded-2xl border-2 border-dashed border-slate-300 bg-white p-4 text-left transition-all duration-150 hover:border-brand-blue hover:bg-brand-light/20 sm:w-auto">
-            <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-brand-blue group-hover:text-white">
-              ${icon('plus', { size: 21 })}
-            </span>
-            <span>
-              <span class="block font-fibra font-extrabold text-brand-deep">Criar um aviso personalizado</span>
-              <span class="block text-xs text-slate-500">Escreva o seu próprio texto em um modelo A3 ou A4 oficial</span>
-            </span>
-          </button>
-        </div>
-      `
-          : ''
-      }
     </div>
   `;
 
   container.querySelector('[data-back]').addEventListener('click', goBack);
-  container.querySelector('[data-personalizado]')?.addEventListener('click', entrarNoGerador);
+
+  container.querySelector('[data-gerador]')?.addEventListener('click', () => {
+    // Com um único formato disponível, a tela de escolha de formato seria um
+    // beco com um cartão só: vamos direto para a confirmação do modelo.
+    const unico = setor.formatos.length === 1 ? setor.formatos[0].id : null;
+    entrarNoGerador(unico);
+  });
 
   const busca = container.querySelector('[data-busca]');
   const aplicarBusca = debounce(() => {
     termo = busca.value;
-    atualizarGrade(container);
+    atualizarGrade(container, categoria);
   }, 140);
   busca.addEventListener('input', aplicarBusca);
 
-  container.querySelector('[data-chips]').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-categoria]');
-    if (!btn) return;
-    categoria = btn.dataset.categoria;
-    container.querySelector('[data-chips]').innerHTML = chipsHtml();
-    atualizarGrade(container);
-  });
-
-  atualizarGrade(container);
+  atualizarGrade(container, categoria);
 }

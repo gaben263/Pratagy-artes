@@ -11,8 +11,13 @@
 //
 // FLUXO
 // `fluxo: 'gerador'` segue o passo a passo de Canvas (formato → modelo → texto →
-// prévia → download). `fluxo: 'catalogo'` abre a busca de artes prontas; de lá o
-// usuário ainda pode entrar no gerador para criar um aviso personalizado.
+// prévia → download). `fluxo: 'catalogo'` abre a busca de artes prontas da
+// categoria indicada em `categoriaCatalogo`.
+//
+// Um setor de catálogo só oferece o gerador se declarar `acaoGerador` E tiver
+// formatos: é o caso da Hospitalidade, que lista as artes prontas e ainda deixa
+// escrever uma carta de boas-vindas. Institucionais Gerais não tem nenhum dos
+// dois — é só consulta e download.
 //
 // safeAreaMm expressa as margens em MILÍMETROS a partir de cada borda da arte.
 // A medida é física, não percentual: as imagens-base estão todas em 300 DPI
@@ -89,75 +94,42 @@ export const SETORES = {
   },
 
   // ID interno mantido: era "Manutenção", hoje aparece como "Institucionais Gerais".
+  //
+  // Não tem mais gerador: os modelos editáveis A3/A4 de Manutenção foram
+  // removidos junto com as imagens-base em assets/images/manutencao/. O setor
+  // virou consulta e download de artes já aprovadas.
   manutencao: {
     id: 'manutencao',
     nome: 'Institucionais Gerais',
     sigla: 'INST',
     corDestaque: '#E95029',
     icone: 'institucional',
-    // Setor de catálogo: a tela principal é a busca de artes prontas. Os
-    // formatos abaixo continuam servindo ao gerador de aviso personalizado,
-    // acessível a partir do catálogo.
     fluxo: 'catalogo',
+    categoriaCatalogo: 'institucional',
+    tituloCatalogo: 'Catálogo de artes institucionais',
     permiteTraducao: false,
-    tipoTexto: 'livre',
     titleCase: false,
-    formatos: [
-      {
-        id: 'a3-horizontal',
-        nome: 'A3 Horizontal',
-        descricao: 'Aviso grande, paisagem',
-        imagem: 'assets/images/manutencao/a3-horizontal.png',
-        largura: 4961,
-        altura: 3508,
-        mmLargura: 420,
-        mmAltura: 297,
-        safeAreaMm: { top: 29.7, bottom: 77.2, left: 58.8, right: 58.8 },
-      },
-      {
-        id: 'a3-vertical',
-        nome: 'A3 Vertical',
-        descricao: 'Aviso grande, retrato',
-        imagem: 'assets/images/manutencao/a3-vertical.png',
-        largura: 3508,
-        altura: 4961,
-        mmLargura: 297,
-        mmAltura: 420,
-        safeAreaMm: { top: 58.8, bottom: 126, left: 47.5, right: 47.5 },
-      },
-      {
-        id: 'a4-horizontal',
-        nome: 'A4 Horizontal',
-        descricao: 'Aviso padrão, paisagem',
-        imagem: 'assets/images/manutencao/a4-horizontal.png',
-        largura: 3508,
-        altura: 2480,
-        mmLargura: 297,
-        mmAltura: 210,
-        safeAreaMm: { top: 37.8, bottom: 58.8, left: 44.6, right: 44.6 },
-      },
-      {
-        id: 'a4-vertical',
-        nome: 'A4 Vertical',
-        descricao: 'Aviso padrão, retrato',
-        imagem: 'assets/images/manutencao/a4-vertical.png',
-        largura: 2480,
-        altura: 3508,
-        mmLargura: 210,
-        mmAltura: 297,
-        safeAreaMm: { top: 41.6, bottom: 95, left: 27.3, right: 27.3 },
-      },
-    ],
+    formatos: [],
   },
 
   // ID interno mantido: era "Governança", hoje aparece como "Hospitalidade".
+  //
+  // Setor híbrido: lista as artes prontas de hospitalidade (cartões de hóspede,
+  // carta de check-out, QR Code do web check-in) e ainda oferece o gerador da
+  // carta de boas-vindas, declarado em `acaoGerador`.
   governanca: {
     id: 'governanca',
     nome: 'Hospitalidade',
     sigla: 'HOSP',
     corDestaque: '#8FB82A',
     icone: 'hospitalidade',
-    fluxo: 'gerador',
+    fluxo: 'catalogo',
+    categoriaCatalogo: 'hospitalidade',
+    tituloCatalogo: 'Artes de Hospitalidade',
+    acaoGerador: {
+      titulo: 'Escrever uma carta de boas-vindas',
+      descricao: 'Sua própria mensagem na arte oficial A4, com letra manuscrita',
+    },
     permiteTraducao: false,
     tipoTexto: 'carta', // textarea longo com auto-shrink
     titleCase: false,
@@ -182,28 +154,6 @@ export const SETORES = {
         // cabana entra a partir daí, nos cantos de baixo). Usamos 26mm para
         // deixar ~2mm de respiro em vez de encostar exatamente no desenho.
         safeAreaMm: { top: 41.6, bottom: 65.3, left: 26, right: 26 },
-      },
-      {
-        // Espaço já reservado no fluxo para os cartões de 12x7 cm entregues no
-        // apartamento (Agências, Aniversariante, Habitué, Lua de Mel, VIP).
-        // Diferente da carta, eles são personalizados com os dados de quem
-        // assina — daí os campos declarados em `camposFuturos`, que o passo de
-        // texto vai renderizar quando as artes-base chegarem.
-        id: 'cartoes-boas-vindas',
-        nome: 'Cartões de Boas-Vindas',
-        descricao: '12×7 cm · personalizados',
-        imagem: 'assets/catalogo/thumbs/hospitalidade/cartao-hospede-vip.jpg',
-        emBreve: true,
-        camposFuturos: [
-          { id: 'vendedorNome', label: 'Nome do vendedor', icone: 'user', tipo: 'text' },
-          { id: 'vendedorEmail', label: 'E-mail', icone: 'mail', tipo: 'email' },
-          { id: 'vendedorTelefone', label: 'Telefone', icone: 'phone', tipo: 'tel' },
-        ],
-        largura: 1471,
-        altura: 829,
-        mmLargura: 124.5,
-        mmAltura: 70.2,
-        safeAreaMm: { top: 12, bottom: 12, left: 12, right: 12 },
       },
     ],
   },
@@ -238,7 +188,6 @@ export const SETORES = {
         // acima da fita. As laterais ficam 30px dentro do cartão, que começa
         // em x=80px.
         safeAreaMm: { top: 40.5, bottom: 26, left: 9.3, right: 9.3 },
-        corTitulo: '#FFFFFF',
         corCorpo: '#FFFFFF',
       },
       {
@@ -252,7 +201,6 @@ export const SETORES = {
         mmAltura: 121.9,
         digital: true,
         safeAreaMm: { top: 40.5, bottom: 26, left: 9.3, right: 9.3 },
-        corTitulo: '#004F9F',
         corCorpo: '#004F9F',
       },
     ],
@@ -267,11 +215,4 @@ export function getFormato(setorId, formatoId) {
   const setor = getSetor(setorId);
   if (!setor) return null;
   return setor.formatos.find((f) => f.id === formatoId) || null;
-}
-
-/** Formatos que o usuário já pode usar (exclui os marcados como "em breve"). */
-export function getFormatosDisponiveis(setorId) {
-  const setor = getSetor(setorId);
-  if (!setor) return [];
-  return setor.formatos.filter((f) => !f.emBreve);
 }

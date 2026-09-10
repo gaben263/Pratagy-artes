@@ -21,11 +21,7 @@ function updateContinueState(container) {
   if (!btn) return;
 
   const hasText = state.texto.trim().length > 0;
-  // No comunicado, o assunto sozinho renderiza um título solto no meio do
-  // cartão: o corpo também é obrigatório para liberar a prévia.
-  const precisaCorpo = setor?.tipoTexto === 'comunicado';
-  const hasCorpo = state.corpo.trim().length > 0;
-  const enabled = hasText && (!precisaCorpo || hasCorpo) && state.fits;
+  const enabled = hasText && state.fits;
 
   btn.disabled = !enabled;
   btn.classList.toggle('opacity-40', !enabled);
@@ -34,11 +30,9 @@ function updateContinueState(container) {
   const hint = container.querySelector('[data-continue-hint]');
   if (hint) {
     hint.textContent = !hasText
-      ? precisaCorpo
-        ? 'Escreva o assunto do comunicado para continuar.'
+      ? setor?.tipoTexto === 'comunicado'
+        ? 'Escreva o texto do comunicado para continuar.'
         : 'Digite o texto da arte para continuar.'
-      : precisaCorpo && !hasCorpo
-      ? 'Escreva o corpo do comunicado para continuar.'
       : !state.fits
       ? 'Reduza o texto: ele não cabe na área segura (veja o alerta na prévia).'
       : '';
@@ -274,29 +268,57 @@ function bodyAB() {
   `;
 }
 
-// ---------- Manutenção (texto livre) e Governança (carta longa) ----------
+// ---------- Texto livre: aviso, carta de boas-vindas e comunicado ----------
+//
+// Os três coletam um bloco de texto só, no mesmo campo `texto` do estado — o
+// que muda é o rótulo, o tamanho do campo e o limite de caracteres.
 
-function bodyLivreOuCarta(setor) {
-  const isCarta = setor.tipoTexto === 'carta';
+const CAMPO_TEXTO = {
+  carta: {
+    icone: 'edit',
+    label: 'Texto da carta de boas-vindas',
+    rows: 10,
+    max: 1200,
+    placeholder: 'Escreva a mensagem de boas-vindas…',
+    dica: 'O tamanho da fonte se ajusta automaticamente ao texto.',
+  },
+  comunicado: {
+    icone: 'alignLeft',
+    label: 'Corpo do texto',
+    rows: 8,
+    max: 600,
+    placeholder: 'Ex: A piscina de ondas fica fechada nesta quarta, das 8h às 16h, para manutenção preventiva. As demais atrações seguem funcionando normalmente.',
+    dica: 'O texto entra logo abaixo da palavra "COMUNICADO", que já vem impressa na arte. A fonte se ajusta sozinha ao tamanho do texto.',
+  },
+  livre: {
+    icone: 'edit',
+    label: 'Texto da arte',
+    rows: 5,
+    max: 240,
+    placeholder: 'Ex: Piscina em manutenção. Retornamos às 14h.',
+    dica: 'Use frases curtas e diretas para melhor leitura.',
+  },
+};
+
+function bodyTextoLivre(setor) {
+  const campo = CAMPO_TEXTO[setor.tipoTexto] || CAMPO_TEXTO.livre;
   return `
     <div>
-      <label class="mb-1.5 block text-sm font-bold text-slate-600">
-        ${isCarta ? 'Texto da carta de boas-vindas' : 'Texto da arte'}
+      <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
+        ${icon(campo.icone, { size: 14, className: 'text-slate-400' })} ${campo.label}
       </label>
-      <textarea data-textarea rows="${isCarta ? 10 : 5}" maxlength="${isCarta ? 1200 : 240}"
-        placeholder="${isCarta ? 'Escreva a mensagem de boas-vindas…' : 'Ex: Piscina em manutenção. Retornamos às 14h.'}"
+      <textarea data-textarea rows="${campo.rows}" maxlength="${campo.max}"
+        placeholder="${escapeHtml(campo.placeholder)}"
         class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light"></textarea>
-      <div class="mt-1.5 flex items-center justify-between gap-3">
-        <p class="text-xs text-slate-400">
-          ${isCarta ? 'O tamanho da fonte se ajusta automaticamente ao texto.' : 'Use frases curtas e diretas para melhor leitura.'}
-        </p>
+      <div class="mt-1.5 flex items-start justify-between gap-3">
+        <p class="text-xs text-slate-400">${campo.dica}</p>
         <p data-char-count class="shrink-0 text-xs tabular-nums text-slate-400"></p>
       </div>
     </div>
   `;
 }
 
-function wireLivreOuCarta(container, initialState) {
+function wireTextoLivre(container, initialState) {
   const textarea = container.querySelector('[data-textarea]');
   const charCount = container.querySelector('[data-char-count]');
   textarea.value = initialState.texto;
@@ -312,72 +334,6 @@ function wireLivreOuCarta(container, initialState) {
     updateCount();
     commit();
   });
-}
-
-// ---------- Acqua Park: assunto + corpo do comunicado ----------
-
-function bodyComunicado() {
-  return `
-    <div class="space-y-4">
-      <div>
-        <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
-          ${icon('type', { size: 14, className: 'text-slate-400' })} Assunto do comunicado
-        </label>
-        <input type="text" data-assunto maxlength="70"
-          placeholder="Ex: Piscina de ondas fechada nesta quarta"
-          class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
-        <div class="mt-1.5 flex items-center justify-between gap-3">
-          <p class="text-xs text-slate-400">Entra logo abaixo da palavra "COMUNICADO", que já vem impressa na arte.</p>
-          <p data-assunto-count class="shrink-0 text-xs tabular-nums text-slate-400"></p>
-        </div>
-      </div>
-
-      <div class="border-t border-slate-100 pt-4">
-        <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
-          ${icon('alignLeft', { size: 14, className: 'text-slate-400' })} Corpo do texto
-        </label>
-        <textarea data-corpo rows="6" maxlength="600"
-          placeholder="Explique o motivo, o período e o que o hóspede deve fazer…"
-          class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light"></textarea>
-        <div class="mt-1.5 flex items-center justify-between gap-3">
-          <p class="text-xs text-slate-400">O tamanho da fonte se ajusta automaticamente ao texto.</p>
-          <p data-corpo-count class="shrink-0 text-xs tabular-nums text-slate-400"></p>
-        </div>
-      </div>
-
-      <p class="flex items-start gap-1.5 text-xs text-slate-400">
-        ${icon('info', { size: 13, className: 'mt-0.5' })}
-        Assunto e corpo saem em Fibra One SemiBold, a mesma família da arte — a hierarquia vem do tamanho, não do peso.
-      </p>
-    </div>
-  `;
-}
-
-function wireComunicado(container, initialState) {
-  const assunto = container.querySelector('[data-assunto]');
-  const corpo = container.querySelector('[data-corpo]');
-  const assuntoCount = container.querySelector('[data-assunto-count]');
-  const corpoCount = container.querySelector('[data-corpo-count]');
-
-  assunto.value = initialState.texto;
-  corpo.value = initialState.corpo;
-
-  const atualizarContadores = () => {
-    assuntoCount.textContent = `${assunto.value.length} / ${assunto.maxLength}`;
-    corpoCount.textContent = `${corpo.value.length} / ${corpo.maxLength}`;
-  };
-  atualizarContadores();
-
-  // Um único commit para os dois campos: o estado guarda o assunto em `texto` e
-  // o corpo em `corpo`, e a prévia precisa dos dois juntos para medir o bloco.
-  const commit = debounce(() => setState({ texto: assunto.value, corpo: corpo.value }), 150);
-
-  [assunto, corpo].forEach((el) =>
-    el.addEventListener('input', () => {
-      atualizarContadores();
-      commit();
-    })
-  );
 }
 
 export function renderEdicaoStep(container) {
@@ -402,19 +358,13 @@ export function renderEdicaoStep(container) {
   }
   container.dataset.sig = signature;
 
-  const bodyHtml =
-    setor.tipoTexto === 'busca'
-      ? bodyAB()
-      : setor.tipoTexto === 'comunicado'
-      ? bodyComunicado()
-      : bodyLivreOuCarta(setor);
+  const bodyHtml = setor.tipoTexto === 'busca' ? bodyAB() : bodyTextoLivre(setor);
 
   container.innerHTML = shell({ setor, formato, bodyHtml });
   wireCommon(container);
 
   if (setor.tipoTexto === 'busca') wireBuscaAB(container, state);
-  else if (setor.tipoTexto === 'comunicado') wireComunicado(container, state);
-  else wireLivreOuCarta(container, state);
+  else wireTextoLivre(container, state);
 
   updateContinueState(container);
 }

@@ -1,6 +1,6 @@
 // Banco de dados do catálogo de artes prontas.
 //
-// Cada item aponta para um PNG estático já aprovado pelo Design — não há
+// Cada item aponta para um PNG estático já aprovado pelo Marketing — não há
 // renderização em Canvas aqui, o usuário só busca, confere e baixa.
 //
 // ORIGEM DOS DADOS
@@ -19,7 +19,7 @@
 //
 // MATERIAL DE IMPRESSÃO
 // `printMaterial` e `bestFormat` são PADRÕES SUGERIDOS, não especificação
-// confirmada pelo Design. Por isso todo item carrega `materialConfirmado: false`
+// confirmada pelo Marketing. Por isso todo item carrega `materialConfirmado: false`
 // e a interface mostra a informação como sugestão a validar. Ao confirmar um
 // item com o time, basta trocar o material e marcar `materialConfirmado: true`.
 
@@ -284,7 +284,7 @@ const ITENS = [
   // --------------------------------------------------------------- Hospitalidade
   {
     id: 'alimentos-sem-gluten-e-zero-lactose',
-    categoria: 'hospitalidade',
+    categoria: 'institucional',
     titulo: 'Alimentos Sem Glúten e Zero Lactose',
     size: '21×29 cm',
     largura: 2480,
@@ -364,7 +364,7 @@ const ITENS = [
   },
   {
     id: 'prato-vegano',
-    categoria: 'hospitalidade',
+    categoria: 'institucional',
     titulo: 'Prato Vegano',
     size: '21×29 cm',
     largura: 2480,
@@ -374,7 +374,7 @@ const ITENS = [
   },
   {
     id: 'proibido-fumar-florestal',
-    categoria: 'hospitalidade',
+    categoria: 'institucional',
     titulo: 'Proibido Fumar — Florestal',
     size: '21×29 cm',
     largura: 2532,
@@ -404,7 +404,7 @@ export const CATALOGO = ITENS.map((item) => ({
   thumb: `assets/catalogo/thumbs/${item.categoria}/${item.id}.jpg`,
   printMaterial: item.printMaterial || MATERIAL_PADRAO,
   bestFormat: item.bestFormat || FORMATO_PADRAO,
-  // Nenhum material foi confirmado com o Design ainda — a interface mostra o
+  // Nenhum material foi confirmado com o Marketing ainda — a interface mostra o
   // valor como sugestão enquanto esta flag for falsa.
   materialConfirmado: item.materialConfirmado === true,
   indiceBusca: montarIndice(item),

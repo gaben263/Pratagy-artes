@@ -79,7 +79,17 @@ export function renderDownloadStep(container) {
     return;
   }
 
-  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${state.texto}`.slice(0, 80);
+  // Só o começo da primeira linha entra no nome: a carta de boas-vindas e o
+  // comunicado do Acqua Park guardam parágrafos inteiros em `texto`, e o nome
+  // do arquivo viraria um trecho truncado no meio de uma frase.
+  // O corte em 40 caracteres cai no meio de uma palavra; o replace descarta
+  // esse pedaço solto para o nome terminar sempre numa palavra inteira.
+  const resumoTexto = state.texto
+    .split(/\r?\n/)[0]
+    .trim()
+    .slice(0, 40)
+    .replace(/\s+\S*$/, '');
+  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${resumoTexto}`;
 
   container.innerHTML = `
     <div>

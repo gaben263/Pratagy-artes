@@ -48,8 +48,7 @@ export function renderPreviaStep(container) {
       <dl class="mb-5 divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-5 py-1 shadow-sm">
         ${linha('Setor', setor.nome)}
         ${linha('Formato', `${formato.nome} · ${medida}`)}
-        ${linha(isComunicado ? 'Assunto' : 'Texto principal', aplicar(state.texto), { destaque: true })}
-        ${state.corpo.trim() ? linha('Corpo do texto', state.corpo) : ''}
+        ${linha(isComunicado ? 'Texto do comunicado' : 'Texto principal', aplicar(state.texto), { destaque: true })}
         ${state.textoEs.trim() ? linha('Tradução (ES)', aplicar(state.textoEs)) : ''}
       </dl>
 
