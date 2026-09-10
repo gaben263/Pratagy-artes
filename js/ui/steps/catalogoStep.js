@@ -20,6 +20,7 @@ import { icon } from '../icons.js';
 import { debounce, escapeHtml } from '../../utils.js';
 import { openModal, showToast, emptyState } from '../common.js';
 import { exportCatalogPNG, exportCatalogPDF } from '../../canvas/export.js';
+import { comemorar } from '../confetti.js';
 
 let termo = '';
 
@@ -184,6 +185,7 @@ async function baixar(kind, item, btn) {
     if (kind === 'png') await exportCatalogPNG(item, item.titulo);
     else await exportCatalogPDF({ arquivo: item.arquivo, mmLargura, mmAltura }, item.titulo);
     showToast(`${item.titulo} — ${kind.toUpperCase()} baixado.`, { type: 'success' });
+    comemorar();
   } catch (err) {
     console.error(err);
     showToast(

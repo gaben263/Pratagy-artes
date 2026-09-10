@@ -5,6 +5,7 @@ import { exportPNG, exportPDF } from '../../canvas/export.js';
 import { ensureFontsReady } from '../../canvas/engine.js';
 import { updatePreview } from '../previewPanel.js';
 import { showToast, confirmModal } from '../common.js';
+import { comemorar } from '../confetti.js';
 
 async function handleExport(kind, formato, nomeArquivo, btn) {
   const original = btn.innerHTML;
@@ -28,6 +29,7 @@ async function handleExport(kind, formato, nomeArquivo, btn) {
     else await exportPDF(canvas, formato, nomeArquivo);
     setState({ exported: true });
     showToast(`Arquivo ${kind.toUpperCase()} exportado com sucesso.`, { type: 'success' });
+    comemorar();
   } catch (err) {
     console.error(err);
     showToast('Não foi possível exportar o arquivo. Tente novamente.', { type: 'error' });
