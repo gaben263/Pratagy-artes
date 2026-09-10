@@ -1,5 +1,19 @@
 // Configuração estática dos setores, formatos e modelos oficiais.
 //
+// IDs INTERNOS x NOMES DE INTERFACE
+// As chaves `manutencao` e `governanca` são IDs históricos e permanecem como
+// estão de propósito: elas indexam os caminhos dos assets
+// (assets/images/manutencao/…, assets/images/governanca/…), o `tipo` do motor de
+// Canvas e o cache já gravado no navegador dos usuários. Renomeá-las quebraria
+// tudo isso sem nenhum ganho. O que o usuário lê — `nome` e `sigla` — foi
+// atualizado: "Manutenção" virou "Institucionais Gerais" e "Governança" virou
+// "Hospitalidade".
+//
+// FLUXO
+// `fluxo: 'gerador'` segue o passo a passo de Canvas (formato → modelo → texto →
+// prévia → download). `fluxo: 'catalogo'` abre a busca de artes prontas; de lá o
+// usuário ainda pode entrar no gerador para criar um aviso personalizado.
+//
 // safeAreaMm expressa as margens em MILÍMETROS a partir de cada borda da arte.
 // A medida é física, não percentual: as imagens-base estão todas em 300 DPI
 // (945px = 80,01mm; 2480px = 209,97mm), então "6 mm de respiro" continua
@@ -25,11 +39,12 @@ export const SETORES = {
     sigla: 'A&B',
     corDestaque: '#008BCE',
     icone: 'ab',
+    fluxo: 'gerador',
     permiteTraducao: true,
     tipoTexto: 'busca', // busca na biblioteca do docx
     // Nomes de pratos são rótulos: recebem Title Case editorial na renderização.
-    // Manutenção e Governança escrevem frases/parágrafos, onde Title Case
-    // atrapalharia a leitura — por isso a regra é por setor, não global.
+    // Os demais setores escrevem frases/parágrafos, onde Title Case atrapalharia
+    // a leitura — por isso a regra é por setor, não global.
     titleCase: true,
     formatos: [
       {
@@ -72,12 +87,18 @@ export const SETORES = {
       },
     ],
   },
+
+  // ID interno mantido: era "Manutenção", hoje aparece como "Institucionais Gerais".
   manutencao: {
     id: 'manutencao',
-    nome: 'Manutenção',
-    sigla: 'MNT',
+    nome: 'Institucionais Gerais',
+    sigla: 'INST',
     corDestaque: '#E95029',
-    icone: 'manutencao',
+    icone: 'institucional',
+    // Setor de catálogo: a tela principal é a busca de artes prontas. Os
+    // formatos abaixo continuam servindo ao gerador de aviso personalizado,
+    // acessível a partir do catálogo.
+    fluxo: 'catalogo',
     permiteTraducao: false,
     tipoTexto: 'livre',
     titleCase: false,
@@ -128,12 +149,15 @@ export const SETORES = {
       },
     ],
   },
+
+  // ID interno mantido: era "Governança", hoje aparece como "Hospitalidade".
   governanca: {
     id: 'governanca',
-    nome: 'Governança',
-    sigla: 'GOV',
+    nome: 'Hospitalidade',
+    sigla: 'HOSP',
     corDestaque: '#8FB82A',
-    icone: 'governanca',
+    icone: 'hospitalidade',
+    fluxo: 'gerador',
     permiteTraducao: false,
     tipoTexto: 'carta', // textarea longo com auto-shrink
     titleCase: false,
@@ -159,6 +183,78 @@ export const SETORES = {
         // deixar ~2mm de respiro em vez de encostar exatamente no desenho.
         safeAreaMm: { top: 41.6, bottom: 65.3, left: 26, right: 26 },
       },
+      {
+        // Espaço já reservado no fluxo para os cartões de 12x7 cm entregues no
+        // apartamento (Agências, Aniversariante, Habitué, Lua de Mel, VIP).
+        // Diferente da carta, eles são personalizados com os dados de quem
+        // assina — daí os campos declarados em `camposFuturos`, que o passo de
+        // texto vai renderizar quando as artes-base chegarem.
+        id: 'cartoes-boas-vindas',
+        nome: 'Cartões de Boas-Vindas',
+        descricao: '12×7 cm · personalizados',
+        imagem: 'assets/catalogo/thumbs/hospitalidade/cartao-hospede-vip.jpg',
+        emBreve: true,
+        camposFuturos: [
+          { id: 'vendedorNome', label: 'Nome do vendedor', icone: 'user', tipo: 'text' },
+          { id: 'vendedorEmail', label: 'E-mail', icone: 'mail', tipo: 'email' },
+          { id: 'vendedorTelefone', label: 'Telefone', icone: 'phone', tipo: 'tel' },
+        ],
+        largura: 1471,
+        altura: 829,
+        mmLargura: 124.5,
+        mmAltura: 70.2,
+        safeAreaMm: { top: 12, bottom: 12, left: 12, right: 12 },
+      },
+    ],
+  },
+
+  acquapark: {
+    id: 'acquapark',
+    nome: 'Acqua Park',
+    sigla: 'AQUA',
+    corDestaque: '#4CC2F1',
+    icone: 'acquapark',
+    fluxo: 'gerador',
+    permiteTraducao: false,
+    tipoTexto: 'comunicado', // assunto em destaque + corpo do texto
+    titleCase: false,
+    formatos: [
+      {
+        id: 'fundo-azul',
+        nome: 'Fundo Azul',
+        descricao: 'Cartão azul, texto branco',
+        imagem: 'assets/images/acquapark/fundo-azul.png',
+        largura: 1080,
+        altura: 1440,
+        // 1080 × 1440 px em 300 DPI. É uma peça digital (WhatsApp), mas o
+        // tamanho físico está declarado para o PDF sair sem distorção.
+        mmLargura: 91.4,
+        mmAltura: 121.9,
+        digital: true,
+        // O título "COMUNICADO" já vem impresso na arte e termina em y=414px;
+        // a fita laranja e a logo do parque voltam a entrar em y=1173px. A
+        // caixa vai de 478px a 1133px: 64px de respiro sob o título impresso
+        // (para o assunto não encostar nele nos comunicados longos) e 40px
+        // acima da fita. As laterais ficam 30px dentro do cartão, que começa
+        // em x=80px.
+        safeAreaMm: { top: 40.5, bottom: 26, left: 9.3, right: 9.3 },
+        corTitulo: '#FFFFFF',
+        corCorpo: '#FFFFFF',
+      },
+      {
+        id: 'fundo-branco',
+        nome: 'Fundo Branco',
+        descricao: 'Cartão branco, texto azul',
+        imagem: 'assets/images/acquapark/fundo-branco.png',
+        largura: 1080,
+        altura: 1440,
+        mmLargura: 91.4,
+        mmAltura: 121.9,
+        digital: true,
+        safeAreaMm: { top: 40.5, bottom: 26, left: 9.3, right: 9.3 },
+        corTitulo: '#004F9F',
+        corCorpo: '#004F9F',
+      },
     ],
   },
 };
@@ -171,4 +267,11 @@ export function getFormato(setorId, formatoId) {
   const setor = getSetor(setorId);
   if (!setor) return null;
   return setor.formatos.find((f) => f.id === formatoId) || null;
+}
+
+/** Formatos que o usuário já pode usar (exclui os marcados como "em breve"). */
+export function getFormatosDisponiveis(setorId) {
+  const setor = getSetor(setorId);
+  if (!setor) return [];
+  return setor.formatos.filter((f) => !f.emBreve);
 }

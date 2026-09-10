@@ -1,17 +1,32 @@
-import { SETORES } from '../../data/models.js';
+import { SETORES, getSetor } from '../../data/models.js';
+import { CATALOGO } from '../../data/catalogData.js';
 import { getState, setState, goToStep } from '../../state.js';
 import { icon } from '../icons.js';
 import { confirmModal } from '../common.js';
 
 const DESCRICOES = {
   ab: 'Identificação de pratos e bebidas do buffet, com tradução em espanhol.',
-  manutencao: 'Avisos e sinalizações técnicas das áreas do resort.',
-  governanca: 'Carta de boas-vindas para os apartamentos.',
+  manutencao: 'Catálogo de avisos e sinalizações já aprovados, prontos para imprimir.',
+  governanca: 'Carta de boas-vindas e materiais de apartamento e recepção.',
+  acquapark: 'Comunicados do parque aquático para WhatsApp e murais.',
 };
+
+/** Rodapé do cartão: o setor de catálogo conta artes prontas, os demais, formatos. */
+function resumoDoSetor(setor) {
+  if (setor.fluxo === 'catalogo') {
+    return { iconName: 'layers', texto: `${CATALOGO.length} artes prontas` };
+  }
+  const disponiveis = setor.formatos.filter((f) => !f.emBreve).length;
+  return {
+    iconName: 'layers',
+    texto: `${disponiveis} ${disponiveis === 1 ? 'modelo' : 'formatos'}`,
+  };
+}
 
 async function handleSelect(setorId) {
   const state = getState();
-  const trocandoComTextoPendente = state.setorId && state.setorId !== setorId && state.texto.trim();
+  const temTextoPendente = state.texto.trim() || state.corpo.trim();
+  const trocandoComTextoPendente = state.setorId && state.setorId !== setorId && temTextoPendente;
 
   if (trocandoComTextoPendente) {
     const ok = await confirmModal({
@@ -26,13 +41,18 @@ async function handleSelect(setorId) {
   setState({
     setorId,
     formatoId: null,
+    modo: null,
     texto: '',
     textoEs: '',
+    corpo: '',
     libraryEntryId: null,
     fits: true,
     exported: false,
   });
-  goToStep('formato');
+
+  // Setor de catálogo abre a busca de artes prontas; os demais seguem para a
+  // escolha de formato do gerador.
+  goToStep(getSetor(setorId).fluxo === 'catalogo' ? 'catalogo' : 'formato');
 }
 
 export function renderSetorStep(container) {
@@ -43,10 +63,14 @@ export function renderSetorStep(container) {
       <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Qual é o setor da arte?</h1>
       <p class="mt-1 mb-5 text-slate-500">Cada setor tem seus próprios modelos oficiais já aprovados.</p>
 
-      <div class="grid gap-3 sm:grid-cols-3">
+      <!-- 2 colunas mesmo em telas largas: os breakpoints do Tailwind olham a
+           janela, não o container, e aqui a coluna da prévia já consome 400px.
+           Com 4 colunas os nomes dos setores quebravam em duas linhas. -->
+      <div class="grid gap-3 sm:grid-cols-2">
         ${Object.values(SETORES)
           .map((setor) => {
             const selected = state.setorId === setor.id;
+            const resumo = resumoDoSetor(setor);
             return `
               <button type="button" data-setor="${setor.id}"
                 class="group relative flex flex-col rounded-2xl border-2 bg-white p-5 text-left shadow-sm transition-all duration-150
@@ -70,8 +94,8 @@ export function renderSetorStep(container) {
                 <span class="font-fibra font-extrabold text-brand-deep">${setor.nome}</span>
                 <span class="mt-1 text-sm leading-snug text-slate-500">${DESCRICOES[setor.id]}</span>
                 <span class="mt-3 flex items-center gap-1.5 border-t border-slate-100 pt-3 text-xs font-semibold text-slate-400">
-                  ${icon('layers', { size: 13 })}
-                  ${setor.formatos.length} ${setor.formatos.length === 1 ? 'modelo' : 'formatos'}
+                  ${icon(resumo.iconName, { size: 13 })}
+                  ${resumo.texto}
                 </span>
               </button>
             `;

@@ -1,12 +1,14 @@
-import { STEP_ORDER, STEP_LABELS, getState, goToStep, canReachStep } from '../state.js';
+import { STEP_LABELS, getState, getStepOrder, goToStep, canReachStep } from '../state.js';
 import { icon } from './icons.js';
 
 export function renderStepper(container) {
   const state = getState();
-  const currentIdx = STEP_ORDER.indexOf(state.step);
+  // A ordem varia por setor (catálogo x gerador), então é lida do estado.
+  const stepOrder = getStepOrder();
+  const currentIdx = stepOrder.indexOf(state.step);
 
   // --- Desktop: trilha horizontal com conectores que preenchem ao avançar ---
-  const desktopItems = STEP_ORDER.map((id, idx) => {
+  const desktopItems = stepOrder.map((id, idx) => {
     const label = STEP_LABELS[id];
     const reachable = canReachStep(id);
     const isCurrent = id === state.step;
@@ -50,7 +52,7 @@ export function renderStepper(container) {
   }).join('');
 
   // --- Mobile: rótulo do passo atual + barra de progresso ---
-  const progressPct = ((currentIdx + 1) / STEP_ORDER.length) * 100;
+  const progressPct = ((currentIdx + 1) / stepOrder.length) * 100;
 
   container.innerHTML = `
     <div class="mx-auto max-w-6xl px-4">
@@ -58,7 +60,7 @@ export function renderStepper(container) {
       <div class="py-2.5 md:hidden">
         <div class="mb-1.5 flex items-baseline justify-between">
           <span class="text-xs font-extrabold text-brand-deep">${STEP_LABELS[state.step]}</span>
-          <span class="text-[11px] text-slate-400">Passo ${currentIdx + 1} de ${STEP_ORDER.length}</span>
+          <span class="text-[11px] text-slate-400">Passo ${currentIdx + 1} de ${stepOrder.length}</span>
         </div>
         <div class="h-1.5 overflow-hidden rounded-full bg-slate-100">
           <div class="h-full rounded-full bg-brand-blue transition-all duration-300" style="width:${progressPct}%"></div>

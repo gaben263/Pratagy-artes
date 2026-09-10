@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sistema de Artes — Pratagy</title>
-  <meta name="description" content="Gerador de artes oficiais do Pratagy Beach — Alimentos & Bebidas, Manutenção e Governança." />
+  <meta name="description" content="Sistema de artes oficiais do Pratagy Beach — Alimentos &amp; Bebidas, Institucionais Gerais, Hospitalidade e Acqua Park." />
 
   <link rel="preload" href="./assets/fonts/FibraOne-Regular.otf" as="font" type="font/otf" crossorigin />
   <link rel="preload" href="./assets/fonts/FibraOne-SemiBold.otf" as="font" type="font/otf" crossorigin />
@@ -80,8 +80,12 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
-    <div class="grid lg:grid-cols-[minmax(0,1fr)_400px] gap-6 lg:gap-8 items-start">
-      <section id="step-container" aria-live="polite"></section>
+    <div id="app-grid" class="grid lg:grid-cols-[minmax(0,1fr)_400px] gap-6 lg:gap-8 items-start">
+      <!-- scroll-mt compensa o cabeçalho fixo: sem ele, o scrollIntoView de cada
+           troca de passo encosta o topo da seção no topo da janela e o botão
+           "Voltar" e o título da etapa ficam escondidos atrás do header
+           (135px no desktop, 197px no mobile, onde o stepper é mais alto). -->
+      <section id="step-container" class="scroll-mt-52 md:scroll-mt-40" aria-live="polite"></section>
       <aside id="preview-container"></aside>
     </div>
   </main>

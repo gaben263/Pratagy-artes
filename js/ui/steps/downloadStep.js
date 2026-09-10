@@ -2,15 +2,28 @@ import { getSetor, getFormato } from '../../data/models.js';
 import { getState, setState, goToStep, resetApp } from '../../state.js';
 import { icon } from '../icons.js';
 import { exportPNG, exportPDF } from '../../canvas/export.js';
+import { ensureFontsReady } from '../../canvas/engine.js';
+import { updatePreview } from '../previewPanel.js';
 import { showToast, confirmModal } from '../common.js';
 
-async function handleExport(kind, canvas, formato, nomeArquivo, btn) {
+async function handleExport(kind, formato, nomeArquivo, btn) {
   const original = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = `<span class="spinner inline-flex text-brand-blue">${icon('spinner', {
     size: 18,
   })}</span> <span class="font-fibra font-extrabold text-brand-deep">Gerando…</span>`;
   try {
+    // Garante a fonte ANTES de transformar o canvas em arquivo: `fonts.ready`
+    // sozinho só espera as fontes já requisitadas, e uma exportação disparada
+    // logo após o carregamento sairia com a fonte de sistema. Depois de esperar,
+    // repintamos a prévia para que o pixel exportado seja o pixel com a
+    // Fibra One aplicada.
+    await ensureFontsReady();
+    await updatePreview();
+
+    const canvas = document.querySelector('#preview-canvas-wrap [data-canvas-main]');
+    if (!canvas) throw new Error('Canvas da prévia não encontrado.');
+
     if (kind === 'png') await exportPNG(canvas, nomeArquivo);
     else await exportPDF(canvas, formato, nomeArquivo);
     setState({ exported: true });
@@ -92,14 +105,16 @@ export function renderDownloadStep(container) {
           kind: 'png',
           iconName: 'image',
           titulo: 'Baixar PNG',
-          descricao: 'Telas, TVs e redes sociais',
+          descricao: formato.digital ? 'WhatsApp, murais e redes sociais' : 'Telas, TVs e redes sociais',
           habilitado: state.fits,
         })}
         ${cardExport({
           kind: 'pdf',
           iconName: 'printer',
           titulo: 'Baixar PDF',
-          descricao: `Impressão em ${formato.mmLargura}×${formato.mmAltura} mm`,
+          descricao: formato.digital
+            ? 'Versão para imprimir e afixar'
+            : `Impressão em ${formato.mmLargura}×${formato.mmAltura} mm`,
           habilitado: state.fits,
         })}
       </div>
@@ -117,9 +132,7 @@ export function renderDownloadStep(container) {
   container.querySelectorAll('[data-export]').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
-      const canvas = document.querySelector('#preview-canvas-wrap [data-canvas-main]');
-      if (!canvas) return;
-      handleExport(btn.dataset.export, canvas, formato, nomeArquivo, btn);
+      handleExport(btn.dataset.export, formato, nomeArquivo, btn);
     });
   });
 }

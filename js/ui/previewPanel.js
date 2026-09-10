@@ -7,6 +7,16 @@ import { emptyState } from './common.js';
 const imageCache = new Map();
 let showGuide = false;
 
+// `tipoTexto` (como o setor coleta o conteúdo) -> `tipo` (como o motor desenha).
+// Mapear pela configuração do setor evita a cadeia de ifs por ID que precisava
+// ser reescrita a cada setor novo.
+const TIPO_RENDER = {
+  busca: 'ab',
+  carta: 'governanca',
+  comunicado: 'comunicado',
+  livre: 'manutencao',
+};
+
 async function getCachedImage(src) {
   if (imageCache.has(src)) return imageCache.get(src);
   const promise = loadImage(src);
@@ -111,7 +121,8 @@ export async function updatePreview() {
       formato,
       texto: state.texto,
       textoEs: state.textoEs,
-      tipo: state.setorId === 'ab' ? 'ab' : state.setorId === 'governanca' ? 'governanca' : 'manutencao',
+      corpo: state.corpo,
+      tipo: TIPO_RENDER[setor?.tipoTexto] || 'manutencao',
       titleCase: Boolean(setor?.titleCase),
     });
 

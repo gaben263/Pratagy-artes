@@ -26,6 +26,10 @@ export function renderPreviaStep(container) {
 
   // Mostra o texto exatamente como ele sai na arte.
   const aplicar = (t) => (setor.titleCase ? toTitleCase(t) : t);
+  const isComunicado = setor.tipoTexto === 'comunicado';
+  const medida = formato.digital
+    ? `${formato.largura}×${formato.altura} px`
+    : `${formato.mmLargura}×${formato.mmAltura} mm`;
 
   container.innerHTML = `
     <div>
@@ -35,12 +39,17 @@ export function renderPreviaStep(container) {
       </button>
 
       <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">Confira a prévia final</h1>
-      <p class="mt-1 mb-5 text-slate-500">Revise o texto e o enquadramento antes de gerar o arquivo de impressão.</p>
+      <p class="mt-1 mb-5 text-slate-500">${
+        formato.digital
+          ? 'Revise o texto e o enquadramento antes de gerar o arquivo para publicação.'
+          : 'Revise o texto e o enquadramento antes de gerar o arquivo de impressão.'
+      }</p>
 
       <dl class="mb-5 divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white px-5 py-1 shadow-sm">
         ${linha('Setor', setor.nome)}
-        ${linha('Formato', `${formato.nome} · ${formato.mmLargura}×${formato.mmAltura} mm`)}
-        ${linha('Texto principal', aplicar(state.texto), { destaque: true })}
+        ${linha('Formato', `${formato.nome} · ${medida}`)}
+        ${linha(isComunicado ? 'Assunto' : 'Texto principal', aplicar(state.texto), { destaque: true })}
+        ${state.corpo.trim() ? linha('Corpo do texto', state.corpo) : ''}
         ${state.textoEs.trim() ? linha('Tradução (ES)', aplicar(state.textoEs)) : ''}
       </dl>
 

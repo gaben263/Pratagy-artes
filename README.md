@@ -1,6 +1,15 @@
 # Sistema de Artes — Pratagy
 
-Sistema interno para gerar as artes oficiais do Pratagy Beach (Alimentos & Bebidas, Manutenção e Governança) a partir dos modelos visuais aprovados.
+Sistema interno de artes oficiais do Pratagy Beach. Quatro módulos:
+
+| Módulo | O que faz |
+|---|---|
+| **Alimentos & Bebidas** | Gera a identificação de pratos a partir da biblioteca oficial (.docx), com tradução em espanhol |
+| **Institucionais Gerais** | Catálogo buscável de 35 artes prontas para baixar, mais um gerador de aviso personalizado em A3/A4 |
+| **Hospitalidade** | Carta de boas-vindas manuscrita (A4). Os cartões de hóspede 12×7 cm já têm o espaço reservado no fluxo |
+| **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
+
+> Os IDs internos dos dois módulos renomeados continuam `manutencao` (Institucionais Gerais) e `governanca` (Hospitalidade): eles indexam os caminhos dos assets e o cache já gravado no navegador dos usuários. Só os nomes de interface mudaram.
 
 ## Como rodar
 
@@ -34,6 +43,7 @@ js/
   utils.js                 normalização de texto, slugify, debounce
   data/
     models.js               setores, formatos e áreas seguras de cada modelo
+    catalogData.js           catálogo de artes prontas (títulos, tags, tamanhos, material)
     docxLibrary.js           leitura da biblioteca de pratos (.docx) + cache IndexedDB
   canvas/
     engine.js                motor de renderização (texto + quebra de linha + auto-shrink)
@@ -43,10 +53,12 @@ js/
     previewPanel.js          painel de prévia (canvas ao vivo)
     stepper.js, common.js, icons.js
 assets/
-  images/{ab,manutencao,governanca}/   modelos oficiais (PNG)
-  fonts/                                 Fibra One (.otf)
-  logo/                                  logo do cabeçalho (não aparece nas artes)
-  docx/                                  biblioteca de pratos PT/ES
+  images/{ab,manutencao,governanca,acquapark}/  modelos oficiais do gerador (PNG)
+  catalogo/{institucional,hospitalidade}/       artes prontas do catálogo (PNG, 300 DPI)
+  catalogo/thumbs/                              miniaturas das artes prontas (JPG)
+  fonts/                                        Fibra One (.otf) e Satisfy (.ttf)
+  logo/                                         logo do cabeçalho (não aparece nas artes)
+  docx/                                         biblioteca de pratos PT/ES
 ```
 
 ## Bibliotecas usadas (via CDN, sem npm)
@@ -57,7 +69,7 @@ assets/
 - **jsPDF** — exportação em PDF no tamanho físico real da arte
 - **Lucide Icons** — ícones da interface (com fallback inline caso o CDN seja bloqueado)
 
-As tipografias são locais, não vêm de CDN: **Fibra One** (interface e artes) e **Satisfy** (carta de Governança).
+As tipografias são locais, não vêm de CDN: **Fibra One** (interface e artes) e **Satisfy** (carta de Hospitalidade).
 
 ## Atualizando os modelos oficiais
 
@@ -72,6 +84,30 @@ Três regras valem para esses valores:
 1. **As margens laterais são simétricas** (`left = right`). O texto centralizado usa o eixo central da arte; margens assimétricas deslocam a composição visualmente.
 2. **A faixa vertical evita as ilustrações**, em vez de cobrir toda a altura útil. O sol e as palmeiras ficam concentrados no topo e na base: incluí-los estrangula a caixa inteira e força quebras de linha desnecessárias no miolo, que está livre.
 3. **Nas artes de A&B há 5–8 mm de respiro da onda azul.** A onda superior do 8x5 termina a 3,4 mm do topo e a inferior a 12,1 mm da base — daí `top: 9.4` e `bottom: 18.1` (6 mm de folga em cada).
+
+## Atualizando o catálogo de artes prontas
+
+As artes ficam em `assets/catalogo/<categoria>/<id>.png` e as miniaturas em
+`assets/catalogo/thumbs/<categoria>/<id>.jpg`. Os metadados (título, tags, tamanho,
+material de impressão) vivem em `js/data/catalogData.js`.
+
+Para adicionar uma arte:
+
+1. Copie o PNG para `assets/catalogo/institucional/` ou `.../hospitalidade/` com um
+   **nome em ASCII, sem espaço nem acento** — os nomes originais das pastas de trabalho
+   têm acento, espaço duplo e um acento agudo solto (`d´água`), que quebram a URL em
+   host estático.
+2. Gere uma miniatura de ~600px na maior dimensão em `assets/catalogo/thumbs/...`.
+3. Adicione o objeto correspondente em `ITENS`, no `catalogData.js`. As `tags` são o que
+   faz a arte aparecer na busca — escreva-as com acento, porque elas também são exibidas
+   no modal; a busca continua insensível a acento.
+
+O campo `printMaterial` vem preenchido com o padrão `"PVC Adesivado"` e `materialConfirmado: false`,
+o que faz a interface exibir a informação como **sugestão a validar**. Quando o time de Design
+confirmar o material de um item, ajuste o valor e marque `materialConfirmado: true` para o aviso sumir.
+
+As pastas de trabalho `Institucional/`, `Hospitalidade/` e `AcquaPark/` continuam versionadas
+no Git, mas ficam fora do deploy (`.vercelignore`) — o site consome só o que está em `assets/`.
 
 ## Atualizando a biblioteca de pratos (A&B)
 

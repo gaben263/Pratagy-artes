@@ -71,6 +71,46 @@ export function confirmModal({ title, message, confirmLabel = 'Confirmar', cance
   });
 }
 
+/**
+ * Modal genérico de conteúdo (diferente do confirmModal, que só decide sim/não).
+ *
+ * Fecha no Esc, no clique fora e em qualquer elemento com [data-close].
+ * Devolve a função de fechar, para quem abriu poder encerrar por conta própria.
+ */
+export function openModal(contentHtml, { onMount, maxWidth = 'max-w-3xl' } = {}) {
+  const root = document.getElementById('modal-root');
+
+  root.innerHTML = `
+    <div data-overlay
+      class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:items-center"
+      role="dialog" aria-modal="true">
+      <div data-dialog class="modal-pop my-auto w-full ${maxWidth} overflow-hidden rounded-2xl bg-white shadow-2xl">
+        ${contentHtml}
+      </div>
+    </div>
+  `;
+  root.classList.remove('hidden');
+
+  const onKey = (e) => {
+    if (e.key === 'Escape') close();
+  };
+
+  function close() {
+    document.removeEventListener('keydown', onKey);
+    root.classList.add('hidden');
+    root.innerHTML = '';
+  }
+
+  document.addEventListener('keydown', onKey);
+  root.querySelector('[data-overlay]').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) close();
+  });
+  root.querySelectorAll('[data-close]').forEach((btn) => btn.addEventListener('click', close));
+
+  onMount?.(root.querySelector('[data-dialog]'), close);
+  return close;
+}
+
 export function emptyState({ iconName = 'image', title, description }) {
   return `
     <div class="flex flex-col items-center justify-center px-6 py-16 text-center text-slate-400">

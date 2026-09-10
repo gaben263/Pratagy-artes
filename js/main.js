@@ -6,6 +6,7 @@ import { loadLibrary } from './data/docxLibrary.js';
 import { icon } from './ui/icons.js';
 import { confirmModal } from './ui/common.js';
 import { renderSetorStep } from './ui/steps/setorStep.js';
+import { renderCatalogoStep } from './ui/steps/catalogoStep.js';
 import { renderFormatoStep } from './ui/steps/formatoStep.js';
 import { renderModeloStep } from './ui/steps/modeloStep.js';
 import { renderEdicaoStep } from './ui/steps/edicaoStep.js';
@@ -20,6 +21,7 @@ loadLibrary().catch((err) => console.warn('Biblioteca A&B indisponível no momen
 
 const STEP_RENDERERS = {
   setor: renderSetorStep,
+  catalogo: renderCatalogoStep,
   formato: renderFormatoStep,
   modelo: renderModeloStep,
   edicao: renderEdicaoStep,
@@ -30,7 +32,12 @@ const STEP_RENDERERS = {
 const stepperEl = document.getElementById('stepper-container');
 const stepEl = document.getElementById('step-container');
 const previewEl = document.getElementById('preview-container');
+const appGridEl = document.getElementById('app-grid');
 const novaPlacaBtn = document.getElementById('btn-nova-placa');
+
+// Classe que cria a coluna da prévia. Fica aqui como constante porque o
+// catálogo precisa removê-la para ocupar a largura inteira.
+const CLASSE_COLUNA_PREVIA = 'lg:grid-cols-[minmax(0,1fr)_400px]';
 
 novaPlacaBtn.innerHTML = `${icon('refresh', { size: 14 })} Nova arte`;
 novaPlacaBtn.addEventListener('click', async () => {
@@ -49,7 +56,13 @@ function render() {
   const state = getState();
   renderStepper(stepperEl);
   STEP_RENDERERS[state.step]?.(stepEl);
-  updatePreview();
+
+  // O catálogo lista artes prontas: não há Canvas para pré-visualizar, então a
+  // coluna da direita sai e a grade de resultados ocupa a largura toda.
+  const semPrevia = state.step === 'catalogo';
+  previewEl.classList.toggle('hidden', semPrevia);
+  appGridEl.classList.toggle(CLASSE_COLUNA_PREVIA, !semPrevia);
+  if (!semPrevia) updatePreview();
 
   // O atalho "Nova arte" só faz sentido depois que algo foi escolhido.
   novaPlacaBtn.classList.toggle('hidden', !state.setorId);
