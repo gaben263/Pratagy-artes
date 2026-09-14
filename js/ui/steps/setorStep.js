@@ -1,24 +1,29 @@
 import { SETORES, getSetor } from '../../data/models.js';
 import { CATALOGO } from '../../data/catalogData.js';
-import { getState, setState, goToStep } from '../../state.js';
+import { getState, setState, goToStep, primeiroPasso } from '../../state.js';
 import { icon } from '../icons.js';
 import { confirmModal } from '../common.js';
 
 const DESCRICOES = {
-  ab: 'Identificação de pratos e bebidas do buffet, com tradução em espanhol.',
-  manutencao: 'Avisos e sinalizações do resort, já aprovados e prontos para imprimir.',
+  ab: 'Identificação de pratos do buffet e artes prontas de alimentos e bebidas.',
+  operacional: 'Avisos e sinalizações do resort, já aprovados e prontos para imprimir.',
   governanca: 'Cartões de hóspede, check-out e a carta de boas-vindas personalizável.',
   acquapark: 'Comunicados do parque aquático para WhatsApp e murais.',
 };
 
 /** Rodapé do cartão: o setor de catálogo conta artes prontas, os demais, formatos. */
 function resumoDoSetor(setor) {
+  const artes = CATALOGO.filter((item) => item.categoria === setor.categoriaCatalogo).length;
+
   if (setor.fluxo === 'catalogo') {
-    const total = CATALOGO.filter((item) => item.categoria === setor.categoriaCatalogo).length;
-    return { iconName: 'layers', texto: `${total} artes prontas` };
+    return { iconName: 'layers', texto: `${artes} artes prontas` };
   }
-  const total = setor.formatos.length;
-  return { iconName: 'layers', texto: `${total} ${total === 1 ? 'modelo' : 'formatos'}` };
+
+  const formatos = setor.formatos.length;
+  if (setor.fluxo === 'misto') {
+    return { iconName: 'layers', texto: `${formatos} formatos + ${artes} prontas` };
+  }
+  return { iconName: 'layers', texto: `${formatos} ${formatos === 1 ? 'modelo' : 'formatos'}` };
 }
 
 async function handleSelect(setorId) {
@@ -47,9 +52,7 @@ async function handleSelect(setorId) {
     exported: false,
   });
 
-  // Setor de catálogo abre a busca de artes prontas; os demais seguem para a
-  // escolha de formato do gerador.
-  goToStep(getSetor(setorId).fluxo === 'catalogo' ? 'catalogo' : 'formato');
+  goToStep(primeiroPasso(getSetor(setorId)));
 }
 
 export function renderSetorStep(container) {

@@ -1,8 +1,8 @@
 // Catálogo de artes prontas.
 //
-// Cada setor de catálogo mostra uma única categoria — Institucionais Gerais
-// mostra as institucionais, Hospitalidade mostra as de hospitalidade —, então
-// não há filtro de categoria na tela: o próprio setor já é o filtro.
+// Cada setor mostra uma única categoria — Operacional mostra as operacionais,
+// Hospitalidade as de hospitalidade, A&B as de alimentos e bebidas —, então não
+// há filtro de categoria na tela: o próprio setor já é o filtro.
 //
 // Diferente das demais telas, aqui não há Canvas: o usuário busca uma arte já
 // aprovada, confere as instruções de impressão e baixa o arquivo. Hospitalidade

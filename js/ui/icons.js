@@ -11,12 +11,10 @@
 // Nome semântico usado na app -> nome do ícone no Lucide (PascalCase).
 const LUCIDE_NAMES = {
   ab: 'Utensils',
-  // Ícones dos setores. As chaves `manutencao`/`governanca` continuam aqui
-  // porque são IDs internos históricos; os nomes de interface mudaram para
-  // "Institucionais Gerais" e "Hospitalidade", com ícones próprios.
-  manutencao: 'Wrench',
+  // Ícones dos setores. `governanca` continua com o ID histórico; o nome de
+  // interface é "Hospitalidade".
   governanca: 'BedDouble',
-  institucional: 'LayoutGrid',
+  operacional: 'LayoutGrid',
   hospitalidade: 'ConciergeBell',
   acquapark: 'Waves',
   user: 'User',
@@ -57,9 +55,8 @@ const LUCIDE_NAMES = {
 // Fallback usado apenas se `window.lucide` não estiver disponível.
 const FALLBACK_PATHS = {
   ab: '<path d="M3 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V2"/><path d="M6 11v11"/><path d="M18 2v20"/><path d="M18 9h3V6a4 4 0 0 0-3-3.9"/>',
-  manutencao: '<path d="M14.7 6.3a4 4 0 1 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.1 2.1-2.3-.6-.6-2.3z"/>',
   governanca: '<path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 17h20"/><path d="M6 8h4"/><path d="M14 8h4"/>',
-  institucional: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+  operacional: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
   hospitalidade: '<path d="M3 20h18"/><path d="M20 16a8 8 0 1 0-16 0"/><path d="M12 4v4"/><path d="M10 4h4"/>',
   acquapark: '<path d="M2 7c1.5 0 1.5 1.6 3.3 1.6S6.8 7 8.3 7s1.5 1.6 3.3 1.6S13.1 7 14.6 7s1.5 1.6 3.3 1.6S19.4 7 22 7"/><path d="M2 12.5c1.5 0 1.5 1.6 3.3 1.6s1.5-1.6 3-1.6 1.5 1.6 3.3 1.6 1.5-1.6 3-1.6 1.5 1.6 3.3 1.6 1.5-1.6 4.1-1.6"/><path d="M2 18c1.5 0 1.5 1.6 3.3 1.6S6.8 18 8.3 18s1.5 1.6 3.3 1.6S13.1 18 14.6 18s1.5 1.6 3.3 1.6S19.4 18 22 18"/>',
   user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',

@@ -4,7 +4,8 @@
 // renderização em Canvas aqui, o usuário só busca, confere e baixa.
 //
 // ORIGEM DOS DADOS
-// Os arquivos vieram das pastas de trabalho `Institucional/` e `Hospitalidade/`.
+// Os arquivos vieram das pastas de trabalho `Operacional/`, `A&B/Artes Prontas/` e
+// `Hospitalidade/`.
 // Como aqueles nomes têm acentos, espaços duplos e um caractere de acento agudo
 // solto ("d´água") — que quebram URL em host estático —, as cópias publicadas em
 // assets/catalogo/ usam slug ASCII. `arquivoOriginal` guarda o nome de origem
@@ -32,17 +33,18 @@ export const MATERIAL_PADRAO = 'PVC Adesivado';
 export const FORMATO_PADRAO = 'PDF';
 
 export const CATEGORIAS = {
-  institucional: { id: 'institucional', nome: 'Institucional', cor: '#E95029' },
+  operacional: { id: 'operacional', nome: 'Operacional', cor: '#E95029' },
+  ab: { id: 'ab', nome: 'A&B', cor: '#008BCE' },
   hospitalidade: { id: 'hospitalidade', nome: 'Hospitalidade', cor: '#8FB82A' },
 };
 
 // Lista bruta: só os campos que variam de item para item. Os padrões de
 // material/formato são aplicados logo abaixo, para não repetir 35 vezes.
 const ITENS = [
-  // ---------------------------------------------------------------- Institucional
+  // ------------------------------------------------------ Operacional e A&B
   {
     id: 'acesso-restrito',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Acesso Restrito',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -52,7 +54,7 @@ const ITENS = [
   },
   {
     id: 'adm-manutencao',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'ADM Manutenção',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -62,7 +64,7 @@ const ITENS = [
   },
   {
     id: 'atividades-nauticas',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Atividades Náuticas',
     size: '59×84 cm',
     largura: 1269,
@@ -72,7 +74,7 @@ const ITENS = [
   },
   {
     id: 'cardapio-tapioca',
-    categoria: 'institucional',
+    categoria: 'ab',
     titulo: 'Cardápio de Tapioca',
     size: 'A4 Vertical',
     largura: 2480,
@@ -82,7 +84,7 @@ const ITENS = [
   },
   {
     id: 'copos-retornaveis',
-    categoria: 'institucional',
+    categoria: 'ab',
     titulo: 'Copos Retornáveis',
     size: 'A4 Vertical',
     largura: 2480,
@@ -92,7 +94,7 @@ const ITENS = [
   },
   {
     id: 'disjuntores-risco-de-descarga-eletrica',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Disjuntores — Risco de Descarga Elétrica',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -102,7 +104,7 @@ const ITENS = [
   },
   {
     id: 'estamos-em-manutencao',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Estamos em Manutenção',
     size: '29,7×21 cm',
     largura: 3508,
@@ -112,7 +114,7 @@ const ITENS = [
   },
   {
     id: 'expressamente-proibido-fumar',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Expressamente Proibido Fumar',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -122,7 +124,7 @@ const ITENS = [
   },
   {
     id: 'giro-rapido-manutencao',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Giro Rápido — Manutenção',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -132,7 +134,7 @@ const ITENS = [
   },
   {
     id: 'luvas-descartaveis',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Luvas Descartáveis',
     size: 'A4 Vertical',
     largura: 2563,
@@ -142,7 +144,7 @@ const ITENS = [
   },
   {
     id: 'manter-o-portao-fechado',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Por Favor, Manter o Portão Fechado',
     size: 'A3 Horizontal',
     largura: 4961,
@@ -152,7 +154,7 @@ const ITENS = [
   },
   {
     id: 'nao-alimente-os-animais',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Não Alimente os Animais',
     size: 'A4 Vertical',
     largura: 2480,
@@ -162,7 +164,7 @@ const ITENS = [
   },
   {
     id: 'proibido-caixas-de-som',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Proibido Caixas de Som',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -172,7 +174,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-casa-de-maquinas-ete',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Proibido Entrada — Casa de Máquinas ETE',
     size: 'A4 Vertical',
     largura: 2480,
@@ -182,7 +184,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-casa-de-maquinas-piscina',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Proibido Entrada — Casa de Máquinas da Piscina',
     size: 'A4 Vertical',
     largura: 2480,
@@ -192,7 +194,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-poco-01',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Proibido Entrada — Poço 01',
     size: 'A4 Vertical',
     largura: 2480,
@@ -202,7 +204,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-poco-02',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Proibido Entrada — Poço 02',
     size: 'A4 Vertical',
     largura: 2480,
@@ -212,7 +214,7 @@ const ITENS = [
   },
   {
     id: 'quadro-bomba-ete',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Quadro Bomba ETE',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -222,7 +224,7 @@ const ITENS = [
   },
   {
     id: 'regulamento-academia',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Regulamento da Academia',
     size: '60×120 cm',
     largura: 7087,
@@ -232,7 +234,7 @@ const ITENS = [
   },
   {
     id: 'reservatorio-caixa-dagua-ete',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: "Reservatório — Caixa d'Água ETE",
     size: 'A4 Horizontal',
     largura: 3508,
@@ -242,7 +244,7 @@ const ITENS = [
   },
   {
     id: 'reservatorio-de-cloro',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Reservatório de Cloro',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -252,7 +254,7 @@ const ITENS = [
   },
   {
     id: 'reservatorio-de-lodo',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Reservatório de Lodo',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -262,7 +264,7 @@ const ITENS = [
   },
   {
     id: 'sorvete-e-picole-teatro',
-    categoria: 'institucional',
+    categoria: 'ab',
     titulo: 'Sorvete e Picolé — Teatro',
     size: 'A4 Vertical',
     largura: 2480,
@@ -272,7 +274,7 @@ const ITENS = [
   },
   {
     id: 'tinta-fresca',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Tinta Fresca',
     size: '29,7×21 cm',
     largura: 3508,
@@ -284,7 +286,7 @@ const ITENS = [
   // --------------------------------------------------------------- Hospitalidade
   {
     id: 'alimentos-sem-gluten-e-zero-lactose',
-    categoria: 'institucional',
+    categoria: 'ab',
     titulo: 'Alimentos Sem Glúten e Zero Lactose',
     size: '21×29 cm',
     largura: 2480,
@@ -364,7 +366,7 @@ const ITENS = [
   },
   {
     id: 'prato-vegano',
-    categoria: 'institucional',
+    categoria: 'ab',
     titulo: 'Prato Vegano',
     size: '21×29 cm',
     largura: 2480,
@@ -374,7 +376,7 @@ const ITENS = [
   },
   {
     id: 'proibido-fumar-florestal',
-    categoria: 'institucional',
+    categoria: 'operacional',
     titulo: 'Proibido Fumar — Florestal',
     size: '21×29 cm',
     largura: 2532,

@@ -1,23 +1,27 @@
 // Configuração estática dos setores, formatos e modelos oficiais.
 //
 // IDs INTERNOS x NOMES DE INTERFACE
-// As chaves `manutencao` e `governanca` são IDs históricos e permanecem como
-// estão de propósito: elas indexam os caminhos dos assets
-// (assets/images/manutencao/…, assets/images/governanca/…), o `tipo` do motor de
-// Canvas e o cache já gravado no navegador dos usuários. Renomeá-las quebraria
-// tudo isso sem nenhum ganho. O que o usuário lê — `nome` e `sigla` — foi
-// atualizado: "Manutenção" virou "Institucionais Gerais" e "Governança" virou
-// "Hospitalidade".
+// `governanca` continua sendo um ID histórico: ele indexa
+// assets/images/governanca/ e o `tipo` do motor de Canvas, e renomeá-lo quebraria
+// esses caminhos sem ganho nenhum. O usuário lê "Hospitalidade".
+//
+// A chave `manutencao` FOI renomeada para `operacional` — o que só ficou seguro
+// depois que os modelos editáveis A3/A4 saíram e a pasta assets/images/manutencao/
+// deixou de existir. Com isso o ID não indexa mais nenhum caminho de asset.
+// Atenção: o `tipo: 'manutencao'` do motor de Canvas é OUTRO namespace (o
+// renderizador de texto livre) e segue com o nome antigo de propósito.
 //
 // FLUXO
 // `fluxo: 'gerador'` segue o passo a passo de Canvas (formato → modelo → texto →
 // prévia → download). `fluxo: 'catalogo'` abre a busca de artes prontas da
-// categoria indicada em `categoriaCatalogo`.
+// categoria indicada em `categoriaCatalogo`. `fluxo: 'misto'` abre antes uma tela
+// de escolha entre os dois caminhos.
 //
 // Um setor de catálogo só oferece o gerador se declarar `acaoGerador` E tiver
-// formatos: é o caso da Hospitalidade, que lista as artes prontas e ainda deixa
-// escrever uma carta de boas-vindas. Institucionais Gerais não tem nenhum dos
-// dois — é só consulta e download.
+// formatos: é o caso da Hospitalidade, onde o catálogo é o prato principal e a
+// carta é acessória. No A&B é o inverso — criar identificação de prato é a tarefa
+// diária e as artes prontas são consulta ocasional —, por isso ele usa `misto`,
+// que dá o mesmo peso aos dois caminhos em vez de enterrar um deles.
 //
 // safeAreaMm expressa as margens em MILÍMETROS a partir de cada borda da arte.
 // A medida é física, não percentual: as imagens-base estão todas em 300 DPI
@@ -44,7 +48,22 @@ export const SETORES = {
     sigla: 'A&B',
     corDestaque: '#008BCE',
     icone: 'ab',
-    fluxo: 'gerador',
+    // Setor misto: cria arte do zero (biblioteca .docx) ou baixa uma arte pronta.
+    fluxo: 'misto',
+    categoriaCatalogo: 'ab',
+    tituloCatalogo: 'Artes prontas de A&B',
+    modos: {
+      gerador: {
+        icone: 'edit',
+        titulo: 'Criar uma nova arte',
+        descricao: 'Escolha o tamanho e busque o prato na biblioteca oficial',
+      },
+      catalogo: {
+        icone: 'layers',
+        titulo: 'Usar uma arte pronta',
+        descricao: 'Baixe uma das artes já aprovadas pelo Marketing',
+      },
+    },
     permiteTraducao: true,
     tipoTexto: 'busca', // busca na biblioteca do docx
     // Nomes de pratos são rótulos: recebem Title Case editorial na renderização.
@@ -93,20 +112,19 @@ export const SETORES = {
     ],
   },
 
-  // ID interno mantido: era "Manutenção", hoje aparece como "Institucionais Gerais".
+  // Era "Manutenção", depois "Institucionais Gerais", hoje "Operacional".
   //
-  // Não tem mais gerador: os modelos editáveis A3/A4 de Manutenção foram
-  // removidos junto com as imagens-base em assets/images/manutencao/. O setor
-  // virou consulta e download de artes já aprovadas.
-  manutencao: {
-    id: 'manutencao',
-    nome: 'Institucionais Gerais',
-    sigla: 'INST',
+  // Não tem gerador: os modelos editáveis A3/A4 foram removidos junto com as
+  // imagens-base. O setor é consulta e download de artes já aprovadas.
+  operacional: {
+    id: 'operacional',
+    nome: 'Operacional',
+    sigla: 'OPER',
     corDestaque: '#E95029',
-    icone: 'institucional',
+    icone: 'operacional',
     fluxo: 'catalogo',
-    categoriaCatalogo: 'institucional',
-    tituloCatalogo: 'Catálogo de artes institucionais',
+    categoriaCatalogo: 'operacional',
+    tituloCatalogo: 'Catálogo de artes operacionais',
     permiteTraducao: false,
     titleCase: false,
     formatos: [],
