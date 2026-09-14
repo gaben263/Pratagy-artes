@@ -357,6 +357,60 @@ no `.vercelignore` desde o início, a subpasta nova já nasceu fora do deploy.
 
 ---
 
+### 3.12 A&B abre direto no catálogo — fim da tela de modo
+
+A tela de escolha da seção anterior durou uma rodada. Na prática ela era um passo a mais para
+chegar ao mesmo lugar, e o A&B passou a seguir o padrão que a Hospitalidade já usava: catálogo
+com o cartão **"Criar uma nova arte"** no topo, separador "ou baixe uma arte pronta", busca e
+grade.
+
+**O que saiu:** `js/ui/steps/modoStep.js`, o passo `modo` do stepper (rótulo "Opção"), as
+constantes `FLUXO_MISTO*`, a função `entrarNoCatalogo` e o bloco `modos` do A&B em `models.js`.
+
+**O que entrou:** o A&B virou `fluxo: 'catalogo'` com `acaoGerador`, igual à Hospitalidade. Os
+dois setores ganharam `subtituloCatalogo` (a frase abaixo do título, que antes era fixa na tela e
+falava só da carta), e a busca ganhou um placeholder por categoria com termos que existem de fato
+nas tags (`tapioca, vegano, sem glúten, sorvete`).
+
+**`getStepOrder` voltou a ter três saídas:**
+
+```
+fluxo gerador / sem setor    → ['setor','formato','modelo','edicao','previa','download']
+catalogo + modo=null         → ['setor','catalogo']
+catalogo + modo='gerador'    → ['setor','catalogo','formato','modelo','edicao','previa','download']
+```
+
+O flag `modo` (`null | 'gerador'`) **ficou**: remover o fluxo misto não implica remover o
+mecanismo que a Hospitalidade sempre usou para sair do catálogo rumo à carta — é ele que estende a
+ordem de passos, sem nenhum passo de "modo" na interface. Renomear para `noGerador` custaria
+mexer em `setorStep.js` e `entrarNoGerador` sem ganho.
+
+**Rodapé do card de setor:** catálogo com mais de um formato no gerador mostra as duas modalidades
+("3 formatos + 5 prontas"); com um formato só, o gerador é acessório e o card fala apenas das artes
+prontas ("8 artes prontas"). A Hospitalidade não mudou.
+
+**Stepper:** o A&B mostra "Setor → Catálogo" ao abrir e "Setor → Catálogo → Formato → … →
+Download" ao clicar em criar — o mesmo que a Hospitalidade.
+
+**Decisão consciente — Voltar não limpa o `modo`.** Ao voltar do Formato para o catálogo,
+`modo: 'gerador'` permanece e os sete passos continuam no stepper, com Formato alcançável. O teste
+expôs isso (a expectativa inicial era "Setor → Catálogo" de novo) e havia dois caminhos:
+
+1. *Manter* — igual à Hospitalidade, que usa o mesmo `goBack`. Clicar em "Formato" no stepper leva
+   a uma ação válida; não é bug.
+2. *Limpar `modo` no `goBack`* — duas linhas, o stepper encolheria de volta, mas mudaria a
+   Hospitalidade junto.
+
+Ficou o caminho 1: consistência entre os dois setores vale mais que a perfeição local.
+
+**Testes (Playwright, 48 verificações):** A&B abre no catálogo com o botão no topo e a ordem
+botão → separador → busca → grade; busca escopada ("reservatório" e "manutenção" → 0, "buffet" → 3
+via tag, vazio → os 5 de `ab`); PNG e PDF de arte pronta; fluxo completo do gerador com export;
+Voltar do Formato ao catálogo; card do topo idêntico ao da Hospitalidade a menos de cor e texto;
+Hospitalidade, Acqua Park e Operacional sem regressão. `node --check` nos 5 módulos alterados.
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:
@@ -429,7 +483,7 @@ js/
     confetti.js             Confete da exportação
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
-    steps/                  Uma tela por etapa do fluxo (inclui modoStep.js)
+    steps/                  Uma tela por etapa do fluxo
 
 assets/
   images/{ab,governanca,acquapark}/       Modelos do gerador
@@ -444,7 +498,7 @@ assets/
 
 - **35 artes prontas** no catálogo — 22 operacionais, 8 de hospitalidade, 5 de A&B
 - **35 miniaturas** geradas (~1,4 MB)
-- **4 módulos**, 21 arquivos JavaScript
+- **4 módulos**, 20 arquivos JavaScript
 
 ### Commits desta fase
 

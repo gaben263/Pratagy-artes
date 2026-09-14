@@ -15,13 +15,15 @@ const DESCRICOES = {
 function resumoDoSetor(setor) {
   const artes = CATALOGO.filter((item) => item.categoria === setor.categoriaCatalogo).length;
 
-  if (setor.fluxo === 'catalogo') {
-    return { iconName: 'layers', texto: `${artes} artes prontas` };
-  }
-
   const formatos = setor.formatos.length;
-  if (setor.fluxo === 'misto') {
-    return { iconName: 'layers', texto: `${formatos} formatos + ${artes} prontas` };
+
+  if (setor.fluxo === 'catalogo') {
+    // Catálogo com vários formatos no gerador (A&B) anuncia as duas modalidades.
+    // Com um formato só (a carta da Hospitalidade) o gerador é acessório e o
+    // rodapé fala apenas das artes prontas.
+    return formatos > 1
+      ? { iconName: 'layers', texto: `${formatos} formatos + ${artes} prontas` }
+      : { iconName: 'layers', texto: `${artes} artes prontas` };
   }
   return { iconName: 'layers', texto: `${formatos} ${formatos === 1 ? 'modelo' : 'formatos'}` };
 }

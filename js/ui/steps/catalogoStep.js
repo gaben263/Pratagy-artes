@@ -5,8 +5,9 @@
 // há filtro de categoria na tela: o próprio setor já é o filtro.
 //
 // Diferente das demais telas, aqui não há Canvas: o usuário busca uma arte já
-// aprovada, confere as instruções de impressão e baixa o arquivo. Hospitalidade
-// ainda oferece o gerador da carta de boas-vindas, declarado em `acaoGerador`.
+// aprovada, confere as instruções de impressão e baixa o arquivo. Setores que
+// declaram `acaoGerador` (Hospitalidade com a carta, A&B com a identificação de
+// prato) ganham um cartão de "criar" no topo, antes do separador e da grade.
 //
 // O termo de busca fica em variável de módulo, não no estado global: qualquer
 // setState dispara um render completo da aplicação, o que recriaria o campo de
@@ -23,6 +24,14 @@ import { exportCatalogPNG, exportCatalogPDF } from '../../canvas/export.js';
 import { comemorar } from '../confetti.js';
 
 let termo = '';
+
+// Exemplos que existem de fato em cada categoria: um placeholder que não
+// encontra nada ensina o vocabulário errado.
+const PLACEHOLDER_BUSCA = {
+  ab: 'Ex: tapioca, vegano, sem glúten, sorvete…',
+  hospitalidade: 'Ex: cartão VIP, check-out, aniversariante…',
+  operacional: 'Ex: proibido fumar, poço, academia, luvas…',
+};
 
 // ------------------------------------------------------------------ Cartões
 
@@ -269,9 +278,8 @@ export function renderCatalogoStep(container) {
       }</h1>
       <p class="mt-1 mb-5 text-slate-500">
         ${
-          gerador
-            ? 'Escreva uma carta personalizada ou baixe uma das artes já aprovadas.'
-            : 'Artes já aprovadas pelo Marketing, prontas para baixar e imprimir. Busque pelo nome ou pelo assunto.'
+          setor.subtituloCatalogo ||
+          'Artes já aprovadas pelo Marketing, prontas para baixar e imprimir. Busque pelo nome ou pelo assunto.'
         }
       </p>
 
@@ -309,11 +317,7 @@ export function renderCatalogoStep(container) {
             ${icon('search', { size: 19 })}
           </span>
           <input type="search" data-busca value="${escapeHtml(termo)}"
-            placeholder="${
-              categoria === 'hospitalidade'
-                ? 'Ex: cartão VIP, check-out, aniversariante…'
-                : 'Ex: proibido fumar, poço, academia, luvas…'
-            }"
+            placeholder="${PLACEHOLDER_BUSCA[categoria] || PLACEHOLDER_BUSCA.operacional}"
             class="w-full rounded-xl border-2 border-slate-200 py-3 pl-11 pr-3 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
         </div>
         <p data-contador class="text-xs font-semibold text-slate-400"></p>

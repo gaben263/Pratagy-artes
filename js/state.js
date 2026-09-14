@@ -12,15 +12,8 @@ const FLUXO_GERADOR = ['setor', ...GERADOR];
 const FLUXO_CATALOGO = ['setor', 'catalogo'];
 const FLUXO_CATALOGO_GERADOR = ['setor', 'catalogo', ...GERADOR];
 
-// Setor misto (A&B): passa por uma tela de escolha antes de seguir por um dos
-// dois caminhos.
-const FLUXO_MISTO = ['setor', 'modo'];
-const FLUXO_MISTO_GERADOR = ['setor', 'modo', ...GERADOR];
-const FLUXO_MISTO_CATALOGO = ['setor', 'modo', 'catalogo'];
-
 export const STEP_LABELS = {
   setor: 'Setor',
-  modo: 'Opção',
   catalogo: 'Catálogo',
   formato: 'Formato',
   modelo: 'Modelo',
@@ -35,7 +28,9 @@ function initialState() {
     maxStepIndex: 0,
     setorId: null,
     formatoId: null,
-    // 'gerador' quando o usuário sai do catálogo para criar uma arte do zero.
+    // 'gerador' quando o usuário sai do catálogo para criar uma arte do zero
+    // (carta da Hospitalidade, identificação de prato no A&B). É só esse flag
+    // que estende a ordem de passos; não há um passo de "modo" na interface.
     modo: null,
     texto: '',
     textoEs: '',
@@ -71,12 +66,6 @@ export function getStepOrder(s = state) {
   const setor = getSetor(s.setorId);
   if (!setor) return FLUXO_GERADOR;
 
-  if (setor.fluxo === 'misto') {
-    if (s.modo === 'gerador') return FLUXO_MISTO_GERADOR;
-    if (s.modo === 'catalogo') return FLUXO_MISTO_CATALOGO;
-    return FLUXO_MISTO;
-  }
-
   if (setor.fluxo === 'catalogo') {
     return s.modo === 'gerador' ? FLUXO_CATALOGO_GERADOR : FLUXO_CATALOGO;
   }
@@ -86,9 +75,7 @@ export function getStepOrder(s = state) {
 
 /** Primeiro passo depois da escolha do setor. */
 export function primeiroPasso(setor) {
-  if (setor.fluxo === 'misto') return 'modo';
-  if (setor.fluxo === 'catalogo') return 'catalogo';
-  return 'formato';
+  return setor.fluxo === 'catalogo' ? 'catalogo' : 'formato';
 }
 
 export function hasUnsavedWork() {
@@ -137,25 +124,14 @@ export function canReachStep(stepId) {
  *   com um cartão único não acrescenta nada.
  */
 export function entrarNoGerador(formatoId = null) {
-  const setor = getSetor(state.setorId);
-  // A ordem que passará a valer depois de `modo: 'gerador'` — é nela que o
-  // índice do destino precisa ser calculado, não na ordem vigente agora.
-  const ordem = setor?.fluxo === 'misto' ? FLUXO_MISTO_GERADOR : FLUXO_CATALOGO_GERADOR;
   const destino = formatoId ? 'modelo' : 'formato';
 
   setState({
     modo: 'gerador',
     formatoId: formatoId || state.formatoId,
     step: destino,
-    maxStepIndex: Math.max(state.maxStepIndex, ordem.indexOf(destino)),
-  });
-}
-
-/** Entra no catálogo de artes prontas a partir da tela de escolha (setor misto). */
-export function entrarNoCatalogo() {
-  setState({
-    modo: 'catalogo',
-    step: 'catalogo',
-    maxStepIndex: Math.max(state.maxStepIndex, FLUXO_MISTO_CATALOGO.indexOf('catalogo')),
+    // Índice calculado na ordem que passará a valer depois de `modo: 'gerador'`,
+    // não na ordem vigente agora (que ainda termina em 'catalogo').
+    maxStepIndex: Math.max(state.maxStepIndex, FLUXO_CATALOGO_GERADOR.indexOf(destino)),
   });
 }

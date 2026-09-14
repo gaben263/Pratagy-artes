@@ -6,7 +6,6 @@ import { loadLibrary } from './data/docxLibrary.js';
 import { icon } from './ui/icons.js';
 import { confirmModal } from './ui/common.js';
 import { renderSetorStep } from './ui/steps/setorStep.js';
-import { renderModoStep } from './ui/steps/modoStep.js';
 import { renderCatalogoStep } from './ui/steps/catalogoStep.js';
 import { renderFormatoStep } from './ui/steps/formatoStep.js';
 import { renderModeloStep } from './ui/steps/modeloStep.js';
@@ -22,7 +21,6 @@ loadLibrary().catch((err) => console.warn('Biblioteca A&B indisponível no momen
 
 const STEP_RENDERERS = {
   setor: renderSetorStep,
-  modo: renderModoStep,
   catalogo: renderCatalogoStep,
   formato: renderFormatoStep,
   modelo: renderModeloStep,
@@ -59,9 +57,9 @@ function render() {
   renderStepper(stepperEl);
   STEP_RENDERERS[state.step]?.(stepEl);
 
-  // Catálogo e tela de escolha não têm Canvas para pré-visualizar, então a
-  // coluna da direita sai e o conteúdo ocupa a largura toda.
-  const semPrevia = state.step === 'catalogo' || state.step === 'modo';
+  // O catálogo não tem Canvas para pré-visualizar, então a coluna da direita
+  // sai e o conteúdo ocupa a largura toda.
+  const semPrevia = state.step === 'catalogo';
   previewEl.classList.toggle('hidden', semPrevia);
   appGridEl.classList.toggle(CLASSE_COLUNA_PREVIA, !semPrevia);
   if (!semPrevia) updatePreview();

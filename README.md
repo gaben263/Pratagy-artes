@@ -10,9 +10,9 @@ Sistema interno de artes oficiais do Pratagy Beach. Quatro módulos:
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 
 > Cada setor mostra uma categoria só, definida em `categoriaCatalogo`. `fluxo: 'catalogo'` abre
-> direto na busca; `fluxo: 'misto'` (A&B) passa antes por uma tela de escolha entre criar e baixar;
-> `fluxo: 'gerador'` (Acqua Park) vai direto para o Canvas. Hospitalidade é catálogo com um
-> gerador acessório, declarado em `acaoGerador`.
+> direto na busca; `fluxo: 'gerador'` (Acqua Park) vai direto para o Canvas. Hospitalidade e A&B
+> são catálogos com um cartão de "criar" no topo, declarado em `acaoGerador` — a carta manuscrita
+> num caso, a identificação de prato no outro.
 
 > Os IDs internos dos dois módulos renomeados continuam `manutencao` (Institucionais Gerais) e `governanca` (Hospitalidade): eles indexam os caminhos dos assets e o cache já gravado no navegador dos usuários. Só os nomes de interface mudaram.
 

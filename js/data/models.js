@@ -14,14 +14,14 @@
 // FLUXO
 // `fluxo: 'gerador'` segue o passo a passo de Canvas (formato → modelo → texto →
 // prévia → download). `fluxo: 'catalogo'` abre a busca de artes prontas da
-// categoria indicada em `categoriaCatalogo`. `fluxo: 'misto'` abre antes uma tela
-// de escolha entre os dois caminhos.
+// categoria indicada em `categoriaCatalogo`.
 //
 // Um setor de catálogo só oferece o gerador se declarar `acaoGerador` E tiver
-// formatos: é o caso da Hospitalidade, onde o catálogo é o prato principal e a
-// carta é acessória. No A&B é o inverso — criar identificação de prato é a tarefa
-// diária e as artes prontas são consulta ocasional —, por isso ele usa `misto`,
-// que dá o mesmo peso aos dois caminhos em vez de enterrar um deles.
+// formatos: o cartão de "criar" aparece no topo do catálogo, seguido do
+// separador e da grade de artes prontas. Hospitalidade (carta de boas-vindas) e
+// A&B (identificação de pratos) usam esse mesmo padrão; o A&B chegou a ter uma
+// tela de escolha própria (`fluxo: 'misto'`), descartada por ser um passo a mais
+// para chegar ao mesmo lugar.
 //
 // safeAreaMm expressa as margens em MILÍMETROS a partir de cada borda da arte.
 // A medida é física, não percentual: as imagens-base estão todas em 300 DPI
@@ -48,21 +48,15 @@ export const SETORES = {
     sigla: 'A&B',
     corDestaque: '#008BCE',
     icone: 'ab',
-    // Setor misto: cria arte do zero (biblioteca .docx) ou baixa uma arte pronta.
-    fluxo: 'misto',
+    // Catálogo com gerador no topo: cria a identificação de um prato (biblioteca
+    // .docx) ou baixa uma das artes prontas de A&B.
+    fluxo: 'catalogo',
     categoriaCatalogo: 'ab',
     tituloCatalogo: 'Artes prontas de A&B',
-    modos: {
-      gerador: {
-        icone: 'edit',
-        titulo: 'Criar uma nova arte',
-        descricao: 'Escolha o tamanho e busque o prato na biblioteca oficial',
-      },
-      catalogo: {
-        icone: 'layers',
-        titulo: 'Usar uma arte pronta',
-        descricao: 'Baixe uma das artes já aprovadas pelo Marketing',
-      },
+    subtituloCatalogo: 'Crie a identificação de um prato ou baixe uma das artes já aprovadas.',
+    acaoGerador: {
+      titulo: 'Criar uma nova arte',
+      descricao: 'Escolha o tamanho e busque o prato na biblioteca oficial',
     },
     permiteTraducao: true,
     tipoTexto: 'busca', // busca na biblioteca do docx
@@ -144,6 +138,7 @@ export const SETORES = {
     fluxo: 'catalogo',
     categoriaCatalogo: 'hospitalidade',
     tituloCatalogo: 'Artes de Hospitalidade',
+    subtituloCatalogo: 'Escreva uma carta personalizada ou baixe uma das artes já aprovadas.',
     acaoGerador: {
       titulo: 'Escrever uma carta de boas-vindas',
       descricao: 'Sua própria mensagem na arte oficial A4, com letra manuscrita',
