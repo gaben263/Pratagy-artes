@@ -59,6 +59,9 @@ export const SETORES = {
       descricao: 'Escolha o tamanho e busque o prato na biblioteca oficial',
     },
     permiteTraducao: true,
+    // Placas de buffet saem às dezenas: o passo Download oferece a folha A4
+    // com várias placas para imprimir na impressora do resort (js/canvas/lote.js).
+    permiteLote: true,
     tipoTexto: 'busca', // busca na biblioteca do docx
     // Nomes de pratos são rótulos: recebem Title Case editorial na renderização.
     // Os demais setores escrevem frases/parágrafos, onde Title Case atrapalharia

@@ -6,6 +6,8 @@ import { ensureFontsReady } from '../../canvas/engine.js';
 import { updatePreview } from '../previewPanel.js';
 import { showToast, confirmModal, motivoNaoCoube } from '../common.js';
 import { comemorar } from '../confetti.js';
+import { exportLotePDF, calcularGrade } from '../../canvas/lote.js';
+import { abrirLoteModal } from '../loteModal.js';
 
 async function handleExport(kind, formato, nomeArquivo, btn) {
   const original = btn.innerHTML;
@@ -39,6 +41,28 @@ async function handleExport(kind, formato, nomeArquivo, btn) {
   }
 }
 
+/**
+ * Folha A4 com várias placas (só setores com `permiteLote`). Mesma preparação
+ * do export individual — fontes prontas e prévia repintada — e o mesmo canvas:
+ * a placa da folha é pixel a pixel a placa do PNG.
+ */
+async function handleLote(formato, quantidade) {
+  try {
+    await ensureFontsReady();
+    await updatePreview();
+    const canvas = document.querySelector('#preview-canvas-wrap [data-canvas-main]');
+    if (!canvas) throw new Error('Canvas da prévia não encontrado.');
+
+    await exportLotePDF(canvas, formato, quantidade, `pratagy-lote-${formato.id}-${quantidade}un`);
+    setState({ exported: true });
+    showToast(`Folha A4 com ${quantidade} ${quantidade === 1 ? 'placa' : 'placas'} exportada.`, { type: 'success' });
+    comemorar();
+  } catch (err) {
+    showToast('Não foi possível gerar a folha A4. Tente novamente.', { type: 'error' });
+    throw err; // o modal restaura o botão e continua aberto
+  }
+}
+
 async function handleNovaPlaca() {
   const ok = await confirmModal({
     title: 'Iniciar uma nova arte?',
@@ -50,10 +74,10 @@ async function handleNovaPlaca() {
   if (ok) resetApp();
 }
 
-function cardExport({ kind, iconName, titulo, descricao, habilitado }) {
+function cardExport({ kind, iconName, titulo, descricao, habilitado, classe = '' }) {
   return `
     <button type="button" data-export="${kind}" ${habilitado ? '' : 'disabled'}
-      class="group flex items-center gap-3.5 rounded-2xl border-2 border-slate-200 bg-white p-4 text-left shadow-sm transition-all duration-150 ${
+      class="group flex items-center gap-3.5 rounded-2xl border-2 border-slate-200 bg-white p-4 text-left shadow-sm transition-all duration-150 ${classe} ${
         habilitado
           ? 'hover:-translate-y-0.5 hover:border-brand-blue hover:shadow-md'
           : 'cursor-not-allowed opacity-40'
@@ -131,6 +155,18 @@ export function renderDownloadStep(container) {
             : `Impressão em ${formato.mmLargura}×${formato.mmAltura} mm`,
           habilitado: state.fits,
         })}
+        ${
+          setor.permiteLote
+            ? cardExport({
+                kind: 'lote',
+                iconName: 'layers',
+                titulo: 'Impressão em lote',
+                descricao: `Até ${calcularGrade(formato).max} placas numa folha A4 para imprimir aqui no resort`,
+                habilitado: state.fits,
+                classe: 'sm:col-span-2',
+              })
+            : ''
+        }
       </div>
 
       <button type="button" data-nova
@@ -146,6 +182,10 @@ export function renderDownloadStep(container) {
   container.querySelectorAll('[data-export]').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
+      if (btn.dataset.export === 'lote') {
+        abrirLoteModal(formato, (quantidade) => handleLote(formato, quantidade));
+        return;
+      }
       handleExport(btn.dataset.export, formato, nomeArquivo, btn);
     });
   });

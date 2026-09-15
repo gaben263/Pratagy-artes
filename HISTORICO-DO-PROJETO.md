@@ -32,7 +32,7 @@ São quatro módulos:
 
 | Módulo | O que faz |
 |---|---|
-| **Alimentos & Bebidas** | Gera a identificação de pratos a partir da biblioteca oficial (`.docx`), com tradução em espanhol — ou baixa uma das 5 artes prontas |
+| **Alimentos & Bebidas** | Gera a identificação de pratos a partir da biblioteca oficial (`.docx`), com tradução em espanhol — individual ou em folha A4 com várias placas — ou baixa uma das 5 artes prontas |
 | **Manutenção** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar |
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) + gerador da carta de boas-vindas manuscrita |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
@@ -545,6 +545,66 @@ que restam estão só neste histórico, onde pertencem); `node --check` nos 5 m�
 
 ---
 
+### 3.16 Impressão em lote: várias placas do A&B numa folha A4
+
+As placas de buffet saem às dezenas e o sistema só exportava uma por vez. Agora o passo
+**Download** do A&B tem um terceiro cartão, **"Impressão em lote"**, que abre um modal: quantas
+placas por folha, o máximo do formato explícito, um diagrama da folha em SVG (retângulos, não
+miniaturas) e o botão que gera o PDF. Só no gerador do A&B (`permiteLote: true` em `models.js`);
+o catálogo de artes prontas e os outros setores não mudam.
+
+**Grade por formato** — calculada, não tabelada. Para cada formato o código testa a folha A4 em
+pé e deitada, com a placa sempre em pé, e fica com a que rende mais (empate → em pé). Margem de
+10 mm; calha de 3 mm entre placas.
+
+| Formato | Folha | Grade | Por folha |
+|---|---|---|---|
+| 8×5 cm | A4 em pé | 2 × 5 | **10** |
+| 8×10 cm | A4 em pé | 2 × 2 | **4** |
+| 10×15 cm | **A4 deitada** | 2 × 1 | **2** |
+
+O 10×15 foi o caso que justificou a regra: em pé, duas colunas dão 200 mm numa área útil de 190
+(só com margem de 5 mm, que impressoras comuns não respeitam) e 1 × 2 dá 300 mm > 297 — não cabe
+nem sem margem. Deitada cabe com folga. O PDF já nasce em paisagem e o leitor escolhe a orientação
+ao imprimir. Se entrar um formato novo, ele ganha a grade sozinho.
+
+**Calha de 3 mm, e por quê.** A arte-base tem faixas azuis em cima e embaixo e laterais brancas.
+Encostadas, duas placas viram uma faixa azul contínua e duas laterais sem fronteira: quem corta
+com tesoura não vê onde termina uma. 3 mm de branco marcam o corte e toleram 1–2 mm de tremida
+sem comer a vizinha.
+
+**Sem marcas de corte, sem sangria.** É impressão interna, na impressora do resort, não arquivo de
+gráfica. Marca de corte seria ruído para quem corta com tesoura.
+
+**Downloads individuais intactos.** PNG e PDF de uma placa continuam exatamente como eram
+(`handleExport` não foi tocado; o lote tem o próprio `handleLote`). O PDF individual segue no
+tamanho físico da placa, sem folha em volta.
+
+**Detalhes de implementação que valem lembrar**
+
+- A placa da folha é o mesmo canvas da prévia, pixel a pixel o PNG individual — nada é
+  renderizado de novo.
+- O PNG vira imagem do PDF **uma vez** (mesmo `alias` no jsPDF) e as N placas apontam para ela:
+  a folha com 10 pesa o mesmo que a com 3 (107 KB vs 108 KB no teste).
+- `fits` é derivado do canvas a cada render, não um flag solto. O teste tentou injetar
+  `fits: false` e o app o sobrescreveu na hora — o caminho real é um texto que não cabe, e o
+  cartão de lote é desabilitado junto com PNG/PDF.
+- Poka-Yoke do campo: acima do máximo corrige na hora com aviso ("15 → 10"); vazio ou zero
+  desabilita o botão enquanto digita e, ao sair do campo, volta ao máximo — uma folha cheia é o
+  caso comum e ninguém quer uma folha em branco. O modal é montado do zero a cada abertura:
+  trocar o formato e reabrir já mostra o novo máximo.
+- Nome do arquivo: `pratagy-lote-<formato>-<n>un.pdf`.
+
+**Testes (Playwright, 48 verificações):** grade e posições direto no módulo; os 3 formatos gerados
+e inspecionados nos bytes do PDF — `MediaBox` 595.28 × 841.89 pt (A4 exato) para 8×5 e 8×10,
+841.89 × 595.28 para o 10×15, uma página, imagem embutida uma vez, N colocações com largura e
+altura exatas em pontos e posições (10,10)/(93,10)/(10,63) mm para 3 placas; 15 → 10 com aviso;
+vazio/zero; estado limpo ao reabrir; PNG/PDF individuais inalterados (80 × 50 mm, uma colocação em
+0,0); arte inválida desabilita os três cartões; Acqua Park e Hospitalidade sem o cartão; catálogos
+intactos. Os PDFs foram abertos e conferidos visualmente.
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:
@@ -613,8 +673,10 @@ js/
   canvas/
     engine.js               Motor de renderização
     export.js               Exportação PNG/PDF
+    lote.js                 Folha A4 com várias placas (grade + PDF)
   ui/
     confetti.js             Confete da exportação
+    loteModal.js            Modal da impressão em lote
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
     steps/                  Uma tela por etapa do fluxo
@@ -632,7 +694,7 @@ assets/
 
 - **35 artes prontas** no catálogo — 22 operacionais, 8 de hospitalidade, 5 de A&B
 - **35 miniaturas** geradas (~1,4 MB)
-- **4 módulos**, 20 arquivos JavaScript
+- **4 módulos**, 22 arquivos JavaScript
 - **424 pratos** na biblioteca A&B (12 categorias; 3 legados dos cardápios de 2025)
 
 ### Commits desta fase
