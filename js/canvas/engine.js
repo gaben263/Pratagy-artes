@@ -1,6 +1,14 @@
 // Motor de renderização do Canvas: desenha o modelo oficial + texto do usuário
-// dentro da área segura, com quebra de linha inteligente e, para textos
-// longos (Governança), redução automática de fonte até caber.
+// dentro da área segura, com quebra de linha por espaço e redução automática
+// de fonte até caber.
+//
+// REGRA DE QUEBRA
+// Uma palavra nunca é partida — nem por caractere, nem por sílaba, nem com
+// hífen. Numa placa impressa, "Strogo-/noff" ou "Strog/onoff" lê como erro de
+// gráfica, e a equipe do resort não tem como revisar cada arte. A palavra que
+// não cabe no resto da linha pula inteira para a próxima; se nem sozinha ela
+// cabe na largura, o bloco encolhe até um piso e, se ainda assim não couber, a
+// exportação é bloqueada nomeando a palavra (ver `fitFontSize`).
 
 import { toTitleCase } from '../utils.js';
 
@@ -67,33 +75,13 @@ export function computeSafeAreaPx(formato) {
 }
 
 /**
- * Fatia uma palavra que não cabe inteira na largura disponível.
+ * Quebra o texto em linhas, só em espaços.
  *
- * Sem isso, uma sequência longa sem espaço (um endereço colado, um nome de
- * arquivo, alguém digitando sem separar palavras) nunca quebraria: o
- * `fitFontSize` iria reduzindo o corpo até o mínimo e a linha continuaria
- * estourando a área segura na horizontal, virando um fiapo ilegível.
- *
- * A iteração é `for…of` para não partir pares substitutos (emoji, por exemplo)
- * no meio de um caractere.
+ * Uma palavra mais larga que `maxWidth` fica sozinha na sua linha, estourando
+ * a largura — de propósito. Isso dá uma garantia que `fitFontSize` explora:
+ * qualquer linha mais larga que a área é, por construção, UMA única palavra,
+ * e é ela que a mensagem de erro vai nomear.
  */
-function quebrarPalavraLonga(ctx, palavra, maxWidth) {
-  const pedacos = [];
-  let atual = '';
-  for (const caractere of palavra) {
-    const candidato = atual + caractere;
-    // `atual &&` evita laço infinito quando um único caractere já não cabe.
-    if (atual && ctx.measureText(candidato).width > maxWidth) {
-      pedacos.push(atual);
-      atual = caractere;
-    } else {
-      atual = candidato;
-    }
-  }
-  if (atual) pedacos.push(atual);
-  return pedacos;
-}
-
 function wrapLines(ctx, text, maxWidth) {
   const paragraphs = text.split('\n');
   const lines = [];
@@ -114,18 +102,10 @@ function wrapLines(ctx, text, maxWidth) {
         continue;
       }
 
-      // A palavra não cabe no resto da linha: fecha a linha atual.
+      // A palavra não cabe no resto da linha: fecha a linha atual e começa a
+      // próxima com a palavra inteira, caiba ela ou não.
       if (current) lines.push(current);
-
-      if (ctx.measureText(word).width <= maxWidth) {
-        current = word;
-      } else {
-        // A palavra sozinha é mais larga que a linha inteira: fatia por
-        // caractere e leva só o último pedaço para a próxima iteração.
-        const pedacos = quebrarPalavraLonga(ctx, word, maxWidth);
-        lines.push(...pedacos.slice(0, -1));
-        current = pedacos[pedacos.length - 1] || '';
-      }
+      current = word;
     }
 
     if (current) lines.push(current);
@@ -134,9 +114,32 @@ function wrapLines(ctx, text, maxWidth) {
   return lines;
 }
 
+// Quanto o bloco pode encolher, além do tamanho natural, para acomodar uma
+// palavra que não cabe na largura. Abaixo disso a placa vira um fiapo e o
+// problema deixa de ser tipográfico: é o texto que precisa mudar.
+const PISO_PALAVRA_LONGA = 0.6;
+
 /**
  * Calcula o maior tamanho de fonte (dentro de [minSize, maxSize]) cujas
  * linhas resultantes cabem inteiramente em safeAreaPx.
+ *
+ * Há dois motivos para encolher, com regras diferentes:
+ *
+ * 1. ALTURA — o texto é longo e as linhas não cabem empilhadas. O corpo desce
+ *    livremente até `minSize`, como sempre foi (a carta da Hospitalidade
+ *    depende disso).
+ *
+ * 2. PALAVRA LONGA — o texto caberia em altura, mas uma palavra sozinha é mais
+ *    larga que a área. O corpo desce só até 60% do tamanho que o bloco teria
+ *    sem essa palavra (`sizeBase`, o primeiro corpo em que a altura cabe). Se
+ *    nem assim couber, devolve `fits: false` com a palavra em `palavraLonga`,
+ *    para a interface nomeá-la.
+ *
+ * O piso é relativo ao tamanho natural, e não a `maxSize`, de propósito: um
+ * texto que já cai a 50% por altura e cabe nesse 50% não tem por que ser
+ * bloqueado por um piso calculado sobre um corpo que ele nunca usaria.
+ *
+ * @returns {{ size:number, lines:string[], lineHeight:number, fits:boolean, palavraLonga:string|null }}
  */
 function fitFontSize(
   ctx,
@@ -144,21 +147,41 @@ function fitFontSize(
   safeAreaPx,
   { minSize, maxSize, weight, lineHeightRatio, fontFamily = FONT_FAMILY }
 ) {
+  let sizeBase = null;
+  let ultimo = null;
+
   for (let size = maxSize; size >= minSize; size -= 1) {
     ctx.font = `${weight} ${size}px ${fontFamily}`;
     const lines = wrapLines(ctx, text, safeAreaPx.width);
     const lineHeight = size * lineHeightRatio;
-    const totalHeight = lines.length * lineHeight;
-    const widestLine = Math.max(...lines.map((l) => ctx.measureText(l).width), 0);
-    if (totalHeight <= safeAreaPx.height && widestLine <= safeAreaPx.width) {
-      return { size, lines, lineHeight, fits: true };
+    const alturaOk = lines.length * lineHeight <= safeAreaPx.height;
+    const linhaMaisLarga = lines.reduce(
+      (pior, l) => (ctx.measureText(l).width > ctx.measureText(pior).width ? l : pior),
+      ''
+    );
+    const larguraOk = ctx.measureText(linhaMaisLarga).width <= safeAreaPx.width;
+
+    if (alturaOk && larguraOk) {
+      return { size, lines, lineHeight, fits: true, palavraLonga: null };
+    }
+
+    if (alturaOk) {
+      // Só a largura estoura — e a linha que estoura é uma palavra só (ver
+      // `wrapLines`). Marca o tamanho natural na primeira vez e guarda o
+      // resultado para reportar caso o piso seja atingido.
+      if (sizeBase === null) sizeBase = size;
+      ultimo = { size, lines, lineHeight, fits: false, palavraLonga: linhaMaisLarga };
+      if (size - 1 < Math.max(minSize, sizeBase * PISO_PALAVRA_LONGA)) return ultimo;
     }
   }
-  // Não coube nem no tamanho mínimo: usa o mínimo mesmo assim e reporta overflow.
+
+  // Chegou a `minSize` sem caber. Se o motivo foi uma palavra longa, `ultimo`
+  // já a identifica; senão, é overflow de altura: usa o mínimo e reporta.
+  if (ultimo) return ultimo;
   ctx.font = `${weight} ${minSize}px ${fontFamily}`;
   const lines = wrapLines(ctx, text, safeAreaPx.width);
   const lineHeight = minSize * lineHeightRatio;
-  return { size: minSize, lines, lineHeight, fits: false };
+  return { size: minSize, lines, lineHeight, fits: false, palavraLonga: null };
 }
 
 function drawTextBlock(
@@ -215,7 +238,9 @@ function drawTextBlock(
  * @param {string} [opts.textoEs] - tradução em espanhol (apenas setor A&B).
  * @param {'ab'|'manutencao'|'governanca'|'comunicado'} opts.tipo
  * @param {boolean} [opts.titleCase] - aplica Title Case editorial ao texto.
- * @returns {{ fits: boolean, safeAreaPx: Object }}
+ * @returns {{ fits: boolean, palavraLonga: string|null, safeAreaPx: Object }}
+ *   `palavraLonga` é a primeira palavra que impediu o encaixe (ou null quando
+ *   coube, ou quando o estouro é de altura e o remédio é encurtar o texto).
  */
 export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, titleCase = false }) {
   const { largura, altura } = formato;
@@ -231,10 +256,11 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
   const textoFinal = titleCase ? toTitleCase(raw) : raw;
 
   if (!textoFinal) {
-    return { fits: true, safeAreaPx };
+    return { fits: true, palavraLonga: null, safeAreaPx };
   }
 
   let fits = true;
+  let palavraLonga = null;
 
   if (tipo === 'ab') {
     // Nome do prato em destaque + tradução em espanhol abaixo, menor.
@@ -260,6 +286,7 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
       canvasWidth: largura,
     });
     fits = fits && ptResult.fits;
+    palavraLonga = palavraLonga || ptResult.palavraLonga;
 
     if (hasEs) {
       const esArea = {
@@ -283,6 +310,7 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
         canvasWidth: largura,
       });
       fits = fits && esResult.fits;
+      palavraLonga = palavraLonga || esResult.palavraLonga;
     }
   } else if (tipo === 'comunicado') {
     // Acqua Park: a arte-base já traz "COMUNICADO" impresso no topo, então o
@@ -307,6 +335,7 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
       canvasWidth: largura,
     });
     fits = result.fits;
+    palavraLonga = result.palavraLonga;
   } else if (tipo === 'governanca') {
     // Carta de boas-vindas: tipografia manuscrita (Satisfy), centralizada,
     // com redução automática de corpo até caber na caixa.
@@ -332,6 +361,7 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
       fontFamily: FONT_FAMILY_MANUSCRITA,
     });
     fits = result.fits;
+    palavraLonga = result.palavraLonga;
   } else {
     // Manutenção: texto livre, centralizado, destaque forte.
     const result = fitFontSize(ctx, textoFinal, safeAreaPx, {
@@ -350,9 +380,10 @@ export function renderCanvas(canvas, { image, formato, texto, textoEs, tipo, tit
       canvasWidth: largura,
     });
     fits = result.fits;
+    palavraLonga = result.palavraLonga;
   }
 
-  return { fits, safeAreaPx };
+  return { fits, palavraLonga, safeAreaPx };
 }
 
 /**

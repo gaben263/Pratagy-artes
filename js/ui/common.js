@@ -1,4 +1,5 @@
 import { icon } from './icons.js';
+import { escapeHtml } from '../utils.js';
 
 let toastTimer = null;
 
@@ -109,6 +110,30 @@ export function openModal(contentHtml, { onMount, maxWidth = 'max-w-3xl' } = {})
 
   onMount?.(root.querySelector('[data-dialog]'), close);
   return close;
+}
+
+/**
+ * Por que o texto não coube — a mesma explicação em todos os pontos que
+ * bloqueiam o avanço (prévia, Texto, Prévia e Download), para que a pessoa
+ * leia sempre a mesma coisa onde quer que esteja.
+ *
+ * Quando a culpa é de uma palavra específica, ela é nomeada: "reduza o texto"
+ * sozinho mandaria a pessoa cortar frases inteiras quando o problema é um
+ * termo só.
+ *
+ * @returns {{ titulo: string, acao: string }} HTML já escapado.
+ */
+export function motivoNaoCoube(state) {
+  if (state.palavraLonga) {
+    return {
+      titulo: `A palavra “${escapeHtml(state.palavraLonga)}” é muito longa para este formato.`,
+      acao: 'Reduza o texto ou escolha outro modelo.',
+    };
+  }
+  return {
+    titulo: 'O texto ultrapassa a área segura.',
+    acao: 'Reduza o texto para liberar a exportação.',
+  };
 }
 
 export function emptyState({ iconName = 'image', title, description }) {

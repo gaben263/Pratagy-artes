@@ -2,7 +2,7 @@ import { getState, setState } from '../state.js';
 import { getFormato, getSetor } from '../data/models.js';
 import { renderCanvas, drawSafeAreaGuide, loadImage, ensureFontsReady } from '../canvas/engine.js';
 import { icon } from './icons.js';
-import { emptyState } from './common.js';
+import { emptyState, motivoNaoCoube } from './common.js';
 
 const imageCache = new Map();
 let showGuide = false;
@@ -116,7 +116,7 @@ export async function updatePreview() {
     const [image] = await Promise.all([getCachedImage(formato.imagem), ensureFontsReady()]);
 
     const setor = getSetor(state.setorId);
-    const { fits } = renderCanvas(canvas, {
+    const { fits, palavraLonga } = renderCanvas(canvas, {
       image,
       formato,
       texto: state.texto,
@@ -130,16 +130,17 @@ export async function updatePreview() {
     guideCanvas.getContext('2d').clearRect(0, 0, formato.largura, formato.altura);
     if (showGuide) drawSafeAreaGuide(guideCanvas, formato);
 
-    if (fits !== state.fits) {
-      setState({ fits });
+    if (fits !== state.fits || palavraLonga !== state.palavraLonga) {
+      setState({ fits, palavraLonga });
     }
 
+    const motivo = motivoNaoCoube({ fits, palavraLonga });
     banner.innerHTML = fits
       ? ''
       : `
         <div class="flex items-start gap-2 rounded-xl border border-brand-coral/30 bg-brand-coral/10 px-3 py-2.5 text-sm text-brand-coral">
           ${icon('alertTriangle', { size: 17, className: 'mt-0.5' })}
-          <p><strong class="font-extrabold">O texto ultrapassa a área segura.</strong> Reduza o texto para liberar a exportação.</p>
+          <p><strong class="font-extrabold">${motivo.titulo}</strong> ${motivo.acao}</p>
         </div>
       `;
   } catch (err) {

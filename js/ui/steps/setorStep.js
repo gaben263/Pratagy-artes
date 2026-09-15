@@ -51,6 +51,7 @@ async function handleSelect(setorId) {
     textoEs: '',
     libraryEntryId: null,
     fits: true,
+    palavraLonga: null,
     exported: false,
   });
 

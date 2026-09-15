@@ -36,6 +36,9 @@ function initialState() {
     textoEs: '',
     libraryEntryId: null,
     fits: true,
+    // Palavra que impediu o texto de caber na largura (ver fitFontSize no
+    // motor). Só existe quando `fits` é false; a interface a nomeia no alerta.
+    palavraLonga: null,
     exported: false,
   };
 }

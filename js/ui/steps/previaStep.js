@@ -2,6 +2,7 @@ import { getSetor, getFormato } from '../../data/models.js';
 import { getState, goToStep } from '../../state.js';
 import { icon } from '../icons.js';
 import { escapeHtml, toTitleCase } from '../../utils.js';
+import { motivoNaoCoube } from '../common.js';
 
 function linha(label, valor, { destaque = false } = {}) {
   return `
@@ -56,7 +57,9 @@ export function renderPreviaStep(container) {
         !state.fits
           ? `<div class="mb-5 flex items-start gap-2.5 rounded-xl border border-brand-coral/30 bg-brand-coral/10 px-4 py-3 text-sm text-brand-coral">
               ${icon('alertTriangle', { size: 17, className: 'mt-0.5' })}
-              <p>O texto ainda não cabe na área segura. Volte e reduza o conteúdo antes de continuar.</p>
+              <p><strong class="font-extrabold">${motivoNaoCoube(state).titulo}</strong> ${
+                state.palavraLonga ? motivoNaoCoube(state).acao : 'Volte e reduza o conteúdo antes de continuar.'
+              }</p>
             </div>`
           : ''
       }

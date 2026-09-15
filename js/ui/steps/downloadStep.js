@@ -4,7 +4,7 @@ import { icon } from '../icons.js';
 import { exportPNG, exportPDF } from '../../canvas/export.js';
 import { ensureFontsReady } from '../../canvas/engine.js';
 import { updatePreview } from '../previewPanel.js';
-import { showToast, confirmModal } from '../common.js';
+import { showToast, confirmModal, motivoNaoCoube } from '../common.js';
 import { comemorar } from '../confetti.js';
 
 async function handleExport(kind, formato, nomeArquivo, btn) {
@@ -107,7 +107,9 @@ export function renderDownloadStep(container) {
         !state.fits
           ? `<div class="mb-5 flex items-start gap-2.5 rounded-xl border border-brand-coral/30 bg-brand-coral/10 px-4 py-3 text-sm text-brand-coral">
               ${icon('alertTriangle', { size: 17, className: 'mt-0.5' })}
-              <p><strong class="font-extrabold">Exportação bloqueada.</strong> O texto ultrapassa a área segura. Volte e ajuste antes de baixar.</p>
+              <p><strong class="font-extrabold">Exportação bloqueada.</strong> ${motivoNaoCoube(state).titulo} ${
+                state.palavraLonga ? motivoNaoCoube(state).acao : 'Volte e ajuste antes de baixar.'
+              }</p>
             </div>`
           : ''
       }

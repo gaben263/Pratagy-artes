@@ -271,6 +271,10 @@ Estão recuperáveis pelo commit `368cc94`.
 
 ### 3.9 Bug da quebra de linha
 
+> **Revertida na 3.13.** A correção abaixo fatiava palavras por caractere — exatamente o que
+> uma placa impressa não pode ter. O bug original (fonte virando fiapo) foi resolvido de outro
+> jeito; o diagnóstico continua válido e por isso a seção fica.
+
 Reportado com dois prints: o texto não quebrava, a fonte encolhia até o mínimo e virava um fiapo
 ilegível.
 
@@ -411,6 +415,91 @@ Hospitalidade, Acqua Park e Operacional sem regressão. `node --check` nos 5 mó
 
 ---
 
+### 3.13 Palavra nunca é partida — reversão da 3.9
+
+A correção da 3.9 resolvia o fiapo fatiando a palavra por caractere. Numa arte impressa isso é
+pior que o problema: "Strogo/noff" lê como erro de gráfica, e a equipe do resort não tem como
+revisar cada placa. Regra nova: **quebra só em espaço; palavra nunca é partida — nem por
+caractere, nem por sílaba, nem com hífen.**
+
+Para não reabrir o bug da 3.9, o encolhimento passou a distinguir **dois motivos**:
+
+| Motivo | Regra |
+|---|---|
+| **Altura** — texto longo, linhas não cabem empilhadas | corpo desce livremente até `minSize`, como sempre (a carta depende disso) |
+| **Palavra longa** — texto cabe em altura, mas uma palavra sozinha é mais larga que a área | corpo desce só até **60 % do tamanho natural** do bloco; se ainda não couber, `fits: false` com a palavra em `palavraLonga` |
+
+"Tamanho natural" é o primeiro corpo em que a altura cabe — **não** o `maxSize` do bloco. A
+diferença importa: um texto que já cai a 50 % por altura e cabe nesse 50 % não deve ser bloqueado
+por um piso calculado sobre um corpo que ele nunca usaria. Foi a interpretação apresentada e
+aprovada antes de codar.
+
+**Como o motor sabe qual palavra estourou:** com quebra só por espaço, qualquer linha mais larga
+que a área é, por construção, uma palavra só. `fitFontSize` guarda a linha mais larga do último
+tamanho testado e a devolve. `renderCanvas` passa `palavraLonga` adiante; `previewPanel` grava no
+estado ao lado de `fits`.
+
+**Poka-Yoke nos quatro pontos** que já bloqueavam por `fits` (banner da prévia, hint do Continuar
+em Texto, alerta em Prévia, alerta em Download): a mensagem passa a nomear o termo — *"A palavra
+'X' é muito longa para este formato. Reduza o texto ou escolha outro modelo."* — montada uma vez
+em `motivoNaoCoube()` (`common.js`) para que a pessoa leia a mesma coisa em qualquer tela. Quando
+o estouro é de altura, o texto antigo continua.
+
+**Testes (Playwright):** direto no `renderCanvas` — palavra média cabe encolhendo, gigante bloqueia
+nomeada inteira, carta de 14 frases continua cabendo por altura, carta + palavra de 138
+caracteres bloqueia, estouro de altura puro reporta sem palavra, A&B com prato real e com ES cabe.
+Na interface: Acqua Park e Hospitalidade com os quatro pontos de bloqueio e a liberação ao
+corrigir. Um detalhe que o teste ensinou: em A4 a 300 DPI (~1870 px úteis) uma palavra de 46
+letras em Satisfy **cabe** — só bloqueia acima de ~100 caracteres. O piso está fazendo o que deve.
+
+---
+
+### 3.14 Biblioteca de pratos: 406 → 424 entradas
+
+Arquivo novo (`biblioteca_pratos_bebidas_loucas_pratagy_pt_es_att1.docx`), copiado por cima de
+`assets/docx/biblioteca_ab.docx` e da duplicata da raiz, mantendo os nomes.
+
+**Estrutura mudou** — e de um jeito diferente do descrito no pedido, o que foi reportado antes de
+adaptar: as categorias são parágrafos comuns (`1. Carnes, aves…`), **não** Heading, então o mammoth
+emite `<p>`; as tabelas de pratos têm **três** colunas (`#`, PT, ES), não duas; e há uma tabela de
+resumo no início (`#`, Categoria, Total) sem pratos. O parser anda o documento em ordem, usa o
+último título `N. …` visto como categoria da tabela seguinte e ignora tabelas cujo cabeçalho não
+tem "Nome em Português". A coluna "Origem/status" não existe mais: o selo "sugestão" do
+autocomplete virou código morto e foi removido.
+
+**Diferença, medida direto no XML antes de trocar (relatório aprovado):**
+
+- 406 → 423 linhas; 389 em comum, 32 adicionadas, 17 removidas, 31 traduções alteradas
+- 14 → 12 categorias: `Pratos principais – proteínas` fundiu em `Carnes, aves, peixes e frutos do
+  mar`; `Petiscos e caldos` fundiu em `Petiscos, lanches e ações rápidas`
+- 2 pratos repetidos no arquivo (`Caldo de camarão`, `Cachorro-quente`) → **deduplicação por PT
+  normalizado, primeira ocorrência fica** → 421 únicas
+- **3 itens ORIGINAL dos cardápios de 2025** haviam saído (Filé de peixe, Coxinha frita, Costelinha
+  ao barbecue) → **mesclados de volta** com a tradução da versão anterior, em `LEGADOS` no módulo,
+  com `origem: 'legado'` → **424**
+- Traduções migraram do espanhol da Espanha para o rio-platense (`patata`→`papa`,
+  `empanizado`→`rebozado`, `Palomitas`→`Pochoclo`, `cacahuete`→`Maní`…). Todas aceitas.
+
+> **Acentuação em espanhol: mantida de propósito.** O relatório apontou "Pure de papas" e "Pernil
+> suino" sem acento. Caixa e um ponto final solto foram corrigidos no documento; **os acentos não**
+> — a tradutora do resort validou os termos assim. Sessões futuras: não "corrigir".
+
+**Busca da biblioteca ganhou multi-termo.** Era substring simples, e "costelinha barbecue" (sem o
+"ao") não achava "Costelinha ao barbecue". Agora cada palavra digitada precisa aparecer no item, em
+qualquer ordem — a mesma regra do catálogo. Para um termo só, o comportamento é idêntico.
+
+**Cache:** `DOCX_VERSION_TAG` `biblioteca_ab-v1` → `v2`. Na primeira visita o app descarta o
+IndexedDB antigo e reprocessa; confirmado no teste (`meta.docxVersion = biblioteca_ab-v2`,
+424 registros no store).
+
+**Contagens (mesmo `searchLibrary` do app, sem limite):** camarão 15 — o relatório dizia 16
+porque contava a linha duplicada de "Caldo de camarão" —, pizza 9, tapioca 1, empanado 3; "filé de
+peixe" 4, "coxinha frita" 1, "costelinha barbecue" 2 (o legado **e** um "Costelinha barbecue" novo
+do arquivo — o legado pode ser aposentado quando a cozinha confirmar). O autocomplete mostra no
+máximo 8.
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:
@@ -499,6 +588,7 @@ assets/
 - **35 artes prontas** no catálogo — 22 operacionais, 8 de hospitalidade, 5 de A&B
 - **35 miniaturas** geradas (~1,4 MB)
 - **4 módulos**, 20 arquivos JavaScript
+- **424 pratos** na biblioteca A&B (12 categorias; 3 legados dos cardápios de 2025)
 
 ### Commits desta fase
 
@@ -545,7 +635,7 @@ limpar**:
 
 - `localStorage` e `sessionStorage` não são usados em lugar nenhum do código
 - O único IndexedDB é o banco `pratagy-placas`, que guarda a biblioteca de pratos e é versionado
-  pela própria tag `biblioteca_ab-v1` — não tem relação com o ID do setor
+  pela própria tag `biblioteca_ab-v*` — não tem relação com o ID do setor
 - O estado da aplicação é em memória e zera a cada reload
 
 O que pode ficar defasado é o **cache HTTP** dos PNGs em `/assets/catalogo/institucional/`, e isso
@@ -553,6 +643,11 @@ o JavaScript não consegue limpar (não há Service Worker nem Cache API no proj
 simplesmente param de ser pedidas. Uma rotina versionada rodaria, não acharia nada e gravaria a
 flag: código defensivo que vira bug latente. **Decisão: não implementar.** Se um dia o app passar a
 persistir algo indexado por setor, este parágrafo é o lembrete de que a migração vira necessária.
+
+**Legados da biblioteca.** `Filé de peixe`, `Coxinha frita` e `Costelinha ao barbecue` estão em
+`LEGADOS` (`docxLibrary.js`) porque saíram do `.docx` novo sem confirmação da cozinha. O arquivo
+novo já traz um "Costelinha barbecue" quase igual. Quando a cozinha bater o martelo, apague da
+lista os que saíram do cardápio e suba a `DOCX_VERSION_TAG`.
 
 **Material de impressão não confirmado.** Os 35 itens carregam `PVC Adesivado` como padrão
 sugerido e `materialConfirmado: false`. Quando o Marketing confirmar o material de um item,

@@ -34,7 +34,9 @@ function updateContinueState(container) {
         ? 'Escreva o texto do comunicado para continuar.'
         : 'Digite o texto da arte para continuar.'
       : !state.fits
-      ? 'Reduza o texto: ele não cabe na área segura (veja o alerta na prévia).'
+      ? state.palavraLonga
+        ? `A palavra “${state.palavraLonga}” é muito longa para este formato. Reduza o texto ou escolha outro modelo.`
+        : 'Reduza o texto: ele não cabe na área segura (veja o alerta na prévia).'
       : '';
   }
 }
@@ -104,14 +106,7 @@ function renderAutocompleteResults(entries) {
           <span class="block text-sm font-bold text-brand-deep">${escapeHtml(e.pt)}</span>
           <span class="block text-xs text-slate-500">${escapeHtml(e.es)}</span>
         </span>
-        <span class="flex shrink-0 flex-col items-end gap-1">
-          <span class="text-[10px] text-slate-400">${escapeHtml(e.categoria)}</span>
-          ${
-            e.status === 'SUGESTAO'
-              ? '<span class="rounded bg-status-yellow/30 px-1.5 py-0.5 text-[10px] font-bold text-status-amber">sugestão</span>'
-              : ''
-          }
-        </span>
+        <span class="shrink-0 text-[10px] text-slate-400">${escapeHtml(e.categoria)}</span>
       </button>
     `
     )

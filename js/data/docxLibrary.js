@@ -1,10 +1,31 @@
 // Carrega a biblioteca de pratos (PT/ES) do arquivo .docx local usando mammoth,
 // com cache em IndexedDB (via idb) para evitar reprocessar o arquivo a cada visita.
+//
+// FORMATO DO .DOCX (versão de setembro/2026)
+// O documento é um glossário por seções: cada categoria é um parágrafo comum
+// ("1. Carnes, aves, peixes e frutos do mar" — sem estilo de título, então o
+// mammoth emite <p>, não <h1>) seguido de uma tabela de três colunas
+// (# | Nome em Português | Tradução em Espanhol). Antes delas há uma tabela de
+// resumo (# | Categoria | Total) que não contém pratos e é ignorada pelo
+// cabeçalho. A versão anterior era uma tabela única com a categoria repetida
+// em cada linha e uma coluna de origem (original/sugestão) que não existe mais.
+//
+// Sempre que o arquivo mudar, DOCX_VERSION_TAG precisa mudar junto: é ela que
+// invalida o cache no navegador de cada pessoa da equipe.
 
 import { normalizeSearch } from '../utils.js';
 
 const DOCX_PATH = 'assets/docx/biblioteca_ab.docx';
-const DOCX_VERSION_TAG = 'biblioteca_ab-v1';
+const DOCX_VERSION_TAG = 'biblioteca_ab-v2';
+
+// Itens que vinham dos cardápios oficiais e saíram na revisão de setembro/2026.
+// Mesclados de volta com a tradução anterior, marcados como `legado` para que
+// seja possível encontrá-los e removê-los de uma vez quando a cozinha confirmar.
+const LEGADOS = [
+  { categoria: 'Carnes, aves, peixes e frutos do mar', pt: 'Filé de peixe', es: 'Filete de pescado' },
+  { categoria: 'Petiscos, lanches e ações rápidas', pt: 'Coxinha frita', es: 'Croqueta de pollo frita' },
+  { categoria: 'Petiscos, lanches e ações rápidas', pt: 'Costelinha ao barbecue', es: 'Costillitas de cerdo a la barbacoa' },
+];
 const DB_NAME = 'pratagy-placas';
 const DB_VERSION = 1;
 const STORE_ITEMS = 'biblioteca_ab';
@@ -57,33 +78,62 @@ async function saveToCache(entries) {
   }
 }
 
+const texto = (el) => el.textContent.replace(/\s+/g, ' ').trim();
+
+// "3. Ações e estações gastronômicas" -> "Ações e estações gastronômicas"
+const TITULO_CATEGORIA = /^\d+\.\s+(.+)$/;
+
+function montarEntrada({ categoria, pt, es, origem }, indice) {
+  return {
+    id: `ab-${indice}`,
+    categoria,
+    pt,
+    es,
+    origem,
+    searchKey: normalizeSearch(`${pt} ${es}`),
+  };
+}
+
 function extractEntriesFromHtml(html) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const tables = [...doc.querySelectorAll('table')];
-  // A tabela principal é a maior (406 pratos); a primeira é apenas um guia de campos.
-  const mainTable = tables.sort((a, b) => b.rows.length - a.rows.length)[0];
-  if (!mainTable) return [];
+  const brutas = [];
+  let categoria = 'Outros';
 
-  const rows = [...mainTable.querySelectorAll('tr')].slice(1); // pula cabeçalho
-  const entries = [];
-  rows.forEach((tr, i) => {
-    const cells = [...tr.querySelectorAll('td')].map((td) =>
-      td.textContent.replace(/\s+/g, ' ').trim()
-    );
-    if (cells.length < 2) return;
-    const [categoria, pt, es, origemRaw] = cells;
-    if (!pt) return;
-    const status = /SUGEST/i.test(origemRaw || '') ? 'SUGESTAO' : 'ORIGINAL';
-    entries.push({
-      id: `ab-${i}`,
-      categoria: categoria || 'Outros',
-      pt,
-      es: es || '',
-      status,
-      searchKey: normalizeSearch(`${pt} ${es}`),
-    });
-  });
-  return entries;
+  // Anda o documento em ordem: o último título de seção visto antes de cada
+  // tabela é a categoria dos pratos daquela tabela.
+  for (const el of doc.body.children) {
+    // Parágrafo comum hoje; título de verdade (h1–h6) se alguém formatar assim
+    // numa próxima revisão do documento.
+    if (/^(P|H[1-6])$/.test(el.tagName)) {
+      const m = texto(el).match(TITULO_CATEGORIA);
+      if (m) categoria = m[1];
+      continue;
+    }
+    if (el.tagName !== 'TABLE') continue;
+
+    const linhas = [...el.querySelectorAll('tr')];
+    const cabecalho = linhas.length ? texto(linhas[0]) : '';
+    // A tabela de resumo do início não tem essa coluna: só as de pratos têm.
+    if (!/Nome em Portugu/i.test(cabecalho)) continue;
+
+    for (const tr of linhas.slice(1)) {
+      const [, pt, es] = [...tr.querySelectorAll('td')].map(texto);
+      if (pt) brutas.push({ categoria, pt, es: es || '', origem: 'docx' });
+    }
+  }
+
+  // O documento repete alguns pratos (ex.: "Cachorro-quente" em duas seções).
+  // Dois resultados idênticos na busca só confundem; fica a primeira ocorrência.
+  const vistos = new Set();
+  const unicas = [];
+  for (const entrada of [...brutas, ...LEGADOS.map((l) => ({ ...l, origem: 'legado' }))]) {
+    const chave = normalizeSearch(entrada.pt);
+    if (vistos.has(chave)) continue;
+    vistos.add(chave);
+    unicas.push(entrada);
+  }
+
+  return unicas.map(montarEntrada);
 }
 
 async function parseDocx() {
@@ -152,18 +202,21 @@ export function getLoadedLibrary() {
 /**
  * Busca itens da biblioteca ignorando acentos/maiúsculas, priorizando
  * correspondências no início do nome.
+ *
+ * Cada palavra digitada precisa aparecer no item, em qualquer ordem — a mesma
+ * regra do catálogo de artes prontas. "costelinha barbecue" encontra
+ * "Costelinha ao barbecue"; uma busca por frase exata não encontraria.
  */
 export function searchLibrary(entries, query, limit = 8) {
   const q = normalizeSearch(query);
   if (!q) return [];
+  const termos = q.split(' ');
   const starts = [];
   const contains = [];
   for (const entry of entries) {
-    if (entry.searchKey.startsWith(q)) {
-      starts.push(entry);
-    } else if (entry.searchKey.includes(q)) {
-      contains.push(entry);
-    }
+    if (!termos.every((t) => entry.searchKey.includes(t))) continue;
+    if (entry.searchKey.startsWith(q)) starts.push(entry);
+    else contains.push(entry);
   }
   return [...starts, ...contains].slice(0, limit);
 }

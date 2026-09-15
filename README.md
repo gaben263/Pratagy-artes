@@ -119,4 +119,8 @@ no Git, mas ficam fora do deploy (`.vercelignore`) — o site consome só o que 
 
 ## Atualizando a biblioteca de pratos (A&B)
 
-Substitua o arquivo em `assets/docx/biblioteca_ab.docx` (mesma estrutura de tabela: Categoria, Nome em português, Tradução em espanhol, Origem/status). Na primeira visita após a troca, mude a constante `DOCX_VERSION_TAG` em `js/data/docxLibrary.js` para forçar o app a reprocessar o arquivo em vez de usar o cache antigo do navegador.
+Substitua o arquivo em `assets/docx/biblioteca_ab.docx` mantendo a estrutura atual: cada categoria é um parágrafo `N. Nome da categoria` seguido de uma tabela de três colunas (`#`, `Nome em Português`, `Tradução em Espanhol`). Tabelas sem a coluna "Nome em Português" no cabeçalho são ignoradas. Pratos repetidos ficam com a primeira ocorrência. Depois da troca, mude a constante `DOCX_VERSION_TAG` em `js/data/docxLibrary.js` (`v2` → `v3`…) para forçar o app a reprocessar o arquivo em vez de usar o cache antigo do navegador.
+
+Os três itens em `LEGADOS` no mesmo módulo vieram dos cardápios oficiais de 2025 e não estão no `.docx` — quando a cozinha confirmar que saíram do cardápio, basta apagá-los da lista.
+
+**Acentuação em espanhol:** os termos foram validados pela tradutora do resort e devem ser usados como estão no arquivo (ex.: "Pure de papas", "Pernil suino"). Não "corrija" acentos no código nem no documento sem passar por ela.
