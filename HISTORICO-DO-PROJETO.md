@@ -33,7 +33,7 @@ São quatro módulos:
 | Módulo | O que faz |
 |---|---|
 | **Alimentos & Bebidas** | Gera a identificação de pratos a partir da biblioteca oficial (`.docx`), com tradução em espanhol — ou baixa uma das 5 artes prontas |
-| **Operacional** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar |
+| **Manutenção** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar |
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) + gerador da carta de boas-vindas manuscrita |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 
@@ -313,6 +313,9 @@ Cuidados aplicados:
 
 ### 3.11 Reorganização do catálogo em três categorias
 
+> **Nomenclatura revista na 3.15.** O setor voltou a se chamar "Manutenção" (ID `manutencao`).
+> A divisão do catálogo e tudo o mais desta seção continuam valendo.
+
 Os 27 itens que estavam em `institucional` foram divididos: **5 para A&B**, **22 para Operacional**.
 O setor "Institucionais Gerais" virou **"Operacional"** e o A&B passou a oferecer os dois caminhos.
 
@@ -500,6 +503,48 @@ máximo 8.
 
 ---
 
+### 3.15 "Operacional" volta a ser "Manutenção"
+
+Terceiro nome do mesmo setor: "Manutenção" (original, ID `manutencao`) → "Institucionais Gerais"
+(3.7, ID mantido) → "Operacional" (3.11, ID `operacional`) → **"Manutenção"** (agora, ID
+`manutencao`).
+
+**A decisão da 3.11 foi revista.** Lá o argumento era que "Operacional" descrevia melhor um
+catálogo que tinha crescido além da manutenção predial. O que pesou agora é outro critério, que o
+projeto sempre colocou na frente: **o nome que a equipe usa no dia a dia**. Ninguém no resort
+procura "arte operacional"; procura "a placa da manutenção". Não é indecisão — é a interface
+seguindo o vocabulário de quem a usa.
+
+**O que mudou**
+
+| Onde | Antes | Agora |
+|---|---|---|
+| Interface (card, catálogo, selo do modal, meta description) | Operacional / `OPER` | **Manutenção** / `MANUT` |
+| ID do setor, categoria do catálogo, ícone, descrição, placeholder | `operacional` | `manutencao` |
+| `assets/catalogo/operacional/` (22 PNG) e `thumbs/operacional/` (22 JPG) | — | `…/manutencao/` |
+| Pasta de trabalho na raiz (22 originais) + `.vercelignore` | `Operacional/` | `Manutencao/` |
+
+Regra mantida: **interface com acento, código em ASCII** (`manutencao`), como todos os caminhos de
+`assets/catalogo/` desde a 3.7. Os 66 arquivos foram movidos com `git mv` e o Git os registra
+como rename (`R`), não como remoção + adição — o histórico de cada PNG continua acessível.
+
+**Por que é seguro:** a 3.11 já verificou que nenhum cache é indexado por ID de setor —
+`localStorage`/`sessionStorage` não são usados e o único IndexedDB é a biblioteca de pratos,
+versionada pela própria tag. O estado é em memória e zera a cada reload. Renomear o ID é uma
+troca de string, sem migração.
+
+**Sobre o `tipo: 'manutencao'` do motor de Canvas:** continua sendo outro namespace (o
+renderizador de texto livre, hoje sem setor que o use). O ID do setor voltou a coincidir com ele
+por acaso histórico, não por dependência — os dois já coincidiam antes da 3.11.
+
+**Verificação:** `grep -ri operacional` em código, HTML, config e README devolve zero (as menções
+que restam estão só neste histórico, onde pertencem); `node --check` nos 5 módulos; Playwright com
+62 verificações — os 4 setores abrindo, "Manutenção" com ç e ã no card, no catálogo e no selo,
+22 cards com as 22 miniaturas carregadas de `thumbs/manutencao/`, busca ("poço" → 2, "tapioca" →
+0), PNG e PDF, e o fluxo completo de A&B, Hospitalidade e Acqua Park sem regressão.
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:
@@ -576,7 +621,7 @@ js/
 
 assets/
   images/{ab,governanca,acquapark}/       Modelos do gerador
-  catalogo/{ab,operacional,hospitalidade}/ Artes prontas (300 DPI)
+  catalogo/{ab,manutencao,hospitalidade}/ Artes prontas (300 DPI)
   catalogo/thumbs/                        Miniaturas
   fonts/                                  Fibra One e Satisfy
   logo/                                   Logo do cabeçalho
@@ -622,7 +667,7 @@ biblioteca, as imagens dos modelos) quando a página é aberta como `file://`.
 
 ## 8. Em aberto
 
-**Duplicação de 27 MB no repositório.** As pastas de trabalho `Operacional/`, `A&B/Artes Prontas/`,
+**Duplicação de 27 MB no repositório.** As pastas de trabalho `Manutencao/`, `A&B/Artes Prontas/`,
 `Hospitalidade/` e `AcquaPark/` estão versionadas, e as cópias em `assets/` são byte a byte idênticas. Diferente
 das pastas de PSD, aqui não há valor extra nos originais além do nome do arquivo — que o campo
 `arquivoOriginal` já registra. Removê-las do Git com `git rm -r --cached` economizaria o espaço

@@ -6,7 +6,7 @@ import { confirmModal } from '../common.js';
 
 const DESCRICOES = {
   ab: 'Identificação de pratos do buffet e artes prontas de alimentos e bebidas.',
-  operacional: 'Avisos e sinalizações do resort, já aprovados e prontos para imprimir.',
+  manutencao: 'Avisos e sinalizações do resort, já aprovados e prontos para imprimir.',
   governanca: 'Cartões de hóspede, check-out e a carta de boas-vindas personalizável.',
   acquapark: 'Comunicados do parque aquático para WhatsApp e murais.',
 };

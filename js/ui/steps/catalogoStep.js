@@ -1,6 +1,6 @@
 // Catálogo de artes prontas.
 //
-// Cada setor mostra uma única categoria — Operacional mostra as operacionais,
+// Cada setor mostra uma única categoria — Manutenção mostra as de manutenção,
 // Hospitalidade as de hospitalidade, A&B as de alimentos e bebidas —, então não
 // há filtro de categoria na tela: o próprio setor já é o filtro.
 //
@@ -30,7 +30,7 @@ let termo = '';
 const PLACEHOLDER_BUSCA = {
   ab: 'Ex: tapioca, vegano, sem glúten, sorvete…',
   hospitalidade: 'Ex: cartão VIP, check-out, aniversariante…',
-  operacional: 'Ex: proibido fumar, poço, academia, luvas…',
+  manutencao: 'Ex: proibido fumar, poço, academia, luvas…',
 };
 
 // ------------------------------------------------------------------ Cartões
@@ -317,7 +317,7 @@ export function renderCatalogoStep(container) {
             ${icon('search', { size: 19 })}
           </span>
           <input type="search" data-busca value="${escapeHtml(termo)}"
-            placeholder="${PLACEHOLDER_BUSCA[categoria] || PLACEHOLDER_BUSCA.operacional}"
+            placeholder="${PLACEHOLDER_BUSCA[categoria] || PLACEHOLDER_BUSCA.manutencao}"
             class="w-full rounded-xl border-2 border-slate-200 py-3 pl-11 pr-3 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
         </div>
         <p data-contador class="text-xs font-semibold text-slate-400"></p>

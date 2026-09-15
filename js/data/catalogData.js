@@ -4,7 +4,7 @@
 // renderização em Canvas aqui, o usuário só busca, confere e baixa.
 //
 // ORIGEM DOS DADOS
-// Os arquivos vieram das pastas de trabalho `Operacional/`, `A&B/Artes Prontas/` e
+// Os arquivos vieram das pastas de trabalho `Manutencao/`, `A&B/Artes Prontas/` e
 // `Hospitalidade/`.
 // Como aqueles nomes têm acentos, espaços duplos e um caractere de acento agudo
 // solto ("d´água") — que quebram URL em host estático —, as cópias publicadas em
@@ -33,7 +33,7 @@ export const MATERIAL_PADRAO = 'PVC Adesivado';
 export const FORMATO_PADRAO = 'PDF';
 
 export const CATEGORIAS = {
-  operacional: { id: 'operacional', nome: 'Operacional', cor: '#E95029' },
+  manutencao: { id: 'manutencao', nome: 'Manutenção', cor: '#E95029' },
   ab: { id: 'ab', nome: 'A&B', cor: '#008BCE' },
   hospitalidade: { id: 'hospitalidade', nome: 'Hospitalidade', cor: '#8FB82A' },
 };
@@ -41,10 +41,10 @@ export const CATEGORIAS = {
 // Lista bruta: só os campos que variam de item para item. Os padrões de
 // material/formato são aplicados logo abaixo, para não repetir 35 vezes.
 const ITENS = [
-  // ------------------------------------------------------ Operacional e A&B
+  // ------------------------------------------------------- Manutenção e A&B
   {
     id: 'acesso-restrito',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Acesso Restrito',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -54,7 +54,7 @@ const ITENS = [
   },
   {
     id: 'adm-manutencao',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'ADM Manutenção',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -64,7 +64,7 @@ const ITENS = [
   },
   {
     id: 'atividades-nauticas',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Atividades Náuticas',
     size: '59×84 cm',
     largura: 1269,
@@ -94,7 +94,7 @@ const ITENS = [
   },
   {
     id: 'disjuntores-risco-de-descarga-eletrica',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Disjuntores — Risco de Descarga Elétrica',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -104,7 +104,7 @@ const ITENS = [
   },
   {
     id: 'estamos-em-manutencao',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Estamos em Manutenção',
     size: '29,7×21 cm',
     largura: 3508,
@@ -114,7 +114,7 @@ const ITENS = [
   },
   {
     id: 'expressamente-proibido-fumar',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Expressamente Proibido Fumar',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -124,7 +124,7 @@ const ITENS = [
   },
   {
     id: 'giro-rapido-manutencao',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Giro Rápido — Manutenção',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -134,7 +134,7 @@ const ITENS = [
   },
   {
     id: 'luvas-descartaveis',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Luvas Descartáveis',
     size: 'A4 Vertical',
     largura: 2563,
@@ -144,7 +144,7 @@ const ITENS = [
   },
   {
     id: 'manter-o-portao-fechado',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Por Favor, Manter o Portão Fechado',
     size: 'A3 Horizontal',
     largura: 4961,
@@ -154,7 +154,7 @@ const ITENS = [
   },
   {
     id: 'nao-alimente-os-animais',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Não Alimente os Animais',
     size: 'A4 Vertical',
     largura: 2480,
@@ -164,7 +164,7 @@ const ITENS = [
   },
   {
     id: 'proibido-caixas-de-som',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Proibido Caixas de Som',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -174,7 +174,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-casa-de-maquinas-ete',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Proibido Entrada — Casa de Máquinas ETE',
     size: 'A4 Vertical',
     largura: 2480,
@@ -184,7 +184,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-casa-de-maquinas-piscina',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Proibido Entrada — Casa de Máquinas da Piscina',
     size: 'A4 Vertical',
     largura: 2480,
@@ -194,7 +194,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-poco-01',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Proibido Entrada — Poço 01',
     size: 'A4 Vertical',
     largura: 2480,
@@ -204,7 +204,7 @@ const ITENS = [
   },
   {
     id: 'proibido-entrada-poco-02',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Proibido Entrada — Poço 02',
     size: 'A4 Vertical',
     largura: 2480,
@@ -214,7 +214,7 @@ const ITENS = [
   },
   {
     id: 'quadro-bomba-ete',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Quadro Bomba ETE',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -224,7 +224,7 @@ const ITENS = [
   },
   {
     id: 'regulamento-academia',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Regulamento da Academia',
     size: '60×120 cm',
     largura: 7087,
@@ -234,7 +234,7 @@ const ITENS = [
   },
   {
     id: 'reservatorio-caixa-dagua-ete',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: "Reservatório — Caixa d'Água ETE",
     size: 'A4 Horizontal',
     largura: 3508,
@@ -244,7 +244,7 @@ const ITENS = [
   },
   {
     id: 'reservatorio-de-cloro',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Reservatório de Cloro',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -254,7 +254,7 @@ const ITENS = [
   },
   {
     id: 'reservatorio-de-lodo',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Reservatório de Lodo',
     size: 'A4 Horizontal',
     largura: 3508,
@@ -274,7 +274,7 @@ const ITENS = [
   },
   {
     id: 'tinta-fresca',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Tinta Fresca',
     size: '29,7×21 cm',
     largura: 3508,
@@ -376,7 +376,7 @@ const ITENS = [
   },
   {
     id: 'proibido-fumar-florestal',
-    categoria: 'operacional',
+    categoria: 'manutencao',
     titulo: 'Proibido Fumar — Florestal',
     size: '21×29 cm',
     largura: 2532,

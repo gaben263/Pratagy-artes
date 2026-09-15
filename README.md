@@ -5,7 +5,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Quatro módulos:
 | Módulo | O que faz |
 |---|---|
 | **Alimentos & Bebidas** | Dois caminhos: gera a identificação de pratos a partir da biblioteca oficial (.docx), com tradução em espanhol, ou baixa uma das 5 artes prontas |
-| **Operacional** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar. Só consulta — não gera arte |
+| **Manutenção** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar. Só consulta — não gera arte |
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) mais o gerador da carta de boas-vindas manuscrita em A4 |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 
@@ -59,7 +59,7 @@ js/
     stepper.js, common.js, icons.js
 assets/
   images/{ab,governanca,acquapark}/             modelos oficiais do gerador (PNG)
-  catalogo/{ab,operacional,hospitalidade}/      artes prontas do catálogo (PNG, 300 DPI)
+  catalogo/{ab,manutencao,hospitalidade}/       artes prontas do catálogo (PNG, 300 DPI)
   catalogo/thumbs/                              miniaturas das artes prontas (JPG)
   fonts/                                        Fibra One (.otf) e Satisfy (.ttf)
   logo/                                         logo do cabeçalho (não aparece nas artes)
@@ -98,7 +98,7 @@ material de impressão) vivem em `js/data/catalogData.js`.
 
 Para adicionar uma arte:
 
-1. Copie o PNG para `assets/catalogo/ab/`, `.../operacional/` ou `.../hospitalidade/` com um
+1. Copie o PNG para `assets/catalogo/ab/`, `.../manutencao/` ou `.../hospitalidade/` com um
    **nome em ASCII, sem espaço nem acento** — os nomes originais das pastas de trabalho
    têm acento, espaço duplo e um acento agudo solto (`d´água`), que quebram a URL em
    host estático.
@@ -114,7 +114,7 @@ confirmar o material de um item, ajuste o valor e marque `materialConfirmado: tr
 Para mover uma arte de categoria, troque o campo `categoria` no `catalogData.js` e mova o PNG e a
 miniatura para a pasta correspondente — os caminhos são derivados de `categoria` + `id`.
 
-As pastas de trabalho `Operacional/`, `A&B/Artes Prontas/`, `Hospitalidade/` e `AcquaPark/` continuam versionadas
+As pastas de trabalho `Manutencao/`, `A&B/Artes Prontas/`, `Hospitalidade/` e `AcquaPark/` continuam versionadas
 no Git, mas ficam fora do deploy (`.vercelignore`) — o site consome só o que está em `assets/`.
 
 ## Atualizando a biblioteca de pratos (A&B)

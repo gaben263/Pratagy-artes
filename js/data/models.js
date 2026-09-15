@@ -5,11 +5,11 @@
 // assets/images/governanca/ e o `tipo` do motor de Canvas, e renomeá-lo quebraria
 // esses caminhos sem ganho nenhum. O usuário lê "Hospitalidade".
 //
-// A chave `manutencao` FOI renomeada para `operacional` — o que só ficou seguro
-// depois que os modelos editáveis A3/A4 saíram e a pasta assets/images/manutencao/
-// deixou de existir. Com isso o ID não indexa mais nenhum caminho de asset.
-// Atenção: o `tipo: 'manutencao'` do motor de Canvas é OUTRO namespace (o
-// renderizador de texto livre) e segue com o nome antigo de propósito.
+// `manutencao` é o ID do setor "Manutenção". O nome de interface mudou três
+// vezes e o ID acompanhou a última (HISTORICO 3.7, 3.11 e 3.15). Nenhum cache é
+// indexado por ID de setor (verificado na 3.11), então renomear é seguro. Atenção: o `tipo: 'manutencao'` do motor de Canvas é OUTRO
+// namespace (o renderizador de texto livre, hoje sem uso) — a coincidência de
+// nome é histórica, não uma dependência.
 //
 // FLUXO
 // `fluxo: 'gerador'` segue o passo a passo de Canvas (formato → modelo → texto →
@@ -106,19 +106,20 @@ export const SETORES = {
     ],
   },
 
-  // Era "Manutenção", depois "Institucionais Gerais", hoje "Operacional".
+  // Já teve outros dois nomes (HISTORICO 3.7 e 3.11) e voltou a "Manutenção":
+  // é o nome que a equipe usa no dia a dia.
   //
   // Não tem gerador: os modelos editáveis A3/A4 foram removidos junto com as
   // imagens-base. O setor é consulta e download de artes já aprovadas.
-  operacional: {
-    id: 'operacional',
-    nome: 'Operacional',
-    sigla: 'OPER',
+  manutencao: {
+    id: 'manutencao',
+    nome: 'Manutenção',
+    sigla: 'MANUT',
     corDestaque: '#E95029',
-    icone: 'operacional',
+    icone: 'manutencao',
     fluxo: 'catalogo',
-    categoriaCatalogo: 'operacional',
-    tituloCatalogo: 'Catálogo de artes operacionais',
+    categoriaCatalogo: 'manutencao',
+    tituloCatalogo: 'Catálogo de artes de Manutenção',
     permiteTraducao: false,
     titleCase: false,
     formatos: [],
