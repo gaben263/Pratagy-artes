@@ -141,7 +141,7 @@ const PISO_PALAVRA_LONGA = 0.6;
  *
  * @returns {{ size:number, lines:string[], lineHeight:number, fits:boolean, palavraLonga:string|null }}
  */
-function fitFontSize(
+export function fitFontSize(
   ctx,
   text,
   safeAreaPx,
@@ -184,7 +184,11 @@ function fitFontSize(
   return { size: minSize, lines, lineHeight, fits: false, palavraLonga: null };
 }
 
-function drawTextBlock(
+// Exportado (3.17) para o compositor do RH desenhar o texto do Atenção
+// centralizado na vertical com a mesma tipografia do comunicado. Os ramos de
+// `renderCanvas` abaixo não mudaram: cada um segue definindo o próprio
+// `verticalAlign`.
+export function drawTextBlock(
   ctx,
   {
     lines,

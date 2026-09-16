@@ -3,7 +3,7 @@ import { getFormato, getSetor } from '../data/models.js';
 import { renderCanvas, drawSafeAreaGuide, loadImage, ensureFontsReady } from '../canvas/engine.js';
 import { icon } from './icons.js';
 import { emptyState, motivoNaoCoube } from './common.js';
-import { modoDeEdicao, EDITORES_COM_CARDS } from '../rh/templates.js';
+import { modoDeEdicao, EDITORES_RH } from '../rh/templates.js';
 import { renderRH } from '../rh/render.js';
 
 const imageCache = new Map();
@@ -16,8 +16,6 @@ const TIPO_RENDER = {
   busca: 'ab',
   carta: 'governanca',
   comunicado: 'comunicado',
-  // Atenção (RH) é o mesmo bloco de texto do comunicado, em azul sobre o cartão.
-  atencao: 'comunicado',
   livre: 'manutencao',
 };
 
@@ -121,9 +119,10 @@ export async function updatePreview() {
 
     const setor = getSetor(state.setorId);
     const modo = modoDeEdicao(setor, formato);
-    // Peças com cards (RH) têm compositor próprio; todo o resto é o motor.
-    const resultado = EDITORES_COM_CARDS.has(modo)
-      ? renderRH(canvas, { image, formato, colaboradores: state.rh.colaboradores })
+    // As peças do RH têm compositor próprio (que usa o motor por baixo para o
+    // texto do Atenção); todo o resto é o motor direto.
+    const resultado = EDITORES_RH.has(modo)
+      ? renderRH(canvas, { image, formato, texto: state.texto, colaboradores: state.rh.colaboradores })
       : renderCanvas(canvas, {
           image,
           formato,

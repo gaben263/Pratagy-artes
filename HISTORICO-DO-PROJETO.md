@@ -617,13 +617,13 @@ colada na borda). Este ciclo internaliza três peças no sistema, todas 1080×14
 |---|---|---|
 | Atenção | Cartão branco / barra "ATENÇÃO" | x 97–983 · y 77–1252 / x 283–779 · y 187–269 (`#008BCE`) |
 | | Intrusões dos megafones no cartão | x ≤ 150 (y 405–555); x ≥ 754 (y ≥ 1131) |
-| | **Área segura** | **x 175–905 · y 301–1107** — livre 151–984 × 277–1131, espelhada no centro do cartão (540), 24 px de respiro |
+| | **Área segura** | **x 175–905 · y 367–1145** (refinada, ver abaixo) — largura: livre 151–984 espelhada no centro do cartão (540), 24 px de respiro |
 | Talento | Quadrado amarelo (cantos) | TL (290,429) · TR (730,368) · BR (790,843) · BL (346,895) |
 | | Foto / rotação / centro | **445×474 px, −7,89°, centro (540, 631,5)**; placeholder `#E1CC1B` |
 | | Moldura branca (`#E4E5E9`) | topo 45 · laterais 38–40 · **base 76** |
 | Aniversariantes | Título "DO DIA" | x 315–765 · y 273–371 |
 | | Limitadores | "INFO-313-REV.00" x 37–56; balão azul-claro x ≥ 942; balões de baixo y ≥ 1196; logo y ≥ 1326 |
-| | **Área útil dos cards** | **x 169–911 · y 402–1165** — livre 57–941 × 372–1195, espelhada no centro (540), 30 px de respiro |
+| | **Área útil dos cards** | **x 169–911 · y 411–1161** (refinada, ver abaixo) — largura: livre 57–941 espelhada no centro (540), 30 px de respiro |
 
 O Aniversariantes chegou primeiro em 1242×1754 (A4 a 150 DPI, apesar do nome do arquivo); a
 versão 1080×1440 foi salva em `_Sistema de Placas - EDIT/RH/` e copiada para `RH/`. As medições
@@ -684,6 +684,58 @@ sondados por pixel, nome absurdo bloqueando e nomeando, PNG/PDF, bloqueio no Dow
 longo; Aniversariantes com 1, 2, 4, 6 e 9 — **centros das fotos sondados por pixel em posições
 calculadas no teste**, independentes do código —, 15 → 9, nome absurdo em 1 de 4; reload limpo;
 regressão dos 4 setores, catálogos e lote. Suítes anteriores (v5, v6, v7) repetidas: 159 verdes.
+
+#### 3.17.1 Refinamentos visuais (segunda rodada)
+
+Depois da validação em produção, três ajustes — nenhum estrutural. Antes de codar, três premissas
+do pedido foram corrigidas com medição: "y 175–905" era o eixo **x**; os números 477/510/1395
+eram da versão 1242×1754 do Aniversariantes; e o Aniversariantes **não tem onda** — embaixo, o
+que limita são os balões (dourado da direita a partir de y 1202) e o logo (1326).
+
+**Atenção — área simétrica e texto centralizado.** Medições novas: topo da onda verde em
+**1243**; megafone inferior direito em x 754–983 · y 1131–1239, entrando na faixa de texto
+(x ≤ 905) em **y 1165**. Área nova **y 367–1145**: teto de baixo = megafone − 20; os 98 px que
+sobram até a onda são espelhados acima da barra (269 + 98). O problema real, porém, não era a
+área: o renderizador `comunicado` do motor **alinha o bloco ao topo** (é o desenho do Acqua Park,
+onde o texto continua o título impresso). Um comunicado curto ficava colado no topo com o vazio
+embaixo, e mover a área não muda isso. Solução aprovada: o compositor do RH desenha o texto com
+`fitFontSize` + `drawTextBlock` do motor — **mesma tipografia e limites do comunicado** (SemiBold,
+2,1–5,8 % da largura, entrelinha 1,38, piso de 60 % para palavra longa) — com
+`verticalAlign: 'middle'`. Para isso, `engine.js` ganhou **duas palavras `export`** e um
+comentário; nenhuma lógica mudou, e cada ramo interno segue definindo o próprio alinhamento (o
+teste confirma o comunicado do Acqua Park começando em y 482, no topo da área). A alternativa sem
+tocar o motor era o renderizador `manutencao`, já centrado, mas Heavy até 97 px — cartaz, não
+comunicado.
+
+**Talento — faixas com cantos de 8 px.** O raio era `min(altura/2, fonte×0,85)` (pílula). O
+template declara `raioFaixa: 8` e `desenharFaixa` aceita o raio por parâmetro; sem ele, continua
+pílula. Aniversariantes fica em pílula nas duas faixas (confirmado nas referências).
+
+**Aniversariantes — fotos maiores.** Pergunta respondida com medição: a área **já estava no
+limite físico** — com 40 px de respiro do título (371) e do balão (1202), o retângulo de largura
+total vai de **411 a 1161**, quase o que havia. O conservador era outra coisa: as fotos eram
+dimensionadas para o pior caso (nome em duas linhas em todas as linhas). Agora são dimensionadas
+para o caso comum e, quando um nome quebra e o bloco estoura, **só as fotos encolhem em passos**
+(`ESCALAS_FOTO` 1 → 0,92 → 0,85 → 0,78 → 0,7) até caber; os nomes ficam legíveis. Se nem a 0,7
+couber, bloqueia como antes.
+
+| Pessoas | Foto antes | Foto agora (nomes em 1 linha) | Nome em 2 linhas numa linha da grade | Em todas as linhas |
+|---|---|---|---|---|
+| 1 | 280 | **320** | 320 | 320 |
+| 2 | 280 | **320** | 320 | 320 |
+| 4 | 200 | **240** | 240* | 204 (0,85) |
+| 6 | 118 | **145** | 133 (0,92) | 113 (0,78) |
+| 9 | 118 | **145** | 133 (0,92) | 113 (0,78) |
+
+\* No layout de 4 a faixa vai até 320 px: nomes de duas palavras cabem em uma linha com a fonte
+reduzida (a regra reduz antes de quebrar); só nomes de três palavras quebram. Valores medidos por
+pixel no teste (corda vertical do círculo), não lidos do código.
+
+**Testes (Playwright, 22 verificações novas):** centro do bloco do Atenção medido pela caixa
+envolvente do texto (744–748 px para curto e longo, centro da área 756); Acqua Park ancorado ao
+topo; canto das faixas sondado a 1 e 3 px (raio 8: vazio/cheio; pílula: vazio/vazio); diâmetro
+das fotos para 1/2/4/6/9 e para os casos de duas linhas ("Alexssandro Davis", "Mayrla Leite");
+PNGs em 1080×1440. Suítes v5–v8 repetidas (v8 atualizada para a grade nova): 216 verdes.
 
 ---
 

@@ -146,10 +146,14 @@ function pilula(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/** Desenha a pílula centrada em (0, topo + altura/2). */
-export function desenharFaixa(ctx, ajuste, { topo, cores }) {
+/**
+ * Desenha a faixa centrada em (0, topo + altura/2). Sem `raio`, é pílula
+ * (Aniversariantes); com `raio` fixo, retângulo de cantos suaves (Talento).
+ */
+export function desenharFaixa(ctx, ajuste, { topo, cores, raio }) {
   const altura = alturaDaFaixa(ajuste);
-  const raio = Math.min(altura / 2, ajuste.px * 0.85);
+  if (raio === undefined) raio = Math.min(altura / 2, ajuste.px * 0.85);
+  raio = Math.min(raio, altura / 2);
   const x = -ajuste.largura / 2;
 
   ctx.save();

@@ -5,10 +5,10 @@
 // é centralizado na área — a arte tem o título e o logo no eixo, e um bloco
 // encostado no topo pareceria solto.
 //
-// As medidas por quantidade de linhas foram escolhidas para que, na pior
-// hipótese (todas as linhas com nome em duas linhas), o bloco ainda caiba na
-// área de 742×763 px. Se mesmo assim não couber (nomes enormes), o compositor
-// devolve `fits: false` e a exportação é bloqueada.
+// As medidas por quantidade de linhas são para o caso comum — nomes em uma
+// linha. Quando um nome quebra em duas e o bloco estoura a área (742×750 px),
+// o compositor reduz só as fotos em passos (`escala` 0,92 → 0,7) até caber;
+// os nomes continuam legíveis. Se nem a 0,7 couber, `fits: false`.
 
 export function colunasPara(n) {
   if (n <= 1) return 1;
@@ -16,19 +16,21 @@ export function colunasPara(n) {
   return 3;
 }
 
+export const ESCALAS_FOTO = [1, 0.92, 0.85, 0.78, 0.7];
+
 /** Medidas de cada card em função do número de linhas da grade. */
-export function medidasPorLinhas(linhas, larguraArea, colunas) {
+export function medidasPorLinhas(linhas, larguraArea, colunas, escala = 1) {
   const larguraCelula = larguraArea / colunas;
   const base =
     linhas <= 1
-      ? { fotoDiametro: 280, fonteNome: 40, fonteSetor: 30, gapFoto: 12, gapFaixas: 10, gapLinhas: 0 }
+      ? { fotoDiametro: 320, fonteNome: 40, fonteSetor: 30, gapFoto: 12, gapFaixas: 10, gapLinhas: 0 }
       : linhas === 2
-      ? { fotoDiametro: 200, fonteNome: 32, fonteSetor: 24, gapFoto: 10, gapFaixas: 8, gapLinhas: 24 }
-      : { fotoDiametro: 118, fonteNome: 26, fonteSetor: 20, gapFoto: 8, gapFaixas: 6, gapLinhas: 16 };
+      ? { fotoDiametro: 240, fonteNome: 32, fonteSetor: 24, gapFoto: 10, gapFaixas: 8, gapLinhas: 24 }
+      : { fotoDiametro: 145, fonteNome: 26, fonteSetor: 20, gapFoto: 8, gapFaixas: 6, gapLinhas: 16 };
   // Um card sozinho não precisa da largura toda: 420 px mantém a faixa
   // proporcional à foto.
   const larguraCard = Math.min(Math.round(larguraCelula) - 16, 420);
-  return { ...base, larguraCelula, larguraCard };
+  return { ...base, fotoDiametro: Math.round(base.fotoDiametro * escala), larguraCelula, larguraCard };
 }
 
 /**
@@ -39,11 +41,10 @@ export function medidasPorLinhas(linhas, larguraArea, colunas) {
  * @param {{x0,y0,x1,y1}} area
  * @returns {{ posicoes: {x:number,y:number}[], alturaBloco: number, colunas: number, linhas: number, medidas: object }}
  */
-export function distribuir(n, alturas, area) {
+export function distribuir(n, alturas, area, medidas) {
   const colunas = colunasPara(n);
   const linhas = Math.ceil(n / colunas);
   const larguraArea = area.x1 - area.x0;
-  const medidas = medidasPorLinhas(linhas, larguraArea, colunas);
 
   // Altura de cada linha = card mais alto dela.
   const alturaLinha = [];

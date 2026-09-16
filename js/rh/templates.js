@@ -6,9 +6,9 @@
 // motor não muda nada para servir ao RH.
 //
 // `editor` decide a tela de edição e o renderizador:
-//   'atencao'         → textarea + renderizador `comunicado` do motor (texto
-//                       alinhado ao topo, SemiBold, auto-shrink) — zero código
-//                       novo de render.
+//   'atencao'         → textarea existente + bloco de texto do motor
+//                       (`fitFontSize`/`drawTextBlock`, SemiBold, auto-shrink)
+//                       centralizado na vertical pelo compositor do RH.
 //   'talento'         → 1 colaborador (foto no polaroid + faixas giradas).
 //   'aniversariantes' → N colaboradores em grade (foto circular + faixas).
 
@@ -57,10 +57,13 @@ export const FORMATOS_RH = [
     editor: 'atencao',
     // Texto em azul da marca sobre o cartão branco.
     corCorpo: '#004F9F',
-    // Cartão branco x 97–983 · y 77–1252; barra "ATENÇÃO" até y 269; megafones
-    // invadem o cartão em x ≤ 150 (y 405–555) e x ≥ 754 (y ≥ 1131). Área livre
-    // 151–984 × 277–1131, espelhada no centro do cartão (540) com 24 px de respiro.
-    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 175, y0: 301, x1: 905, y1: 1107 }),
+    // Largura: megafones invadem o cartão (x 97–983) em x ≤ 150 e x ≥ 754 →
+    // livre 151–984, espelhado no centro (540) com 24 px de respiro = 175–905.
+    // Altura: simétrica entre o fim da barra "ATENÇÃO" (269) e o topo da onda
+    // verde (1243), com o teto de baixo dado pelo megafone inferior direito, que
+    // entra na faixa de texto em y 1165 → 1145; espelhando os 98 px, 367.
+    // O bloco é centralizado na vertical dentro desta área (ver render.js).
+    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 175, y0: 367, x1: 905, y1: 1145 }),
   },
   {
     ...BASE,
@@ -79,6 +82,9 @@ export const FORMATOS_RH = [
       anguloGraus: -7.89,
       moldura: { topo: 45, lados: 39, base: 76 },
     },
+    // Faixas com cantos suavemente arredondados (retângulo), não pílula: é o
+    // desenho da referência do Talento. Aniversariantes segue em pílula.
+    raioFaixa: 8,
     // A guia de "área segura" da prévia mostra a caixa envolvente do polaroid.
     safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 251, y0: 323, x1: 829, y1: 971 }),
   },
@@ -91,14 +97,17 @@ export const FORMATOS_RH = [
     editor: 'aniversariantes',
     maxColaboradores: 9,
     // Título "DO DIA" até y 371; "INFO-313-REV.00" em x 37–56; balão azul-claro
-    // a partir de x 942; balões de baixo a partir de y 1196. Área livre
-    // 57–941 × 372–1195, espelhada no centro (540) com 30 px de respiro.
-    areaCards: { x0: 169, y0: 402, x1: 911, y1: 1165 },
-    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 169, y0: 402, x1: 911, y1: 1165 }),
+    // a partir de x 942; na largura toda (169–911) o fundo é limpo até y 1201
+    // (balão dourado à direita). Largura espelhada no centro (540) com 30 px;
+    // altura com 40 px de respiro do título e do balão — é o limite físico.
+    areaCards: { x0: 169, y0: 411, x1: 911, y1: 1161 },
+    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 169, y0: 411, x1: 911, y1: 1161 }),
   },
 ];
 
 export const EDITORES_COM_CARDS = new Set(['talento', 'aniversariantes']);
+// Tudo que o compositor do RH renderiza (os cards e o texto do Atenção).
+export const EDITORES_RH = new Set(['atencao', 'talento', 'aniversariantes']);
 
 /** O modo de edição/render de um formato (RH) ou do setor (demais). */
 export function modoDeEdicao(setor, formato) {
