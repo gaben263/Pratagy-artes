@@ -9,6 +9,7 @@ const DESCRICOES = {
   manutencao: 'Avisos e sinalizações do resort, já aprovados e prontos para imprimir.',
   governanca: 'Cartões de hóspede, check-out e a carta de boas-vindas personalizável.',
   acquapark: 'Comunicados do parque aquático para WhatsApp e murais.',
+  rh: 'Comunicados internos, Talento do Mês e Aniversariantes do Dia com foto.',
 };
 
 /** Rodapé do cartão: o setor de catálogo conta artes prontas, os demais, formatos. */
@@ -52,6 +53,8 @@ async function handleSelect(setorId) {
     libraryEntryId: null,
     fits: true,
     palavraLonga: null,
+    avisoEncaixe: null,
+    rh: { colaboradores: [] },
     exported: false,
   });
 

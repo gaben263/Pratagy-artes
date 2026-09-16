@@ -36,6 +36,7 @@ São quatro módulos:
 | **Manutenção** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar |
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) + gerador da carta de boas-vindas manuscrita |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
+| **RH** | Atenção (comunicado só-texto), Talento do Mês (foto no polaroid) e Aniversariantes do Dia (1 a 9 colaboradores). Dados só em memória |
 
 ---
 
@@ -605,6 +606,87 @@ intactos. Os PDFs foram abertos e conferidos visualmente.
 
 ---
 
+### 3.17 Setor RH: Atenção, Talento do Mês e Aniversariantes do Dia
+
+O RH mandava modelos do Canva para o Marketing adaptar — e saía do padrão (fonte, cor, caixa
+colada na borda). Este ciclo internaliza três peças no sistema, todas 1080×1440 px.
+
+**Medições (pixel a pixel, via Canvas do Chromium — sem Pillow na máquina):**
+
+| Peça | Medida | Valor (px) |
+|---|---|---|
+| Atenção | Cartão branco / barra "ATENÇÃO" | x 97–983 · y 77–1252 / x 283–779 · y 187–269 (`#008BCE`) |
+| | Intrusões dos megafones no cartão | x ≤ 150 (y 405–555); x ≥ 754 (y ≥ 1131) |
+| | **Área segura** | **x 175–905 · y 301–1107** — livre 151–984 × 277–1131, espelhada no centro do cartão (540), 24 px de respiro |
+| Talento | Quadrado amarelo (cantos) | TL (290,429) · TR (730,368) · BR (790,843) · BL (346,895) |
+| | Foto / rotação / centro | **445×474 px, −7,89°, centro (540, 631,5)**; placeholder `#E1CC1B` |
+| | Moldura branca (`#E4E5E9`) | topo 45 · laterais 38–40 · **base 76** |
+| Aniversariantes | Título "DO DIA" | x 315–765 · y 273–371 |
+| | Limitadores | "INFO-313-REV.00" x 37–56; balão azul-claro x ≥ 942; balões de baixo y ≥ 1196; logo y ≥ 1326 |
+| | **Área útil dos cards** | **x 169–911 · y 402–1165** — livre 57–941 × 372–1195, espelhada no centro (540), 30 px de respiro |
+
+O Aniversariantes chegou primeiro em 1242×1754 (A4 a 150 DPI, apesar do nome do arquivo); a
+versão 1080×1440 foi salva em `_Sistema de Placas - EDIT/RH/` e copiada para `RH/`. As medições
+foram refeitas do zero — não escaladas.
+
+**Arquitetura (`js/rh/`, 6 módulos, nada no motor):**
+
+- `templates.js` — os 3 formatos do setor, com `editor` por formato (`'atencao' | 'talento' |
+  'aniversariantes'`). O motor lê área segura em mm; `safeAreaMmDePx` converte as medições —
+  **o motor não muda uma linha**. Cores das faixas: nome `#FDD945`/`#004F9F`, setor
+  `#004F9F`/branco (o amarelo é o "do Mês" da própria arte; o azul, o do título "Talento").
+- `cardRenderer.js` — foto (círculo ou quadrado girado; sem foto, placeholder `#004F9F` com
+  iniciais `#C0E5FB`), faixas em pílula, e a regra de crescimento aprovada: **cresce em largura
+  até 90 % do card → fonte reduz até 20 % → só o nome quebra em 2 linhas → senão, não coube**.
+  `janelaDaFoto` guarda o enquadramento em frações da imagem (zoom + centro), então o editor de
+  200 px e a arte de 445 px mostram exatamente o mesmo recorte.
+- `gridLayout.js` — 1 pessoa centralizada; 2 lado a lado; 3–6 em duas colunas; 7–9 em três;
+  linha incompleta centralizada; bloco centralizado na área. Medidas por número de linhas
+  (foto 280/200/118 px) escolhidas para o pior caso (nomes em 2 linhas em todas as linhas) ainda
+  caber. **Máximo: 9.**
+- `render.js` — compõe template + cards e devolve `{ fits, aviso }`, o mesmo contrato do motor.
+  Talento: foto recortada no quadrado girado com 6 px de sangria (cobre o anti-aliasing do
+  amarelo), faixas **giradas junto com o polaroid** e empilhadas de baixo para cima a partir da
+  borda da moldura — setor na tira branca, nome montado sobre a borda da foto, como legenda de
+  polaroid. A ponta do "b" de "parabéns" fica por baixo; é fundo decorativo.
+- `photoEditor.js` — `<input type=file>`, visor com máscara, arrastar por Pointer Events, zoom
+  por roda e slider (1×–4×). Object URL revogada ao carregar.
+- `editorRH.js` — tela do Talento (1 colaborador) e do Aniversariantes (quantidade 1–9, uma
+  linha por pessoa). Colaboradores são objetos mutáveis em `state.rh` (a foto é um
+  `HTMLImageElement`, não serializável); cada mudança faz `setState` com throttle por frame, e a
+  guarda de montagem do passo evita recriar os campos.
+
+**Despacho por formato, não por setor.** `modoDeEdicao(setor, formato) = formato.editor ||
+setor.tipoTexto`: `edicaoStep` e `previewPanel` ganharam três linhas cada; os setores antigos
+continuam despachando por `tipoTexto`. O Atenção é `editor: 'atencao'` → textarea existente +
+renderizador `comunicado` do motor com `corCorpo: '#004F9F'` — zero código novo de render, e a
+mesma regra de palavra longa da 3.13.
+
+**Poka-Yoke.** `fits` continua derivado do render (a 3.16 provou que injetar `fits: false` não
+cola). O compositor nomeia o culpado em `avisoEncaixe` — *"O nome 'X' não cabe no card, mesmo
+reduzido e em duas linhas."* — e `motivoNaoCoube` mostra isso na prévia, no Continuar, na Prévia
+e no Download. Continuar também exige nome e setor de todos. Quantidade acima de 9 corrige para 9.
+
+**LGPD — sem persistência, por construção.** Nada do RH toca IndexedDB, localStorage ou
+sessionStorage; o único banco continua sendo a biblioteca de pratos. Recarregar volta ao passo
+Setor com a lista vazia. O teste confirma: stores = `biblioteca_ab, meta`, storages vazios,
+nenhum nome ou `data:image` nos registros.
+
+**Decisões registradas:** foto opcional (placeholder com iniciais) para não travar a publicação
+quando falta a foto de alguém; faixas do Talento giradas (não havia lugar reto — abaixo do
+polaroid está o "parabéns"); máximo 9 com 3 colunas em vez de sempre-2 (foto de 118 px em vez
+de 105); Aniversariantes em 1080×1440 como as outras duas.
+
+**Testes (Playwright, 57 verificações):** setor e 3 templates; Atenção com texto azul dentro da
+área segura, palavra gigante bloqueando, PNG 1080×1440; Talento com upload (imagem gerada no
+teste, 900 px), arraste mudando `cx/cy`, roda e slider mudando o zoom, placeholder e foto
+sondados por pixel, nome absurdo bloqueando e nomeando, PNG/PDF, bloqueio no Download por setor
+longo; Aniversariantes com 1, 2, 4, 6 e 9 — **centros das fotos sondados por pixel em posições
+calculadas no teste**, independentes do código —, 15 → 9, nome absurdo em 1 de 4; reload limpo;
+regressão dos 4 setores, catálogos e lote. Suítes anteriores (v5, v6, v7) repetidas: 159 verdes.
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:
@@ -677,6 +759,7 @@ js/
   ui/
     confetti.js             Confete da exportação
     loteModal.js            Modal da impressão em lote
+  rh/                       Setor RH: templates, card, grade, compositor, editor de foto, tela
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
     steps/                  Uma tela por etapa do fluxo
@@ -694,7 +777,7 @@ assets/
 
 - **35 artes prontas** no catálogo — 22 operacionais, 8 de hospitalidade, 5 de A&B
 - **35 miniaturas** geradas (~1,4 MB)
-- **4 módulos**, 22 arquivos JavaScript
+- **5 módulos**, 28 arquivos JavaScript
 - **424 pratos** na biblioteca A&B (12 categorias; 3 legados dos cardápios de 2025)
 
 ### Commits desta fase

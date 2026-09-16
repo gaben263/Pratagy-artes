@@ -124,6 +124,9 @@ export function openModal(contentHtml, { onMount, maxWidth = 'max-w-3xl' } = {})
  * @returns {{ titulo: string, acao: string }} HTML já escapado.
  */
 export function motivoNaoCoube(state) {
+  if (state.avisoEncaixe) {
+    return { titulo: escapeHtml(state.avisoEncaixe), acao: 'Abrevie o texto ou reduza a quantidade de pessoas.' };
+  }
   if (state.palavraLonga) {
     return {
       titulo: `A palavra “${escapeHtml(state.palavraLonga)}” é muito longa para este formato.`,

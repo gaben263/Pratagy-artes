@@ -41,6 +41,8 @@
 //    estrangula a caixa inteira e força quebras de linha desnecessárias no
 //    miolo, que está livre.
 
+import { FORMATOS_RH } from '../rh/templates.js';
+
 export const SETORES = {
   ab: {
     id: 'ab',
@@ -221,6 +223,23 @@ export const SETORES = {
         corCorpo: '#004F9F',
       },
     ],
+  },
+
+  // RH: comunicados internos e peças com foto de colaborador. Cada template
+  // declara o próprio `editor` (js/rh/templates.js); `tipoTexto: 'rh'` só
+  // identifica o setor — o despacho real é por formato. Dados pessoais ficam
+  // em memória e somem no reload (LGPD): nada é gravado em cache.
+  rh: {
+    id: 'rh',
+    nome: 'RH',
+    sigla: 'RH',
+    corDestaque: '#F7A600',
+    icone: 'rh',
+    fluxo: 'gerador',
+    permiteTraducao: false,
+    tipoTexto: 'rh',
+    titleCase: false,
+    formatos: FORMATOS_RH,
   },
 };
 

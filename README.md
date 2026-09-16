@@ -8,6 +8,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Quatro módulos:
 | **Manutenção** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar. Só consulta — não gera arte |
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) mais o gerador da carta de boas-vindas manuscrita em A4 |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
+| **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
 
 > Cada setor mostra uma categoria só, definida em `categoriaCatalogo`. `fluxo: 'catalogo'` abre
 > direto na busca; `fluxo: 'gerador'` (Acqua Park) vai direto para o Canvas. Hospitalidade e A&B
@@ -56,6 +57,13 @@ js/
     lote.js                  folha A4 com várias placas (grade por formato + PDF)
   ui/
     loteModal.js             modal da impressão em lote (quantidade, diagrama, gerar)
+  rh/
+    templates.js             os 3 templates do RH (medições em px, áreas seguras, cores das faixas)
+    cardRenderer.js          card de colaborador: foto (círculo/quadrado), faixas que crescem com o texto
+    gridLayout.js            distribuição de N cards na área do Aniversariantes
+    render.js                compositor: template + cards, devolve `fits` como o motor
+    photoEditor.js           upload + arrastar + zoom (Pointer Events), tudo em memória
+    editorRH.js              tela de edição (nome, setor, foto por colaborador)
     steps/                   telas de cada etapa do fluxo
     previewPanel.js          painel de prévia (canvas ao vivo)
     stepper.js, common.js, icons.js

@@ -3,6 +3,8 @@ import { getState, setState, goToStep, goBack } from '../../state.js';
 import { icon } from '../icons.js';
 import { debounce, escapeHtml, toTitleCase } from '../../utils.js';
 import { loadLibrary, searchLibrary, getLoadedLibrary } from '../../data/docxLibrary.js';
+import { modoDeEdicao, EDITORES_COM_CARDS } from '../../rh/templates.js';
+import { bodyRH, wireRH, prontoRH } from '../../rh/editorRH.js';
 
 // Listener único (registrado uma vez) que fecha o dropdown de busca ao
 // clicar fora dele, evitando acumular listeners a cada remontagem do passo.
@@ -17,10 +19,15 @@ document.addEventListener('click', (e) => {
 function updateContinueState(container) {
   const state = getState();
   const setor = getSetor(state.setorId);
+  const formato = getFormato(state.setorId, state.formatoId);
   const btn = container.querySelector('[data-continue]');
   if (!btn) return;
 
-  const hasText = state.texto.trim().length > 0;
+  // Peças com cards (RH) não têm `texto`: o que libera é todo colaborador ter
+  // nome e setor.
+  const comCards = EDITORES_COM_CARDS.has(modoDeEdicao(setor, formato));
+  const pronto = comCards ? prontoRH(state) : { ok: state.texto.trim().length > 0, hint: '' };
+  const hasText = pronto.ok;
   const enabled = hasText && state.fits;
 
   btn.disabled = !enabled;
@@ -30,11 +37,15 @@ function updateContinueState(container) {
   const hint = container.querySelector('[data-continue-hint]');
   if (hint) {
     hint.textContent = !hasText
-      ? setor?.tipoTexto === 'comunicado'
+      ? comCards
+        ? pronto.hint
+        : setor?.tipoTexto === 'comunicado'
         ? 'Escreva o texto do comunicado para continuar.'
         : 'Digite o texto da arte para continuar.'
       : !state.fits
-      ? state.palavraLonga
+      ? state.avisoEncaixe
+        ? `${state.avisoEncaixe} Abrevie o texto.`
+        : state.palavraLonga
         ? `A palavra “${state.palavraLonga}” é muito longa para este formato. Reduza o texto ou escolha outro modelo.`
         : 'Reduza o texto: ele não cabe na área segura (veja o alerta na prévia).'
       : '';
@@ -48,8 +59,8 @@ function medidaDoFormato(formato) {
     : `${formato.mmLargura}×${formato.mmAltura} mm`;
 }
 
-function shell({ setor, formato, bodyHtml }) {
-  const isComunicado = setor.tipoTexto === 'comunicado';
+function shell({ setor, formato, bodyHtml, comCards = false }) {
+  const isComunicado = setor.tipoTexto === 'comunicado' || formato.editor === 'atencao';
   return `
     <div data-edicao-root>
       <button type="button" data-back
@@ -63,9 +74,9 @@ function shell({ setor, formato, bodyHtml }) {
         <span class="text-xs font-semibold text-slate-400">${formato.nome} &middot; ${medidaDoFormato(formato)}</span>
       </div>
       <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">${
-        isComunicado ? 'Escreva o comunicado' : 'Preencha o texto da arte'
+        comCards ? 'Preencha os colaboradores' : isComunicado ? 'Escreva o comunicado' : 'Preencha o texto da arte'
       }</h1>
-      <p class="mt-1 mb-5 text-slate-500">A prévia é atualizada automaticamente conforme você digita.</p>
+      <p class="mt-1 mb-5 text-slate-500">A prévia é atualizada automaticamente conforme você ${comCards ? 'preenche' : 'digita'}.</p>
 
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         ${bodyHtml}
@@ -285,6 +296,14 @@ const CAMPO_TEXTO = {
     placeholder: 'Ex: A piscina de ondas fica fechada nesta quarta, das 8h às 16h, para manutenção preventiva. As demais atrações seguem funcionando normalmente.',
     dica: 'O texto entra logo abaixo da palavra "COMUNICADO", que já vem impressa na arte. A fonte se ajusta sozinha ao tamanho do texto.',
   },
+  atencao: {
+    icone: 'megaphone',
+    label: 'Texto do comunicado',
+    rows: 8,
+    max: 600,
+    placeholder: 'Ex: A partir de segunda-feira, o ponto eletrônico passa a ser registrado no novo aplicativo. Procure o RH em caso de dúvida.',
+    dica: 'O texto entra abaixo da barra "ATENÇÃO", que já vem impressa na arte. A fonte se ajusta sozinha ao tamanho do texto.',
+  },
   livre: {
     icone: 'edit',
     label: 'Texto da arte',
@@ -295,8 +314,8 @@ const CAMPO_TEXTO = {
   },
 };
 
-function bodyTextoLivre(setor) {
-  const campo = CAMPO_TEXTO[setor.tipoTexto] || CAMPO_TEXTO.livre;
+function bodyTextoLivre(modo) {
+  const campo = CAMPO_TEXTO[modo] || CAMPO_TEXTO.livre;
   return `
     <div>
       <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
@@ -353,12 +372,17 @@ export function renderEdicaoStep(container) {
   }
   container.dataset.sig = signature;
 
-  const bodyHtml = setor.tipoTexto === 'busca' ? bodyAB() : bodyTextoLivre(setor);
+  // O modo vem do formato quando ele declara um `editor` (RH) e do setor nos
+  // demais casos — um setor pode misturar texto e cards.
+  const modo = modoDeEdicao(setor, formato);
+  const comCards = EDITORES_COM_CARDS.has(modo);
+  const bodyHtml = modo === 'busca' ? bodyAB() : comCards ? bodyRH(formato, state) : bodyTextoLivre(modo);
 
-  container.innerHTML = shell({ setor, formato, bodyHtml });
+  container.innerHTML = shell({ setor, formato, bodyHtml, comCards });
   wireCommon(container);
 
-  if (setor.tipoTexto === 'busca') wireBuscaAB(container, state);
+  if (modo === 'busca') wireBuscaAB(container, state);
+  else if (comCards) wireRH(container, formato);
   else wireTextoLivre(container, state);
 
   updateContinueState(container);

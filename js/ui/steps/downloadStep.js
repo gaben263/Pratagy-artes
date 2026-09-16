@@ -115,7 +115,9 @@ export function renderDownloadStep(container) {
     .trim()
     .slice(0, 40)
     .replace(/\s+\S*$/, '');
-  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${resumoTexto}`;
+  // Peças com cards (RH) não têm texto: o arquivo leva o nome do primeiro colaborador.
+  const primeiroNome = state.rh.colaboradores[0]?.nome.trim().split(/\s+/)[0] || '';
+  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${resumoTexto || primeiroNome}`;
 
   container.innerHTML = `
     <div>

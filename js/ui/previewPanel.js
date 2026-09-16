@@ -3,6 +3,8 @@ import { getFormato, getSetor } from '../data/models.js';
 import { renderCanvas, drawSafeAreaGuide, loadImage, ensureFontsReady } from '../canvas/engine.js';
 import { icon } from './icons.js';
 import { emptyState, motivoNaoCoube } from './common.js';
+import { modoDeEdicao, EDITORES_COM_CARDS } from '../rh/templates.js';
+import { renderRH } from '../rh/render.js';
 
 const imageCache = new Map();
 let showGuide = false;
@@ -14,6 +16,8 @@ const TIPO_RENDER = {
   busca: 'ab',
   carta: 'governanca',
   comunicado: 'comunicado',
+  // Atenção (RH) é o mesmo bloco de texto do comunicado, em azul sobre o cartão.
+  atencao: 'comunicado',
   livre: 'manutencao',
 };
 
@@ -116,25 +120,30 @@ export async function updatePreview() {
     const [image] = await Promise.all([getCachedImage(formato.imagem), ensureFontsReady()]);
 
     const setor = getSetor(state.setorId);
-    const { fits, palavraLonga } = renderCanvas(canvas, {
-      image,
-      formato,
-      texto: state.texto,
-      textoEs: state.textoEs,
-      tipo: TIPO_RENDER[setor?.tipoTexto] || 'manutencao',
-      titleCase: Boolean(setor?.titleCase),
-    });
+    const modo = modoDeEdicao(setor, formato);
+    // Peças com cards (RH) têm compositor próprio; todo o resto é o motor.
+    const resultado = EDITORES_COM_CARDS.has(modo)
+      ? renderRH(canvas, { image, formato, colaboradores: state.rh.colaboradores })
+      : renderCanvas(canvas, {
+          image,
+          formato,
+          texto: state.texto,
+          textoEs: state.textoEs,
+          tipo: TIPO_RENDER[modo] || 'manutencao',
+          titleCase: Boolean(setor?.titleCase),
+        });
+    const { fits, palavraLonga = null, aviso: avisoEncaixe = null } = resultado;
 
     guideCanvas.width = formato.largura;
     guideCanvas.height = formato.altura;
     guideCanvas.getContext('2d').clearRect(0, 0, formato.largura, formato.altura);
     if (showGuide) drawSafeAreaGuide(guideCanvas, formato);
 
-    if (fits !== state.fits || palavraLonga !== state.palavraLonga) {
-      setState({ fits, palavraLonga });
+    if (fits !== state.fits || palavraLonga !== state.palavraLonga || avisoEncaixe !== state.avisoEncaixe) {
+      setState({ fits, palavraLonga, avisoEncaixe });
     }
 
-    const motivo = motivoNaoCoube({ fits, palavraLonga });
+    const motivo = motivoNaoCoube({ fits, palavraLonga, avisoEncaixe });
     banner.innerHTML = fits
       ? ''
       : `

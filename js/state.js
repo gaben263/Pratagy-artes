@@ -39,6 +39,12 @@ function initialState() {
     // Palavra que impediu o texto de caber na largura (ver fitFontSize no
     // motor). Só existe quando `fits` é false; a interface a nomeia no alerta.
     palavraLonga: null,
+    // Motivo em texto quando o encaixe falha por outra razão que não uma
+    // palavra longa (ex.: nome que não cabe no card do RH). Nomeia o culpado.
+    avisoEncaixe: null,
+    // RH: colaboradores da peça atual (nome, setor, foto em memória). Nunca vai
+    // para IndexedDB/localStorage — recarregar a página apaga tudo (LGPD).
+    rh: { colaboradores: [] },
     exported: false,
   };
 }
