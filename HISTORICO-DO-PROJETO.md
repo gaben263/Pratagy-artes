@@ -999,6 +999,110 @@ numa área que vai até 1133).
 Suítes v5–v10 repetidas: **303 verdes**. A v10 (Encontro) cravava "4 formatos" e a lista de 4;
 virou contagem dinâmica, como as v8 e v9 na rodada anterior.
 
+### 3.20 Rodada 2A do RH: três peças de card e o Plantão de Gestores
+
+Quatro templates: Destaque Administrativo, Destaque Operacional e Sejam Bem Vindos (a grade de
+cards circulares do Aniversariantes, com outra arte) e G&G Gestores de Plantão (compositor novo:
+foto no círculo impresso, nome e setor na faixa impressa, data e tipo ao lado dos ícones). O setor
+foi de 10 para **14 templates**.
+
+**Nomenclatura.** Dois desvios nos arquivos: `Destaque do Mês -  Grupo Pratagy` (espaço duplo) e
+`G&G - Plantão Gestores` (sem "Grupo Pratagy"). Mais importante: **o arquivo "Destaque do Mês" diz
+"Colaborador Destaque Operacional"** — o nome e o id (`destaque-operacional`) seguem a arte.
+
+#### Grupo A — cards
+
+**Os dois Destaques são a mesma arte com outro título.** Diff pixel a pixel: 65.502 pixels
+diferentes, todos dentro de x 178–902 · y 180–421; o "parabéns" manuscrito, o mar e o rodapé são
+byte-idênticos. Uma área serve para os dois, calculada do título mais baixo (Operacional, y 421) e
+do "parabéns" (y 1005), com 24 px de respiro. É foto de fundo inteiro, sem placeholder: o card vai
+sobre o mar.
+
+| Peça | Card | Máx. | Área | Por quê |
+|---|---|---|---|---|
+| Destaque ADM / Operacional | círculo | **1** | x 140–940 · y 445–981 | título singular, "parabéns" para uma pessoa; o card de 1 (461 px) fica centrado com folga |
+| Sejam Bem Vindos | círculo | **4** | x 160–920 · y 503–1116 | ver abaixo |
+
+**Bem Vindos: o teto vem da arte, não do código.** O vão entre os dois textos impressos (o de
+boas-vindas termina em y 486; "Mais uma vez, seja bem-vindo(a)!" começa em 1133) tem **646 px**,
+contra 763 do Aniversariantes. Rodando o `distribuir` real com os degraus de foto da grade
+(`ESCALAS_FOTO` até 0,7): com 24 px de respiro só 1–2 cabem; com **16 px**, 3–4 cabem com foto de
+175 px; 5+ precisariam de 623 px, que a arte não tem. Ficou máximo 4 com respiro 16 — a menor
+concessão que destrava 3–4 — **sem tocar na grade compartilhada**. Para mais gente, o caminho
+certo é o designer liberar o texto de baixo, não um degrau de foto de 105 px.
+
+**Cores: as três artes usam `#f7a600`**, não o `#FDD945` do Talento/Aniversariantes. O
+"DESTAQUE", o "Vindos" e o "Sejam" são todos `#f7a600`; o azul é o `#004F9F` de sempre. A pílula
+segue a arte em que está: `cores` por template, lidas em `desenharCard` com fallback para `CORES`.
+Contraste do azul sobre `#f7a600`: 4,0:1 (texto grande em Heavy). O teste confirma que o
+Aniversariantes não ganhou um pixel de `#f7a600`.
+
+**Grupo A precisou de código?** Dois ajustes pequenos, ambos com fallback para o comportamento
+atual: (1) o campo "Quantas pessoas?" some quando o template só aceita uma (mostrar "De 1 a 1" é
+ruído), e o texto de ajuda descreve a distribuição só até o máximo da peça — o do Aniversariantes
+continua idêntico, palavra por palavra; (2) `cores` por template. Fora isso, cadastro e medição.
+Ao trocar de um template cheio (9 no Aniversariantes) para um de máximo menor, a lista é cortada
+no máximo do destino — antes, os 9 seriam desenhados num template de 1.
+
+#### Grupo B — Gestores de Plantão
+
+Tudo medido no PNG e **calibrado no exemplo preenchido do RH** (Mario Cesar / Alimentos & Bebidas /
+05/09 e 06/09 / Fim de Semana): a largura do "Mario Cesar" impresso bate com Heavy 48 px, a do
+"Alimentos & Bebidas" com Regular 32, a do "05/09 e 06/09" com Heavy 32.
+
+| Elemento | Medida |
+|---|---|
+| Círculo branco | centro (540, 617) · diâmetro 384; anel até raio 207 na cor da faixa (os dois são uma forma só) |
+| Faixa azul-clara | x 248–830 · y 800–919 · `#4cc2f1` · cantos ~21 px |
+| Ícone calendário / relógio | centro y 1044 / 1127; x 375–413 |
+| Palmeira direita | x ≥ 877 na linha do relógio — limite direito dos textos: 861 |
+| Fundo | `#0652a2` → `#0c5bab` |
+
+Nada é desenhado além da foto e dos textos: círculo, anel, faixa e ícones já estão na arte. A foto
+usa `desenharFoto(forma: 'circulo')` do `cardRenderer`, diâmetro 388 (4 px de sangria sobre o
+anel, como no Talento). Nome (Heavy 48 → piso 34, `#004F9F`) e setor (Regular 32 → piso 24)
+centrados na faixa; data e tipo (Heavy 32 → piso 24, branco) à esquerda, a 28 px do ícone. Cada
+campo é uma linha só, e o teto de uma linha sai da geometria como na data do Encontro: a caixa é
+mais baixa que duas linhas no piso (nome 56 < 78; setor 38 < 55; data e tipo 40 < 55).
+
+**O tipo é um `<select>` nativo no formulário**, não um controle sobre o canvas — nada neste
+sistema é sobreposto à prévia. Só existem três strings (`TIPOS_PLANTAO`); começa vazio para o RH
+escolher de propósito; o compositor confere o valor de novo e um valor forjado no estado não
+desenha nem libera. "Noturno e Fim de Semana", a opção mais longa, mede 410 px a 32 e cabe nos
+420 da caixa: o tipo nunca encolhe, então as três opções têm o mesmo corpo.
+
+**Uma diferença entre o exemplo e o PNG em branco:** o exemplo tem um subtítulo "Noturno e Fim de
+Semana" sob o "PLANTÃO". Ele **não existe no PNG em branco** nem na especificação, e não foi
+inventado. Se deve existir sempre, é o designer quem o põe na arte; se deve variar, é um campo a
+mais.
+
+Estado: o gestor em `rh.colaboradores[0]` (como o Talento), a data em `rh.data` (como o Encontro),
+`rh.tipoPlantao` novo. A tela de edição reaproveita a linha de colaborador (com dica própria — a
+dica dos cards fala em nome quebrando em duas linhas, o que aqui não acontece), o `photoEditor`
+sem mudança, o campo de data e o select.
+
+#### Um bug pré-existente que a rodada encontrou
+
+`previaStep.js` escapava nome e setor e depois `linha()` escapava de novo: "Alimentos & Bebidas"
+aparecia como `Alimentos &amp; Bebidas` no resumo da prévia, e com duas ou mais pessoas o `<br>`
+entre elas aparecia como texto. Estava assim desde a 3.17 — nenhum teste lia a prévia com "&" ou
+com mais de uma pessoa. Corrigido: `linha` escapa uma vez, e as pessoas se separam por quebra de
+linha (o `<dd>` já era `whitespace-pre-wrap`, que era a intenção).
+
+#### Testes
+
+**Suíte v12, 79 verificações.** Lista de 14 na ordem; Destaques sem campo de quantidade, card
+dentro da área e centrado, pílulas em `#f7a600` (18.384 pixels) e zero `#FDD945`; Bem Vindos com
+1, 2, 3 e 4 entre os dois textos impressos, 9 corrigido para 4; troca Aniversariantes(9) →
+Destaque cortando a lista para 1. Plantão: select com placeholder e exatamente as três opções,
+Poka-Yoke em ordem (sem data → sem tipo → libera), nome e setor dentro das caixas da faixa e
+centrados, data e tipo a x 441 e centrados nas linhas dos ícones, foto recortada exatamente no
+círculo (346–733 × 423–810), os três tipos terminando antes da palmeira (x1 575 / 682 / 849),
+tipo forjado bloqueando sem desenhar, nome/setor/data longos encolhendo e absurdos bloqueando
+com o culpado nomeado, prévia sem `&amp;`, PNG 1080×1440. Regressão: Aniversariantes com a
+ajuda intacta, 9 pessoas e prévia sem `<br>`; Talento, Atenção, Encontro, Comunicado; os quatro
+setores e os catálogos. Suítes v5–v11 repetidas.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
@@ -1013,6 +1117,7 @@ Registro porque são os que mais ensinam sobre o código:
 | Medição da área segura errada | Suavização por percentil descartava as linhas onde o sol invade | Interseção estrita, depois varredura por faixas verticais |
 | `toTitleCase` em texto todo maiúsculo | "CAMARÃO ALHO E ÓLEO" virava "CAMARÃO ALHO e ÓLEO" | Minusculizar antes quando a entrada é toda maiúscula |
 | `downloadStep.js` quebrado por um `\n` | Um escape virou quebra de linha real dentro de uma string | Corrigido; passei a rodar `node --check` em todos os módulos |
+| `&amp;` e `<br>` literais no resumo da prévia do RH | Nome e setor escapados duas vezes (na montagem e em `linha()`) | Escapar uma vez; pessoas separadas por quebra de linha num `<dd>` `pre-wrap` (3.20) |
 
 A primeira tentativa de correção da tela em branco usou `[data-continue]` como marcador de
 presença — e **falhou**, porque a tela de Prévia também tem esse atributo.
@@ -1074,15 +1179,16 @@ js/
     confetti.js             Confete da exportação
     loteModal.js            Modal da impressão em lote
   rh/                       Setor RH: templates, card, grade, compositor, editor de foto, tela
-                            (10 templates: Atenção, Encontro Geral, Talento, Aniversariantes
-                            e 6 comunicados puros — ver 3.19)
+                            (14 templates: Atenção, Encontro Geral, Talento, Aniversariantes,
+                            6 comunicados puros — 3.19 —, Destaque ADM/Operacional,
+                            Bem Vindos e Gestores de Plantão — 3.20)
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
     steps/                  Uma tela por etapa do fluxo
 
 assets/
   images/{ab,governanca,acquapark}/       Modelos do gerador
-  images/rh/                              Templates do RH (10 peças, 1080×1440)
+  images/rh/                              Templates do RH (14 peças, 1080×1440)
   catalogo/{ab,manutencao,hospitalidade}/ Artes prontas (300 DPI)
   catalogo/thumbs/                        Miniaturas
   fonts/                                  Fibra One e Satisfy

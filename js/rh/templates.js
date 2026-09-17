@@ -15,6 +15,12 @@
 //                       ao lado do ícone de calendário já impresso na arte.
 //   'talento'         → 1 colaborador (foto no polaroid + faixas giradas).
 //   'aniversariantes' → N colaboradores em grade (foto circular + faixas).
+//                       O nome vem da primeira peça que o usou; é o editor de
+//                       "grade de cards circulares" — Destaque e Bem Vindos
+//                       também são ele, só com outra arte, área e máximo.
+//   'plantao'         → 1 gestor: foto no círculo impresso, nome e setor na
+//                       faixa impressa, data e tipo de plantão ao lado dos
+//                       ícones (o tipo é um select de três opções fixas).
 //
 // Por que 'texto' e não 'comunicado': `modoDeEdicao` cai no `tipoTexto` do
 // setor quando o formato não declara `editor`, e 'comunicado' já é o
@@ -161,6 +167,114 @@ const COMUNICADOS_PUROS = [
   }),
 ];
 
+// Cores das faixas nas artes da rodada 2A (Destaque ADM, Destaque Operacional
+// e Bem Vindos). As três usam exatamente o mesmo par — #f7a600 no "DESTAQUE"
+// e no "Vindos", #004F9F no badge e no script —, e o amarelo é visivelmente
+// mais quente que o #FDD945 do Talento/Aniversariantes. A pílula segue a arte
+// em que está (contraste do azul sobre #f7a600: 4,0:1, acima do mínimo para
+// texto grande em negrito). Quem não declara `cores` continua em CORES.
+const CORES_2A = {
+  faixaNome: { fundo: '#f7a600', texto: '#004F9F' },
+  faixaSetor: { fundo: '#004F9F', texto: '#FFFFFF' },
+};
+
+// Destaque ADM e Destaque Operacional são a MESMA arte com outro título (diff
+// pixel a pixel: só x 178–902 · y 180–421 muda). A área é uma só, calculada a
+// partir do título mais baixo (Operacional, y 421) e do "parabéns" manuscrito
+// branco, que começa em y 1005 — 24 px de respiro de cada lado. A arte é foto
+// de fundo inteiro, sem obstáculo lateral: 140–940, como o Aniversariantes.
+// O card de 1 pessoa (foto 320 + pílulas = 461 px) fica centrado com folga;
+// a grade comportaria 2, mas o título é singular — máximo 1.
+const AREA_DESTAQUE = { x0: 140, y0: 445, x1: 940, y1: 981 };
+const destaque = ({ id, nome, descricao }) => ({
+  ...BASE,
+  id,
+  nome,
+  descricao,
+  imagem: `assets/images/rh/${id}.png`,
+  editor: 'aniversariantes',
+  maxColaboradores: 1,
+  cores: CORES_2A,
+  areaCards: AREA_DESTAQUE,
+  safeAreaMm: safeAreaMmDePx({ ...BASE, ...AREA_DESTAQUE }),
+});
+
+const CARDS_2A = [
+  destaque({ id: 'destaque-adm', nome: 'Destaque Administrativo', descricao: 'Colaborador destaque da área administrativa' }),
+  // O arquivo de origem chama-se "Destaque do Mês", mas a arte diz
+  // "Colaborador Destaque Operacional" — o nome e o id seguem a arte.
+  destaque({ id: 'destaque-operacional', nome: 'Destaque Operacional', descricao: 'Colaborador destaque da área operacional' }),
+  {
+    ...BASE,
+    id: 'bem-vindos',
+    nome: 'Sejam Bem Vindos',
+    descricao: 'Boas-vindas a até 4 novos colaboradores',
+    imagem: 'assets/images/rh/bem-vindos.png',
+    editor: 'aniversariantes',
+    // O vão entre os dois textos impressos (o de boas-vindas termina em y 486,
+    // "Mais uma vez, seja bem-vindo(a)!" começa em 1133) tem 646 px — contra
+    // 763 do Aniversariantes. Com os degraus de foto da grade compartilhada:
+    // respiro 24 → só 1–2 cabem; respiro 16 → 3–4 cabem com foto de 175 px;
+    // 5+ precisariam de 623 px, que a arte não tem. Máximo 4, respiro 16.
+    // Largura: 160–920 (760); a partir de 800 px o confete vermelho da
+    // esquerda (x ≈ 140, y 540–640) entra na área e empurra o topo para 644.
+    maxColaboradores: 4,
+    cores: CORES_2A,
+    areaCards: { x0: 160, y0: 503, x1: 920, y1: 1116 },
+    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 160, y0: 503, x1: 920, y1: 1116 }),
+  },
+];
+
+// Tipos de plantão: as três únicas strings que o campo aceita. O select do
+// formulário só oferece estas; o compositor confere de novo e não desenha
+// (nem libera a exportação) se o valor não for uma delas.
+export const TIPOS_PLANTAO = ['Noturno', 'Fim de Semana', 'Noturno e Fim de Semana'];
+
+// G&G — Gestores de Plantão. Tudo medido no PNG e calibrado no exemplo
+// preenchido do RH (Mario Cesar / Alimentos & Bebidas / 05/09 e 06/09 / Fim de
+// Semana): a largura do "Mario Cesar" impresso bate com Heavy 48 px, a do
+// "Alimentos & Bebidas" com Regular 32, e a do "05/09 e 06/09" com Heavy 32.
+const PLANTAO_GESTORES = {
+  ...BASE,
+  id: 'plantao-gestores',
+  nome: 'Gestores de Plantão',
+  descricao: 'Gestor de plantão noturno e/ou de fim de semana',
+  imagem: 'assets/images/rh/plantao-gestores.png',
+  editor: 'plantao',
+  maxColaboradores: 1,
+  // Círculo branco impresso: x 348–731 · y 425–808 → centro (540, 617),
+  // diâmetro 384. O anel em volta (raio 192 → 207) tem a cor da faixa, então
+  // os dois são uma forma só. A foto leva 4 px de sangria para cobrir a borda
+  // anti-aliased do branco.
+  foto: { cx: 540, cy: 617, diametro: 388 },
+  // Faixa azul-clara impressa: x 248–830 · y 800–919, #4cc2f1. Não é
+  // desenhada — o texto entra nela. Nome e setor centrados no eixo (540), cada
+  // um na sua caixa de UMA linha: a altura da caixa é menor que duas linhas no
+  // piso (nome: 2×34×1,15 = 78 > 56; setor: 2×24×1,15 = 55 > 38), então não
+  // existe segunda linha que caiba e `fitFontSize` bloqueia sozinho.
+  faixa: {
+    x0: 278, x1: 800, // 583 de faixa menos 30 de padding de cada lado
+    cor: '#004F9F',
+    nome: { y0: 812, altura: 56, corpo: 48, piso: 34, peso: 800 },
+    setor: { y0: 870, altura: 38, corpo: 32, piso: 24, peso: 400 },
+  },
+  // Ícones brancos impressos: calendário x 375–413 (centro y 1044), relógio
+  // x 376–413 (centro y 1127). O texto começa em x 441 (413 + 28, o gap
+  // ícone→texto do exemplo). Limite direito 861: a palmeira da direita invade
+  // a linha do relógio a partir de x 877; as duas linhas usam a mesma caixa
+  // para ficarem alinhadas. Altura 40: uma linha de 32 (36,8) cabe, duas no
+  // piso de 24 (55) não. "Noturno e Fim de Semana", a opção mais longa, mede
+  // 410 px a 32 — cabe sem encolher, então o tipo é sempre do mesmo tamanho.
+  linhas: {
+    x0: 441, largura: 420, cor: '#FFFFFF', corpo: 32, piso: 24, peso: 800, entrelinha: 1.15,
+    data: { y0: 1024, altura: 40 },
+    tipo: { y0: 1107, altura: 40 },
+  },
+  opcoesTipo: TIPOS_PLANTAO,
+  // Guia da área segura na prévia: a caixa envolvente da foto e da faixa.
+  safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 248, y0: 410, x1: 830, y1: 919 }),
+};
+
 export const FORMATOS_RH = [
   {
     ...BASE,
@@ -261,11 +375,15 @@ export const FORMATOS_RH = [
     safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 140, y0: 411, x1: 940, y1: 1174 }),
   },
   ...COMUNICADOS_PUROS,
+  ...CARDS_2A,
+  PLANTAO_GESTORES,
 ];
 
-export const EDITORES_COM_CARDS = new Set(['talento', 'aniversariantes']);
+// Editores cuja tela é a de colaboradores (nome, setor, foto) — o Plantão
+// também é um deles, com data e tipo a mais.
+export const EDITORES_COM_CARDS = new Set(['talento', 'aniversariantes', 'plantao']);
 // Tudo que o compositor do RH renderiza (os cards e os textos de comunicado).
-export const EDITORES_RH = new Set(['atencao', 'texto', 'encontro', 'talento', 'aniversariantes']);
+export const EDITORES_RH = new Set(['atencao', 'texto', 'encontro', 'talento', 'aniversariantes', 'plantao']);
 
 /** O modo de edição/render de um formato (RH) ou do setor (demais). */
 export function modoDeEdicao(setor, formato) {

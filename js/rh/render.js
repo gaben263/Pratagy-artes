@@ -1,11 +1,12 @@
 // Compositor das peças do RH: desenha o template e, por cima, o texto de
-// comunicado (Atenção e Encontro Geral), a data do Encontro Geral ou os cards
-// de colaborador (Talento e Aniversariantes).
+// comunicado (Atenção, Encontro Geral e os comunicados puros), a data do
+// Encontro Geral, os cards de colaborador (Talento e a grade de círculos do
+// Aniversariantes, Destaque e Bem Vindos) ou o gestor do Plantão.
 //
 // Devolve o mesmo contrato do motor (`fits` + motivo) para que a prévia, o
 // Continuar, a Prévia e o Download bloqueiem pelo mecanismo que já existe.
 
-import { CORES } from './templates.js';
+import { CORES, TIPOS_PLANTAO } from './templates.js';
 import { computeSafeAreaPx, fitFontSize, drawTextBlock } from '../canvas/engine.js';
 import { medirCard, desenharCard, desenharFoto, ajustarFaixa, alturaDaFaixa, desenharFaixa } from './cardRenderer.js';
 import { colunasPara, medidasPorLinhas, distribuir, ESCALAS_FOTO } from './gridLayout.js';
@@ -157,7 +158,63 @@ function renderTalento(ctx, formato, colaborador) {
   return { fits: !aviso, aviso };
 }
 
-/** Aniversariantes do Dia: N cards em grade na área útil. */
+/**
+ * Uma linha de texto numa caixa fixa da arte, pelo motor: `fitFontSize` dá o
+ * auto-shrink e `drawTextBlock` posiciona. A caixa é baixa o bastante para
+ * duas linhas no piso não caberem, então "uma linha" sai da geometria (ver o
+ * comentário do Plantão em templates.js). Devolve o `fits`.
+ */
+function linhaNaCaixa(ctx, texto, caixa, { corpo, piso, peso, entrelinha = 1.15, cor, align, canvasWidth }) {
+  const bloco = fitFontSize(ctx, texto, caixa, { minSize: piso, maxSize: corpo, weight: peso, lineHeightRatio: entrelinha });
+  drawTextBlock(ctx, { ...bloco, weight: peso, color: cor, align, safeAreaPx: caixa, verticalAlign: 'middle', canvasWidth });
+  return bloco;
+}
+
+/**
+ * G&G Gestores de Plantão: foto no círculo impresso, nome e setor na faixa
+ * impressa, data e tipo ao lado dos ícones impressos. Nada é desenhado além
+ * da foto e dos textos — círculo, anel, faixa e ícones já estão na arte.
+ *
+ * O tipo vem de um select de três opções; ainda assim o valor é conferido
+ * contra TIPOS_PLANTAO, para um estado estranho não desenhar nem exportar.
+ */
+function renderPlantao(ctx, formato, gestor, data, tipo) {
+  const { largura } = formato;
+  const { foto, faixa, linhas } = formato;
+
+  ctx.save();
+  ctx.translate(foto.cx, foto.cy);
+  desenharFoto(ctx, { foto: gestor.foto, nome: gestor.nome, largura: foto.diametro, altura: foto.diametro, forma: 'circulo' });
+  ctx.restore();
+
+  const nome = (gestor.nome || '').trim();
+  const setor = (gestor.setor || '').trim();
+  const dataFinal = (data || '').trim();
+  const tipoFinal = TIPOS_PLANTAO.includes(tipo) ? tipo : '';
+  const problemas = [];
+
+  const caixaFaixa = (cfg) => ({ x: faixa.x0, y: cfg.y0, width: faixa.x1 - faixa.x0, height: cfg.altura });
+  if (nome) {
+    const b = linhaNaCaixa(ctx, nome, caixaFaixa(faixa.nome), { ...faixa.nome, cor: faixa.cor, align: 'center', canvasWidth: largura });
+    if (!b.fits) problemas.push(`O nome “${nome}” não cabe na faixa, mesmo reduzido.`);
+  }
+  if (setor) {
+    const b = linhaNaCaixa(ctx, setor, caixaFaixa(faixa.setor), { ...faixa.setor, cor: faixa.cor, align: 'center', canvasWidth: largura });
+    if (!b.fits) problemas.push(`O setor “${setor}” não cabe na faixa, mesmo reduzido.`);
+  }
+
+  const caixaLinha = (cfg) => ({ x: linhas.x0, y: cfg.y0, width: linhas.largura, height: cfg.altura });
+  const estiloLinha = { corpo: linhas.corpo, piso: linhas.piso, peso: linhas.peso, entrelinha: linhas.entrelinha, cor: linhas.cor, align: 'left', canvasWidth: largura };
+  if (dataFinal) {
+    const b = linhaNaCaixa(ctx, dataFinal, caixaLinha(linhas.data), estiloLinha);
+    if (!b.fits) problemas.push(`A data “${dataFinal}” não cabe ao lado do calendário, mesmo reduzida.`);
+  }
+  if (tipoFinal) linhaNaCaixa(ctx, tipoFinal, caixaLinha(linhas.tipo), estiloLinha);
+
+  return { fits: !problemas.length, aviso: problemas[0] || null };
+}
+
+/** Grade de cards circulares (Aniversariantes, Destaque, Bem Vindos). */
 function renderAniversariantes(ctx, formato, colaboradores) {
   const area = formato.areaCards;
   const n = colaboradores.length;
@@ -170,7 +227,7 @@ function renderAniversariantes(ctx, formato, colaboradores) {
   // reduz só as fotos, passo a passo, até caber (os nomes ficam legíveis).
   let medidas, medidos, grade;
   for (const escala of ESCALAS_FOTO) {
-    medidas = medidasPorLinhas(linhas, area.x1 - area.x0, colunas, escala);
+    medidas = { ...medidasPorLinhas(linhas, area.x1 - area.x0, colunas, escala), cores: formato.cores };
     medidos = colaboradores.map((c) => medirCard(ctx, c, medidas));
     grade = distribuir(n, medidos.map((m) => m.altura), area, medidas);
     if (grade.cabe) break;
@@ -188,10 +245,10 @@ function renderAniversariantes(ctx, formato, colaboradores) {
 
 /**
  * @param {HTMLCanvasElement} canvas
- * @param {{ image: HTMLImageElement, formato: object, texto?: string, data?: string, colaboradores: object[] }} opts
+ * @param {{ image: HTMLImageElement, formato: object, texto?: string, data?: string, tipoPlantao?: string, colaboradores: object[] }} opts
  * @returns {{ fits: boolean, aviso: string|null, palavraLonga?: string|null }}
  */
-export function renderRH(canvas, { image, formato, texto, data, colaboradores }) {
+export function renderRH(canvas, { image, formato, texto, data, tipoPlantao, colaboradores }) {
   const { largura, altura } = formato;
   canvas.width = largura;
   canvas.height = altura;
@@ -209,6 +266,9 @@ export function renderRH(canvas, { image, formato, texto, data, colaboradores })
   const lista = (colaboradores || []).filter(Boolean);
   if (formato.editor === 'talento') {
     return renderTalento(ctx, formato, lista[0] || { nome: '', setor: '', foto: null });
+  }
+  if (formato.editor === 'plantao') {
+    return renderPlantao(ctx, formato, lista[0] || { nome: '', setor: '', foto: null }, data, tipoPlantao);
   }
   return renderAniversariantes(ctx, formato, lista);
 }

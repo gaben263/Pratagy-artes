@@ -4,7 +4,7 @@ import { icon } from '../icons.js';
 import { debounce, escapeHtml, toTitleCase } from '../../utils.js';
 import { loadLibrary, searchLibrary, getLoadedLibrary } from '../../data/docxLibrary.js';
 import { modoDeEdicao, EDITORES_COM_CARDS } from '../../rh/templates.js';
-import { bodyRH, wireRH, prontoRH, campoData, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
+import { bodyRH, wireRH, prontoRH, prontoPlantao, campoData, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
 
 // Listener único (registrado uma vez) que fecha o dropdown de busca ao
 // clicar fora dele, evitando acumular listeners a cada remontagem do passo.
@@ -29,7 +29,9 @@ function updateContinueState(container) {
   const modo = modoDeEdicao(setor, formato);
   const comCards = EDITORES_COM_CARDS.has(modo);
   const pronto = comCards
-    ? prontoRH(state)
+    ? modo === 'plantao'
+      ? prontoPlantao(state)
+      : prontoRH(state)
     : modo === 'encontro'
     ? prontoEncontro(state)
     : { ok: state.texto.trim().length > 0, hint: '' };

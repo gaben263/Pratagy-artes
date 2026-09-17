@@ -122,7 +122,14 @@ export async function updatePreview() {
     // As peças do RH têm compositor próprio (que usa o motor por baixo para o
     // texto do Atenção); todo o resto é o motor direto.
     const resultado = EDITORES_RH.has(modo)
-      ? renderRH(canvas, { image, formato, texto: state.texto, data: state.rh.data, colaboradores: state.rh.colaboradores })
+      ? renderRH(canvas, {
+          image,
+          formato,
+          texto: state.texto,
+          data: state.rh.data,
+          tipoPlantao: state.rh.tipoPlantao,
+          colaboradores: state.rh.colaboradores,
+        })
       : renderCanvas(canvas, {
           image,
           formato,

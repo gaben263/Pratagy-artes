@@ -206,12 +206,15 @@ export function medirCard(ctx, colaborador, medidas) {
  */
 export function desenharCard(ctx, colaborador, medidas, medido, { x, y }) {
   const { fotoDiametro, gapFoto, gapFaixas } = medidas;
+  // Cores por template (3.20): Destaque e Bem Vindos seguem o amarelo da
+  // própria arte. Quem não declara `cores` continua em CORES.
+  const cores = medidas.cores || CORES;
   ctx.save();
   ctx.translate(x, y + fotoDiametro / 2);
   desenharFoto(ctx, { foto: colaborador.foto, nome: colaborador.nome, largura: fotoDiametro, altura: fotoDiametro, forma: 'circulo' });
 
   let topo = fotoDiametro / 2 + gapFoto;
-  if (medido.faixaNome) topo += desenharFaixa(ctx, medido.faixaNome, { topo, cores: CORES.faixaNome }) + gapFaixas;
-  if (medido.faixaSetor) desenharFaixa(ctx, medido.faixaSetor, { topo, cores: CORES.faixaSetor });
+  if (medido.faixaNome) topo += desenharFaixa(ctx, medido.faixaNome, { topo, cores: cores.faixaNome }) + gapFaixas;
+  if (medido.faixaSetor) desenharFaixa(ctx, medido.faixaSetor, { topo, cores: cores.faixaSetor });
   ctx.restore();
 }

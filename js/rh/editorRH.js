@@ -1,5 +1,7 @@
-// Tela de edição das peças do RH com cards: Talento do Mês (1 colaborador) e
-// Aniversariantes do Dia (1 a N). Nome, setor e foto por pessoa.
+// Tela de edição das peças do RH com colaboradores: Talento do Mês (1),
+// a grade de cards circulares (Aniversariantes, Destaque, Bem Vindos — 1 a N)
+// e o Plantão de Gestores (1 gestor + data + tipo). Nome, setor e foto por
+// pessoa.
 //
 // Os colaboradores vivem em `state.rh.colaboradores` como objetos mutáveis
 // (a foto é um HTMLImageElement, que não se serializa nem se clona). Cada
@@ -13,6 +15,7 @@ import { getState, setState } from '../state.js';
 import { icon } from '../ui/icons.js';
 import { debounce, escapeHtml } from '../utils.js';
 import { montarEditorFoto } from './photoEditor.js';
+import { TIPOS_PLANTAO } from './templates.js';
 
 const novoColaborador = () => ({ nome: '', setor: '', foto: null });
 
@@ -52,6 +55,15 @@ export function prontoRH(state) {
       hint: lista.length === 1 ? 'Preencha nome e setor para continuar.' : `Preencha nome e setor de todos (${faltando} incompleto${faltando > 1 ? 's' : ''}).`,
     };
   }
+  return { ok: true, hint: '' };
+}
+
+/** Plantão: além de nome e setor do gestor, a data e o tipo de plantão. */
+export function prontoPlantao(state) {
+  const base = prontoRH(state);
+  if (!base.ok) return base;
+  if (!state.rh.data?.trim()) return { ok: false, hint: 'Preencha a data do plantão para continuar.' };
+  if (!TIPOS_PLANTAO.includes(state.rh.tipoPlantao)) return { ok: false, hint: 'Escolha o tipo de plantão para continuar.' };
   return { ok: true, hint: '' };
 }
 
@@ -95,7 +107,9 @@ export function wireCampoData(container) {
 
 // ------------------------------------------------------------------ HTML
 
-function linhaColaborador(indice, colaborador, { forma, mostrarNumero }) {
+const DICA_CARD = 'As faixas crescem com o texto; se o nome for muito longo, ele quebra em duas linhas.';
+
+function linhaColaborador(indice, colaborador, { forma, mostrarNumero, dica = DICA_CARD }) {
   return `
     <div data-colaborador="${indice}" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       ${mostrarNumero ? `<p class="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Colaborador ${indice + 1}</p>` : ''}
@@ -114,7 +128,7 @@ function linhaColaborador(indice, colaborador, { forma, mostrarNumero }) {
               placeholder="Ex: Recepção"
               class="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm font-semibold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
           </label>
-          <p class="text-[11px] leading-snug text-slate-400">As faixas crescem com o texto; se o nome for muito longo, ele quebra em duas linhas.</p>
+          <p class="text-[11px] leading-snug text-slate-400">${dica}</p>
         </div>
       </div>
     </div>
@@ -138,22 +152,87 @@ export function bodyRH(formato, state) {
     `;
   }
 
+  if (editor === 'plantao') {
+    if (!lista.length) ajustarQuantidade(1);
+    return `
+      <div data-rh-root data-editor="plantao" class="space-y-4">
+        <div class="rounded-2xl border border-brand-vivid/30 bg-brand-light/25 px-4 py-3 text-sm text-slate-600">
+          ${icon('info', { size: 15, className: 'mr-1 inline align-[-2px] text-brand-deep' })}
+          A foto entra no círculo da arte; nome e setor, na faixa azul. Data e tipo ficam ao lado dos ícones.
+        </div>
+        ${linhaColaborador(0, getState().rh.colaboradores[0], {
+          forma: 'circulo',
+          mostrarNumero: false,
+          dica: 'Nome e setor entram na faixa azul da arte, em uma linha cada; se não couberem, a fonte reduz.',
+        })}
+        ${camposPlantao(state)}
+      </div>
+    `;
+  }
+
   const max = formato.maxColaboradores || 9;
   if (!lista.length) ajustarQuantidade(1);
-  const atual = getState().rh.colaboradores;
+  const atual = getState().rh.colaboradores.slice(0, max);
+  getState().rh.colaboradores.length = atual.length;
   return `
     <div data-rh-root data-editor="aniversariantes" class="space-y-4">
-      <div class="flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <label class="block">
-          <span class="mb-1 block text-xs font-bold text-slate-600">Quantas pessoas?</span>
-          <input type="number" data-quantidade min="1" max="${max}" step="1" value="${atual.length}" inputmode="numeric"
-            class="w-24 rounded-xl border-2 border-slate-200 px-3 py-2 text-lg font-extrabold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
-        </label>
-        <p class="pb-2 text-xs text-slate-500">De 1 a ${max}. A distribuição na arte é automática: 1 no centro, 2 lado a lado, até 6 em duas colunas, até ${max} em três.</p>
-      </div>
+      ${max > 1 ? blocoQuantidade(max, atual.length) : ''}
       <div data-lista class="space-y-3">
-        ${atual.map((c, i) => linhaColaborador(i, c, { forma: 'circulo', mostrarNumero: true })).join('')}
+        ${atual.map((c, i) => linhaColaborador(i, c, { forma: 'circulo', mostrarNumero: max > 1 })).join('')}
       </div>
+    </div>
+  `;
+}
+
+// Campo "Quantas pessoas?" da grade. Um template de uma pessoa só (Destaque)
+// não mostra o bloco: um campo que só aceita um valor é ruído para o RH. O
+// texto de ajuda descreve a distribuição só até o máximo da peça.
+function blocoQuantidade(max, atual) {
+  const distribuicao =
+    max <= 2
+      ? '1 no centro, 2 lado a lado'
+      : max <= 6
+      ? `1 no centro, 2 lado a lado, até ${max} em duas colunas`
+      : `1 no centro, 2 lado a lado, até 6 em duas colunas, até ${max} em três`;
+  return `
+    <div class="flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <label class="block">
+        <span class="mb-1 block text-xs font-bold text-slate-600">Quantas pessoas?</span>
+        <input type="number" data-quantidade min="1" max="${max}" step="1" value="${atual}" inputmode="numeric"
+          class="w-24 rounded-xl border-2 border-slate-200 px-3 py-2 text-lg font-extrabold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
+      </label>
+      <p class="pb-2 text-xs text-slate-500">De 1 a ${max}. A distribuição na arte é automática: ${distribuicao}.</p>
+    </div>
+  `;
+}
+
+// Data e tipo do Plantão. O tipo é um <select> nativo com as três opções de
+// TIPOS_PLANTAO e nada mais — o Poka-Yoke é estrutural: não existe como
+// digitar outra coisa. Começa vazio para o RH escolher de propósito.
+function camposPlantao(state) {
+  const tipoAtual = state.rh.tipoPlantao;
+  return `
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="block">
+          <span class="mb-1 flex items-center gap-1.5 text-xs font-bold text-slate-600">
+            ${icon('calendar', { size: 13, className: 'text-slate-400' })} Data do plantão
+          </span>
+          <input type="text" data-data-input maxlength="40" autocomplete="off" placeholder="Ex: 05/09 e 06/09"
+            class="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm font-semibold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
+        </label>
+        <label class="block">
+          <span class="mb-1 flex items-center gap-1.5 text-xs font-bold text-slate-600">
+            ${icon('clock', { size: 13, className: 'text-slate-400' })} Tipo de plantão
+          </span>
+          <select data-tipo-plantao
+            class="w-full rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light">
+            <option value="" ${tipoAtual ? '' : 'selected'}>Selecione…</option>
+            ${TIPOS_PLANTAO.map((t) => `<option value="${escapeHtml(t)}" ${t === tipoAtual ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('')}
+          </select>
+        </label>
+      </div>
+      <p class="mt-2 text-[11px] leading-snug text-slate-400">A data entra ao lado do calendário e o tipo ao lado do relógio, como já estão na arte.</p>
     </div>
   `;
 }
@@ -190,6 +269,21 @@ function ligarLinha(linha, formato) {
 export function wireRH(container, formato) {
   const root = container.querySelector('[data-rh-root]');
   root.querySelectorAll('[data-colaborador]').forEach((linha) => ligarLinha(linha, formato));
+
+  const dataInput = root.querySelector('[data-data-input]');
+  if (dataInput) {
+    dataInput.value = getState().rh.data;
+    const commitData = debounce(() => setState({ rh: { ...getState().rh, data: dataInput.value } }), 150);
+    dataInput.addEventListener('input', commitData);
+  }
+  const tipo = root.querySelector('[data-tipo-plantao]');
+  if (tipo) {
+    tipo.addEventListener('change', () => {
+      // Só aceita um dos três valores; qualquer outra coisa vira vazio.
+      const valor = TIPOS_PLANTAO.includes(tipo.value) ? tipo.value : '';
+      setState({ rh: { ...getState().rh, tipoPlantao: valor } });
+    });
+  }
 
   const quantidade = root.querySelector('[data-quantidade]');
   if (!quantidade) return;

@@ -54,12 +54,16 @@ export function renderPreviaStep(container) {
           state.rh.colaboradores.length && !state.texto.trim()
             ? linha(
                 state.rh.colaboradores.length === 1 ? 'Colaborador' : `Colaboradores (${state.rh.colaboradores.length})`,
-                state.rh.colaboradores.map((c) => `${escapeHtml(c.nome)} · ${escapeHtml(c.setor)}`).join('<br>'),
+                // `linha` já escapa; escapar aqui de novo mostrava "&amp;" em
+                // "Alimentos & Bebidas" e um "<br>" literal entre as pessoas.
+                // O <dd> é `whitespace-pre-wrap`: a quebra de linha vira linha.
+                state.rh.colaboradores.map((c) => `${c.nome} · ${c.setor}`).join('\n'),
                 { destaque: true }
               )
             : linha(isComunicado ? 'Texto do comunicado' : 'Texto principal', aplicar(state.texto), { destaque: true })
         }
         ${formato.editor === 'encontro' ? linha('Data do encontro', state.rh.data, { destaque: true }) : ''}
+        ${formato.editor === 'plantao' ? linha('Data do plantão', state.rh.data, { destaque: true }) + linha('Tipo de plantão', state.rh.tipoPlantao, { destaque: true }) : ''}
         ${state.textoEs.trim() ? linha('Tradução (ES)', aplicar(state.textoEs)) : ''}
       </dl>
 

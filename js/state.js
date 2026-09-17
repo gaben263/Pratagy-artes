@@ -45,7 +45,7 @@ function initialState() {
     // RH: colaboradores da peça atual (nome, setor, foto em memória) e a data
     // do Encontro Geral. Nunca vai para IndexedDB/localStorage — recarregar a
     // página apaga tudo (LGPD).
-    rh: { colaboradores: [], data: '' },
+    rh: { colaboradores: [], data: '', tipoPlantao: '' },
     exported: false,
   };
 }
