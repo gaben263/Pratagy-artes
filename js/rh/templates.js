@@ -96,12 +96,15 @@ export const FORMATOS_RH = [
     imagem: 'assets/images/rh/aniversariantes.png',
     editor: 'aniversariantes',
     maxColaboradores: 9,
-    // Título "DO DIA" até y 371; "INFO-313-REV.00" em x 37–56; balão azul-claro
-    // a partir de x 942; na largura toda (169–911) o fundo é limpo até y 1201
-    // (balão dourado à direita). Largura espelhada no centro (540) com 30 px;
-    // altura com 40 px de respiro do título e do balão — é o limite físico.
-    areaCards: { x0: 169, y0: 411, x1: 911, y1: 1161 },
-    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 169, y0: 411, x1: 911, y1: 1161 }),
+    // LARGURA (3.17.2): o balão azul-claro da direita começa em x 942 e desce de
+    // y 792 até ~1200, então x 940 é o limite físico; espelhado no centro (540),
+    // dá 140–940 (800 px). Era 169–911 (742) — a faixa de setor mais larga é o
+    // que faz "Departamento Pessoal" caber no layout de 9.
+    // ALTURA: topo mantido em 411 (título "DO DIA" termina em 371). Nessa
+    // largura o fundo é limpo até y 1194 (balão dourado à direita); 20 px de
+    // respiro → 1174. O logo só começa em 1326.
+    areaCards: { x0: 140, y0: 411, x1: 940, y1: 1174 },
+    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 140, y0: 411, x1: 940, y1: 1174 }),
   },
 ];
 

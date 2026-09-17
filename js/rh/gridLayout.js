@@ -6,7 +6,7 @@
 // encostado no topo pareceria solto.
 //
 // As medidas por quantidade de linhas são para o caso comum — nomes em uma
-// linha. Quando um nome quebra em duas e o bloco estoura a área (742×750 px),
+// linha. Quando um nome quebra em duas e o bloco estoura a área (800×763 px),
 // o compositor reduz só as fotos em passos (`escala` 0,92 → 0,7) até caber;
 // os nomes continuam legíveis. Se nem a 0,7 couber, `fits: false`.
 
@@ -23,10 +23,14 @@ export function medidasPorLinhas(linhas, larguraArea, colunas, escala = 1) {
   const larguraCelula = larguraArea / colunas;
   const base =
     linhas <= 1
+      // Uma linha só: a altura permitiria mais, mas com 2 pessoas a célula tem
+      // 400 px e o card 384 — 320 já é quase o limite lateral. Fica 320.
       ? { fotoDiametro: 320, fonteNome: 40, fonteSetor: 30, gapFoto: 12, gapFaixas: 10, gapLinhas: 0 }
+      // 2 linhas: 2×(D+113)+24 ≤ 763 → D ≤ 256.
       : linhas === 2
-      ? { fotoDiametro: 240, fonteNome: 32, fonteSetor: 24, gapFoto: 10, gapFaixas: 8, gapLinhas: 24 }
-      : { fotoDiametro: 145, fonteNome: 26, fonteSetor: 20, gapFoto: 8, gapFaixas: 6, gapLinhas: 16 };
+      ? { fotoDiametro: 250, fonteNome: 32, fonteSetor: 24, gapFoto: 10, gapFaixas: 8, gapLinhas: 24 }
+      // 3 linhas: 3×(D+92)+32 ≤ 763 → D ≤ 151.
+      : { fotoDiametro: 150, fonteNome: 26, fonteSetor: 20, gapFoto: 8, gapFaixas: 6, gapLinhas: 16 };
   // Um card sozinho não precisa da largura toda: 420 px mantém a faixa
   // proporcional à foto.
   const larguraCard = Math.min(Math.round(larguraCelula) - 16, 420);

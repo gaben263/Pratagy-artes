@@ -623,7 +623,7 @@ colada na borda). Este ciclo internaliza três peças no sistema, todas 1080×14
 | | Moldura branca (`#E4E5E9`) | topo 45 · laterais 38–40 · **base 76** |
 | Aniversariantes | Título "DO DIA" | x 315–765 · y 273–371 |
 | | Limitadores | "INFO-313-REV.00" x 37–56; balão azul-claro x ≥ 942; balões de baixo y ≥ 1196; logo y ≥ 1326 |
-| | **Área útil dos cards** | **x 169–911 · y 411–1161** (refinada, ver abaixo) — largura: livre 57–941 espelhada no centro (540), 30 px de respiro |
+| | **Área útil dos cards** | **x 140–940 · y 411–1174** (refinada duas vezes, ver 3.17.1 e 3.17.2) |
 
 O Aniversariantes chegou primeiro em 1242×1754 (A4 a 150 DPI, apesar do nome do arquivo); a
 versão 1080×1440 foi salva em `_Sistema de Placas - EDIT/RH/` e copiada para `RH/`. As medições
@@ -736,6 +736,69 @@ envolvente do texto (744–748 px para curto e longo, centro da área 756); Acqu
 topo; canto das faixas sondado a 1 e 3 px (raio 8: vazio/cheio; pílula: vazio/vazio); diâmetro
 das fotos para 1/2/4/6/9 e para os casos de duas linhas ("Alexssandro Davis", "Mayrla Leite");
 PNGs em 1080×1440. Suítes v5–v8 repetidas (v8 atualizada para a grade nova): 216 verdes.
+
+#### 3.17.2 Aniversariantes: área mais larga para o setor caber
+
+O problema relatado era um caso concreto: **"Departamento Pessoal" não cabia na faixa** do layout
+de 9. Isso é largura, não altura — e a 3.17.1 tinha tratado só o eixo Y, porque a pergunta de lá
+era sobre o tamanho das fotos.
+
+**Uma premissa corrigida:** o pedido dizia "topo em y 402"; o topo real já era **411** desde a
+3.17.1 (402 vinha da versão anterior). 411 é mais baixo que 402, então mantê-lo respeita
+"não subir a área" — ficou 411.
+
+**Medições novas (1080×1440):**
+
+| O que limita | Onde |
+|---|---|
+| Balão azul-claro da direita | x ≥ 942, de y ≈ 792 a ≈ 1200 → **x 940 é o teto lateral** |
+| Balão dourado inferior direito | invade a faixa a partir de y **1195** (na largura 800) |
+| Balão azul inferior esquerdo | x ≥ 174 a partir de y 1266 (abaixo da área) |
+| "INFO-313-REV.00" | x 37–56 (não atrapalha) |
+| Logo | y ≥ 1326 |
+
+Varrendo faixas simétricas em torno do centro (540): largura 800 (x 140–940) fica limpa até
+y 1194; a partir de 820 (x 130–950) o balão azul-claro corta já em y 792. **800 é o limite
+físico da largura.**
+
+**Área: x 169–911 · y 411–1161 → x 140–940 · y 411–1174.** Largura 742 → **800** (+58);
+altura 750 → **763** (+13), com 20 px de respiro do balão dourado — o mínimo que o pedido
+autorizava.
+
+**"Departamento Pessoal" — a conta.** No layout de 9 (3 colunas) a célula é `largura/3`, o card
+`célula − 16` e a faixa 90 % do card. Rodando o `ajustarFaixa` real:
+
+| Área | Célula | Card | Faixa máx | Resultado |
+|---|---|---|---|---|
+| 742 (antes) | 247 | 231 | 208 | **não cabe** (212 px seria o mínimo, a 16 px) |
+| **800 (agora)** | 267 | 251 | **226** | **cabe em 1 linha, 17 px** (faixa de 226 px) |
+
+Cabe com a fonte reduzida a 85 % (17 de 20 px), sem quebrar em duas linhas — então a regra
+"só o nome quebra, o setor nunca" **ficou como estava**. O pedido autorizava quebrar o setor em
+duas linhas se necessário; não foi necessário, e a alternativa mais simples venceu. Se um dia
+aparecer um setor ainda mais longo, o caminho é passar `permiteQuebra: true` na faixa de setor —
+uma palavra.
+
+**Fotos: cresceram onde a altura permitiu.** O ganho vertical foi pequeno (+13 px), então os
+tamanhos subiram pouco. Com 1 ou 2 pessoas nada mudou: a altura permitiria muito mais, mas com
+2 pessoas a célula tem 400 px e o card 384 — 320 já é quase o limite lateral.
+
+| Pessoas | Antes | Agora | Limite pela altura |
+|---|---|---|---|
+| 1 | 320 | **320** (limite lateral, não vertical) | — |
+| 2 | 320 | **320** (idem) | — |
+| 4 | 240 | **250** | 256 |
+| 6 | 145 | **150** | 151 |
+| 9 | 145 | **150** | 151 |
+
+O encolhimento adaptativo para nomes em duas linhas acompanha: 9 pessoas com uma linha da grade
+quebrada → 138 (era 133); com todas quebradas → 117 (era 113); 4 pessoas com todas quebradas →
+213 (era 204).
+
+**Testes (Playwright, 27 verificações):** diâmetros de 1/2/4/6/9 e dos casos de duas linhas
+medidos por pixel; `ajustarFaixa` real confirmando "Departamento Pessoal" em 1 linha a 17 px;
+9 e 4 pessoas com esse setor em todos os cards liberando a exportação; nenhum card acima de
+y 411. Suítes v5–v8 repetidas (v8 atualizada para a grade nova): 216 verdes.
 
 ---
 
