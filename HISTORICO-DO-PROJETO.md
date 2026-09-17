@@ -907,6 +907,98 @@ Suítes v5–v9 repetidas: **243 verdes**. As v8 e v9 precisaram de ajuste — n
 porque procuravam o template por **índice** (`FORMATOS_RH[1]`) e cravavam "3 formatos". Passaram a
 buscar por `id`, para não quebrarem de novo no próximo template.
 
+### 3.19 Seis peças de comunicado puro no RH
+
+Comunicado, Comunicado Importante, Dica do Pratagynho, Fique por Dentro, Seus Benefícios e Você
+Sabia — as seis que o RH editava no Canva. Todas são o Atenção com outra arte: texto livre,
+auto-shrink, Poka-Yoke, Fibra One SemiBold, centralizado. O setor passou de 4 para **10
+templates**; `templates.js` e a grade de formatos aceitaram os seis sem ajuste estrutural.
+
+**Nomenclatura.** O arquivo veio como "Dica Prataginho", mas a arte diz **"Dica do Pratagynho"**
+(com Y). O `id` segue a grafia ASCII pedida (`dica-prataginho`); o nome na interface segue a arte.
+Todos os PNGs são 1080×1440 a 300 DPI (lido do chunk `pHYs`), o mesmo `BASE` das peças de RH
+anteriores — nenhuma conversão nova.
+
+#### Medições
+
+O predicado de "fundo limpo" mudou em relação ao Encontro Geral: **saturação ≤ 22 e canal mínimo
+≥ 195**. A saturação é quem separa fundo de objeto — todo elemento dessas artes (megafone vermelho,
+prancheta azul, coração verde, "?" amarelo, badges) é saturado. O piso de brilho deixa passar as
+**sombras difusas** dos badges 3D, que são cinza-claro e não atrapalham leitura; com o corte
+anterior (215) a sombra do selo do Comunicado Importante (`#d6dada`, mínimo 214) roubava ~100 px
+do topo. Os overlays das seis áreas foram conferidos a olho antes de codar.
+
+| id | Área (x) | Área (y) | Altura | Fecha em cima | Fecha embaixo |
+|---|---|---|---|---|---|
+| `comunicado` | 175–905 | 301–1172 | 871 | megafone sup. dir. (y 276) | sombra do megafone inf. dir. (y 1197) |
+| `comunicado-importante` | 175–905 | 424–926 | 502 | sombra do selo vermelho (y 399) | megafone vermelho (y 951) |
+| `dica-prataginho` | 175–905 | 446–1229 | 783 | rabo do balão amarelo (y 421) | halo do "?" inf. dir. (y 1254) |
+| `fique-por-dentro` | 175–905 | 304–977 | 673 | título + velocímetro (y 279) | prancheta azul (y 1002) |
+| `seus-beneficios` | 175–905 | 367–1070 | 703 | badge verde (y 342) | halo do coração inf. esq. (y 1095) |
+| `voce-sabia` | 175–905 | 414–1007 | 593 | canto arredondado do cartão (y 389) | "?" amarelo inf. dir. (y 1032) |
+
+Cada `y` é o vão limpo medido menos 24 px de respiro em cima e embaixo, como no Atenção e no
+Encontro. **A largura é 730 px (x 175–905) nas seis, a mesma do Atenção** — larguras de 601 a 881
+foram testadas em cada arte e 730 cabe em todas; só o vão vertical varia.
+
+**Alinhamento: centralizado nas seis.** As artes vêm vazias, então não há evidência direta de
+alinhamento nelas. O que há é a **assimetria natural do vão** (até onde o fundo vai para cada
+lado, sem forçar simetria): comunicado −1,5 px, comunicado-importante 0, dica −12, fique 0,
+benefícios −19, você sabia +19,5. Nenhuma passa de 2 % da largura; nenhuma pede texto à esquerda.
+`alinhamento` ficou como propriedade por template para que mudar qualquer uma seja uma palavra.
+
+**Cor: `#004F9F` nas seis, incluindo o Comunicado Importante.** O cartão dele é `#f2f7f9` — o
+vermelho é o selo e o megafone, não o fundo do texto. Contraste medido do azul sobre cada fundo:
+7,36:1 a 7,62:1.
+
+#### Limite de caracteres por uma regra só
+
+Em vez de seis números estimados, uma régua: **o corpo não cai abaixo de 32 px** no arranjo mais
+caro (3 parágrafos — cada quebra custa uma linha inteira), arredondado para baixo no múltiplo
+de 50. A régua se confere sozinha: **o Atenção, com os 600 caracteres já aprovados, renderiza a
+33 px.** Ela reproduz o número que existia em vez de inventar outro.
+
+| peça | limite a 32 px | `maxCaracteres` | capacidade física | corpo no limite (medido) |
+|---|---|---|---|---|
+| comunicado | 735 | **700** | 1417 | 33 px / 19 linhas |
+| comunicado-importante | 385 | **350** | 803 | 36 px / 10 linhas |
+| dica-prataginho | 620 | **600** | 1177 | 35 px / 16 linhas |
+| fique-por-dentro | 577 | **550** | 1114 | 32 px / 14 linhas |
+| seus-beneficios | 577 | **550** | 1136 | 33 px / 15 linhas |
+| voce-sabia | 478 | **450** | 875 | 33 px / 12 linhas |
+
+O limite vive no template (`maxCaracteres`) e `bodyTextoLivre` o lê com fallback para a constante
+de `CAMPO_TEXTO`. Nenhum formato antigo declara a propriedade — o Atenção segue em 600, o
+Encontro em 400. O Poka-Yoke continua derivando do render; o `maxlength` só evita digitar 900
+caracteres para descobrir o bloqueio no fim.
+
+#### Arquitetura: `editor: 'texto'`, não `'comunicado'`
+
+As seis declaram `editor: 'texto'`, um id novo que `render.js` despacha para o mesmo
+`renderAtencao`. Não foi reaproveitado `'atencao'` (nomearia mal seis peças que não são o Atenção)
+e **não pode ser `'comunicado'`**: `modoDeEdicao` cai no `tipoTexto` do setor quando o formato não
+declara `editor`, e `'comunicado'` já é o `tipoTexto` do Acqua Park. Pôr `'comunicado'` em
+`EDITORES_RH` faria o Acqua Park ser desenhado pelo compositor do RH — centralizado na vertical,
+em vez de ancorado no topo como o desenho dele exige. A suíte verifica exatamente isso.
+
+`engine.js`, `cardRenderer.js`, `photoEditor.js` e os quatro templates anteriores não mudaram.
+A descrição do card do setor foi atualizada ("Comunicados e avisos internos, mais Talento do Mês e
+Aniversariantes do Dia com foto"), porque 4 → 10 templates a deixou incompleta.
+
+#### Testes
+
+**Suíte v11, 117 verificações.** A tinta do texto é medida por diferença contra a arte vazia
+(várias dessas artes já têm azul impresso). Por peça: textarea sem foto, colaborador ou data;
+`maxlength` igual ao `maxCaracteres`; texto curto, médio e no limite do campo cabendo e ficando
+dentro da área declarada (lida de `computeSafeAreaPx`, não copiada); centro horizontal em 539,5;
+corpo ≥ 30 px no limite; palavra enorme bloqueando e nomeada; 1900 caracteres (injetados no
+estado) bloqueando; PNG 1080×1440. Regressão dos quatro templates anteriores, dos quatro setores e
+dos catálogos; e a prova de que o Acqua Park segue no motor, ancorado no topo (tinta em y 482–705
+numa área que vai até 1133).
+
+Suítes v5–v10 repetidas: **303 verdes**. A v10 (Encontro) cravava "4 formatos" e a lista de 4;
+virou contagem dinâmica, como as v8 e v9 na rodada anterior.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
@@ -982,14 +1074,15 @@ js/
     confetti.js             Confete da exportação
     loteModal.js            Modal da impressão em lote
   rh/                       Setor RH: templates, card, grade, compositor, editor de foto, tela
-                            (4 templates: Atenção, Encontro Geral, Talento, Aniversariantes)
+                            (10 templates: Atenção, Encontro Geral, Talento, Aniversariantes
+                            e 6 comunicados puros — ver 3.19)
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
     steps/                  Uma tela por etapa do fluxo
 
 assets/
   images/{ab,governanca,acquapark}/       Modelos do gerador
-  images/rh/                              Templates do RH (4 peças, 1080×1440)
+  images/rh/                              Templates do RH (10 peças, 1080×1440)
   catalogo/{ab,manutencao,hospitalidade}/ Artes prontas (300 DPI)
   catalogo/thumbs/                        Miniaturas
   fonts/                                  Fibra One e Satisfy

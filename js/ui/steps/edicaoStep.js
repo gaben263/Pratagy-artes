@@ -66,8 +66,7 @@ function medidaDoFormato(formato) {
 }
 
 function shell({ setor, formato, bodyHtml, comCards = false }) {
-  const isComunicado =
-    setor.tipoTexto === 'comunicado' || formato.editor === 'atencao' || formato.editor === 'encontro';
+  const isComunicado = setor.tipoTexto === 'comunicado' || COMUNICADOS.has(formato.editor);
   return `
     <div data-edicao-root>
       <button type="button" data-back
@@ -286,6 +285,10 @@ function bodyAB() {
 // Os três coletam um bloco de texto só, no mesmo campo `texto` do estado — o
 // que muda é o rótulo, o tamanho do campo e o limite de caracteres.
 
+// Editores do RH que coletam um comunicado de texto puro. Serve para o rótulo
+// da tela e para escolher o campo; o renderizador é o mesmo para todos.
+const COMUNICADOS = new Set(['atencao', 'texto', 'encontro']);
+
 const CAMPO_TEXTO = {
   carta: {
     icone: 'edit',
@@ -324,6 +327,17 @@ const CAMPO_TEXTO = {
     placeholder: 'Ex: O Encontro Geral deste mês vai apresentar os resultados do trimestre e o reconhecimento dos destaques. A presença de todos os setores é obrigatória.',
     dica: 'O texto entra entre a ilustração e a linha de horário e local. A fonte se ajusta sozinha ao tamanho do texto.',
   },
+  texto: {
+    icone: 'megaphone',
+    label: 'Texto do comunicado',
+    rows: 8,
+    // Valor de partida; cada peça sobrescreve com o seu `maxCaracteres`, porque
+    // a área útil varia de 502 px de altura (Comunicado Importante) a 871
+    // (Comunicado). Ver o cabeçalho de COMUNICADOS_PUROS em js/rh/templates.js.
+    max: 600,
+    placeholder: 'Ex: A partir de segunda-feira, o refeitório funcionará em novo horário. Procure o RH em caso de dúvida.',
+    dica: 'O texto entra na área central da arte. A fonte se ajusta sozinha ao tamanho do texto.',
+  },
   livre: {
     icone: 'edit',
     label: 'Texto da arte',
@@ -334,14 +348,22 @@ const CAMPO_TEXTO = {
   },
 };
 
-function bodyTextoLivre(modo) {
+/**
+ * @param {string} modo - qual campo montar.
+ * @param {object} [formato] - quando o template declara `maxCaracteres`, ele
+ *   manda no limite do campo: a área útil muda de peça para peça, e um número
+ *   único deixaria as menores bloqueando cedo e as maiores subaproveitadas.
+ *   Nenhum formato antigo declara a propriedade, então nada muda para eles.
+ */
+function bodyTextoLivre(modo, formato) {
   const campo = CAMPO_TEXTO[modo] || CAMPO_TEXTO.livre;
+  const max = formato?.maxCaracteres || campo.max;
   return `
     <div>
       <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
         ${icon(campo.icone, { size: 14, className: 'text-slate-400' })} ${campo.label}
       </label>
-      <textarea data-textarea rows="${campo.rows}" maxlength="${campo.max}"
+      <textarea data-textarea rows="${campo.rows}" maxlength="${max}"
         placeholder="${escapeHtml(campo.placeholder)}"
         class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light"></textarea>
       <div class="mt-1.5 flex items-start justify-between gap-3">
@@ -404,7 +426,7 @@ export function renderEdicaoStep(container) {
       ? bodyAB()
       : comCards
       ? bodyRH(formato, state)
-      : bodyTextoLivre(modo) + (comData ? campoData() : '');
+      : bodyTextoLivre(modo, formato) + (comData ? campoData() : '');
 
   container.innerHTML = shell({ setor, formato, bodyHtml, comCards });
   wireCommon(container);

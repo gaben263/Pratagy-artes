@@ -39,7 +39,10 @@ function desenharComunicado(ctx, formato, texto) {
     ...bloco,
     weight: WEIGHT_TEXTO,
     color: formato.corCorpo || '#004F9F',
-    align: 'center',
+    // `alinhamento` é por template: as artes das peças de texto puro são todas
+    // simétricas (desvio natural máximo de 19,5 px), mas se alguma futura pedir
+    // texto à esquerda, é só declarar 'left' em templates.js.
+    align: formato.alinhamento || 'center',
     safeAreaPx,
     verticalAlign: 'middle',
     canvasWidth: largura,
@@ -196,7 +199,11 @@ export function renderRH(canvas, { image, formato, texto, data, colaboradores })
   ctx.clearRect(0, 0, largura, altura);
   ctx.drawImage(image, 0, 0, largura, altura);
 
-  if (formato.editor === 'atencao') return renderAtencao(ctx, formato, texto);
+  // 'atencao' e 'texto' são a mesma peça de comunicado puro; o que muda entre
+  // elas é só a arte e a área segura declaradas no template.
+  if (formato.editor === 'atencao' || formato.editor === 'texto') {
+    return renderAtencao(ctx, formato, texto);
+  }
   if (formato.editor === 'encontro') return renderEncontro(ctx, formato, texto, data);
 
   const lista = (colaboradores || []).filter(Boolean);
