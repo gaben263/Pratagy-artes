@@ -11,7 +11,7 @@
 
 import { getState, setState } from '../state.js';
 import { icon } from '../ui/icons.js';
-import { escapeHtml } from '../utils.js';
+import { debounce, escapeHtml } from '../utils.js';
 import { montarEditorFoto } from './photoEditor.js';
 
 const novoColaborador = () => ({ nome: '', setor: '', foto: null });
@@ -24,7 +24,9 @@ function commit() {
   agendado = true;
   requestAnimationFrame(() => {
     agendado = false;
-    setState({ rh: { colaboradores: getState().rh.colaboradores } });
+    // Espalha o `rh` inteiro: `setState` troca a chave toda, e montar o objeto
+    // só com `colaboradores` apagaria a data do Encontro Geral.
+    setState({ rh: { ...getState().rh } });
   });
 }
 
@@ -51,6 +53,44 @@ export function prontoRH(state) {
     };
   }
   return { ok: true, hint: '' };
+}
+
+// ------------------------------------------------------- Encontro Geral
+//
+// A data é um campo à parte do comunicado: ela entra ao lado do ícone de
+// calendário que já vem impresso na arte, e é ela (não o texto) que libera o
+// Continuar — um Encontro Geral sem comunicado é legítimo; sem data, não.
+
+/** O que falta para poder continuar no Encontro Geral: a data. */
+export function prontoEncontro(state) {
+  return state.rh?.data?.trim()
+    ? { ok: true, hint: '' }
+    : { ok: false, hint: 'Preencha a data do encontro para continuar.' };
+}
+
+export function campoData() {
+  return `
+    <div data-campo-data class="mt-4 border-t border-slate-100 pt-4">
+      <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
+        ${icon('calendar', { size: 14, className: 'text-slate-400' })} Data do encontro
+      </label>
+      <input type="text" data-data-input maxlength="60" autocomplete="off"
+        placeholder="Ex: Sábado, 12 de setembro"
+        class="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm font-semibold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
+      <p class="mt-1.5 text-xs text-slate-400">
+        Entra ao lado do calendário, à esquerda. O horário e o local já vêm impressos na arte.
+        Datas longas quebram em duas linhas com a fonte reduzida.
+      </p>
+    </div>
+  `;
+}
+
+export function wireCampoData(container) {
+  const input = container.querySelector('[data-data-input]');
+  if (!input) return;
+  input.value = getState().rh.data;
+  const commitData = debounce(() => setState({ rh: { ...getState().rh, data: input.value } }), 150);
+  input.addEventListener('input', commitData);
 }
 
 // ------------------------------------------------------------------ HTML

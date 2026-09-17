@@ -125,7 +125,7 @@ export function openModal(contentHtml, { onMount, maxWidth = 'max-w-3xl' } = {})
  */
 export function motivoNaoCoube(state) {
   if (state.avisoEncaixe) {
-    return { titulo: escapeHtml(state.avisoEncaixe), acao: 'Abrevie o texto ou reduza a quantidade de pessoas.' };
+    return { titulo: escapeHtml(state.avisoEncaixe), acao: 'Abrevie o conteúdo para liberar a exportação.' };
   }
   if (state.palavraLonga) {
     return {

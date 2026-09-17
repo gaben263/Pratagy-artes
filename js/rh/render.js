@@ -1,5 +1,6 @@
-// Compositor das peças do RH: desenha o template e, por cima, o texto do
-// Atenção ou os cards de colaborador.
+// Compositor das peças do RH: desenha o template e, por cima, o texto de
+// comunicado (Atenção e Encontro Geral), a data do Encontro Geral ou os cards
+// de colaborador (Talento e Aniversariantes).
 //
 // Devolve o mesmo contrato do motor (`fits` + motivo) para que a prévia, o
 // Continuar, a Prévia e o Download bloqueiem pelo mecanismo que já existe.
@@ -13,17 +14,20 @@ import { colunasPara, medidasPorLinhas, distribuir, ESCALAS_FOTO } from './gridL
 const WEIGHT_TEXTO = 600;
 
 /**
- * Atenção: bloco de texto com a tipografia e os limites do renderizador
+ * Bloco de texto de comunicado: a tipografia e os limites do renderizador
  * `comunicado` do motor (SemiBold, corpo entre 2,1 % e 5,8 % da largura,
  * entrelinha 1,38, quebra só por espaço, piso de 60 % para palavra longa) —
- * mas centralizado na vertical. Um comunicado curto fica no meio do cartão,
- * entre a barra "ATENÇÃO" e a onda, em vez de colado no topo.
+ * mas centralizado na vertical. Um comunicado curto fica no meio da área em
+ * vez de colado no topo.
+ *
+ * Usado pelo Atenção e pelo Encontro Geral, cada um com a sua própria área
+ * segura; o texto vazio não bloqueia nada.
  */
-function renderAtencao(ctx, formato, texto) {
+function desenharComunicado(ctx, formato, texto) {
   const safeAreaPx = computeSafeAreaPx(formato);
   const { largura } = formato;
   const textoFinal = (texto || '').trim();
-  if (!textoFinal) return { fits: true, palavraLonga: null, aviso: null };
+  if (!textoFinal) return { fits: true, palavraLonga: null };
 
   const bloco = fitFontSize(ctx, textoFinal, safeAreaPx, {
     minSize: Math.round(largura * 0.021),
@@ -40,7 +44,62 @@ function renderAtencao(ctx, formato, texto) {
     verticalAlign: 'middle',
     canvasWidth: largura,
   });
-  return { fits: bloco.fits, palavraLonga: bloco.palavraLonga, aviso: null };
+  return { fits: bloco.fits, palavraLonga: bloco.palavraLonga };
+}
+
+function renderAtencao(ctx, formato, texto) {
+  return { ...desenharComunicado(ctx, formato, texto), aviso: null };
+}
+
+/**
+ * Encontro Geral: o mesmo bloco de comunicado + a data ao lado do ícone de
+ * calendário impresso na arte.
+ *
+ * A data é o motor puro: `fitFontSize` dá o auto-shrink e a quebra só por
+ * espaço, e `drawTextBlock` já sabe alinhar à esquerda (`align: 'left'` usa
+ * `safeAreaPx.x` como origem) e centralizar na vertical. O teto de duas linhas
+ * não é código: a caixa tem 56 px e três linhas no piso de 18 px medem 62,1 px,
+ * então não existe terceira linha que caiba (ver o comentário em templates.js).
+ *
+ * `fits` é derivado do render, como no resto do sistema — não dá para forjar.
+ */
+function renderEncontro(ctx, formato, texto, data) {
+  const comunicado = desenharComunicado(ctx, formato, texto);
+
+  const cfg = formato.data;
+  const dataFinal = (data || '').trim();
+  if (!dataFinal) return { ...comunicado, aviso: null };
+
+  const caixa = { x: cfg.x, y: cfg.y, width: cfg.largura, height: cfg.altura };
+  const bloco = fitFontSize(ctx, dataFinal, caixa, {
+    minSize: cfg.piso,
+    maxSize: cfg.corpo,
+    weight: cfg.peso,
+    lineHeightRatio: cfg.entrelinha,
+  });
+  drawTextBlock(ctx, {
+    ...bloco,
+    weight: cfg.peso,
+    color: cfg.cor,
+    align: 'left',
+    safeAreaPx: caixa,
+    verticalAlign: 'middle',
+    canvasWidth: formato.largura,
+  });
+
+  // O comunicado reporta a palavra longa dele pelo caminho de sempre; a data
+  // precisa dizer que o problema é a data, senão o aviso manda "reduzir o
+  // texto" quando o texto está impecável.
+  if (!bloco.fits) {
+    return {
+      fits: false,
+      palavraLonga: null,
+      aviso: bloco.palavraLonga
+        ? `A data “${bloco.palavraLonga}” tem uma palavra larga demais para o espaço ao lado do calendário.`
+        : 'A data não cabe ao lado do calendário, nem reduzida em duas linhas.',
+    };
+  }
+  return { ...comunicado, aviso: null };
 }
 
 const GAP_POLAROID = 6;
@@ -118,16 +177,18 @@ function renderAniversariantes(ctx, formato, colaboradores) {
 
   const primeiroErro = medidos.find((m) => !m.fits);
   let aviso = primeiroErro ? primeiroErro.aviso : null;
-  if (!aviso && !grade.cabe) aviso = `Os ${n} cards não cabem na área da arte com esses nomes.`;
+  if (!aviso && !grade.cabe) {
+    aviso = `Os ${n} cards não cabem na área da arte com esses nomes. Abrevie os nomes ou reduza a quantidade de pessoas.`;
+  }
   return { fits: !aviso, aviso, fotoDiametro: medidas.fotoDiametro };
 }
 
 /**
  * @param {HTMLCanvasElement} canvas
- * @param {{ image: HTMLImageElement, formato: object, texto?: string, colaboradores: object[] }} opts
+ * @param {{ image: HTMLImageElement, formato: object, texto?: string, data?: string, colaboradores: object[] }} opts
  * @returns {{ fits: boolean, aviso: string|null, palavraLonga?: string|null }}
  */
-export function renderRH(canvas, { image, formato, texto, colaboradores }) {
+export function renderRH(canvas, { image, formato, texto, data, colaboradores }) {
   const { largura, altura } = formato;
   canvas.width = largura;
   canvas.height = altura;
@@ -136,6 +197,7 @@ export function renderRH(canvas, { image, formato, texto, colaboradores }) {
   ctx.drawImage(image, 0, 0, largura, altura);
 
   if (formato.editor === 'atencao') return renderAtencao(ctx, formato, texto);
+  if (formato.editor === 'encontro') return renderEncontro(ctx, formato, texto, data);
 
   const lista = (colaboradores || []).filter(Boolean);
   if (formato.editor === 'talento') {

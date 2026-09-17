@@ -9,6 +9,8 @@
 //   'atencao'         → textarea existente + bloco de texto do motor
 //                       (`fitFontSize`/`drawTextBlock`, SemiBold, auto-shrink)
 //                       centralizado na vertical pelo compositor do RH.
+//   'encontro'        → o mesmo bloco de texto do 'atencao' + um campo de data
+//                       ao lado do ícone de calendário já impresso na arte.
 //   'talento'         → 1 colaborador (foto no polaroid + faixas giradas).
 //   'aniversariantes' → N colaboradores em grade (foto circular + faixas).
 
@@ -67,6 +69,46 @@ export const FORMATOS_RH = [
   },
   {
     ...BASE,
+    id: 'encontro',
+    nome: 'Encontro Geral',
+    descricao: 'Convocação do encontro, com a data do dia',
+    imagem: 'assets/images/rh/encontro.png',
+    editor: 'encontro',
+    corCorpo: '#004F9F',
+    // O vão entre a ilustração e a fileira de ícones está 100 % limpo de
+    // y 492 a 853, na largura inteira da arte. A largura vem da própria peça:
+    // a fileira de ícones (x 189–890) e a frase impressa de baixo (x 190–891)
+    // têm exatamente 702 px, simétricas no centro (540) — essa é a coluna de
+    // conteúdo do layout. Vertical: 24 px de respiro da engrenagem mais baixa
+    // do desenho (491) e da fileira de ícones (854); o centro do bloco fica em
+    // 672,5, o centro exato do vão.
+    safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 189, y0: 516, x1: 891, y1: 829 }),
+    // Campo de data: entra à esquerda, colado no ícone de calendário impresso
+    // (x 189–225), e não pode encostar no relógio (x 482).
+    //   x 239 = 225 + os mesmos 14 px de gap ícone→texto dos outros dois grupos
+    //   largura 204 = até 443, deixando 40 px de respiro do relógio
+    //   y 853 + altura 56 → centro em 881, o mesmo dos três ícones e dos dois
+    //   textos já impressos (880,5 / 881 / 881)
+    //
+    // O limite de DUAS linhas não é uma regra à parte: sai da geometria. Com
+    // entrelinha 1,15 e piso de 18 px, três linhas medem 62,1 px e não cabem
+    // nos 56 px da caixa — então `fitFontSize` nunca devolve três linhas que
+    // "cabem", e acima disso bloqueia. Corpo 24 px Heavy é o mesmo tamanho
+    // medido no "15hOO" e no "No Teatro do / Pratagy Resort" impressos.
+    data: {
+      x: 239,
+      y: 853,
+      largura: 204,
+      altura: 56,
+      corpo: 24,
+      piso: 18,
+      entrelinha: 1.15,
+      peso: 800,
+      cor: '#004F9F',
+    },
+  },
+  {
+    ...BASE,
     id: 'talento',
     nome: 'Talento do Mês',
     descricao: 'Um colaborador em destaque no polaroid',
@@ -109,8 +151,8 @@ export const FORMATOS_RH = [
 ];
 
 export const EDITORES_COM_CARDS = new Set(['talento', 'aniversariantes']);
-// Tudo que o compositor do RH renderiza (os cards e o texto do Atenção).
-export const EDITORES_RH = new Set(['atencao', 'talento', 'aniversariantes']);
+// Tudo que o compositor do RH renderiza (os cards e os textos de comunicado).
+export const EDITORES_RH = new Set(['atencao', 'encontro', 'talento', 'aniversariantes']);
 
 /** O modo de edição/render de um formato (RH) ou do setor (demais). */
 export function modoDeEdicao(setor, formato) {

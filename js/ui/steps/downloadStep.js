@@ -115,9 +115,12 @@ export function renderDownloadStep(container) {
     .trim()
     .slice(0, 40)
     .replace(/\s+\S*$/, '');
-  // Peças com cards (RH) não têm texto: o arquivo leva o nome do primeiro colaborador.
+  // Peças com cards (RH) não têm texto: o arquivo leva o nome do primeiro
+  // colaborador. No Encontro Geral o comunicado pode estar vazio, e aí quem
+  // identifica a peça é a data.
   const primeiroNome = state.rh.colaboradores[0]?.nome.trim().split(/\s+/)[0] || '';
-  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${resumoTexto || primeiroNome}`;
+  const identificador = resumoTexto || primeiroNome || state.rh.data.trim();
+  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${identificador}`;
 
   container.innerHTML = `
     <div>

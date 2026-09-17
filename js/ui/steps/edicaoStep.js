@@ -4,7 +4,7 @@ import { icon } from '../icons.js';
 import { debounce, escapeHtml, toTitleCase } from '../../utils.js';
 import { loadLibrary, searchLibrary, getLoadedLibrary } from '../../data/docxLibrary.js';
 import { modoDeEdicao, EDITORES_COM_CARDS } from '../../rh/templates.js';
-import { bodyRH, wireRH, prontoRH } from '../../rh/editorRH.js';
+import { bodyRH, wireRH, prontoRH, campoData, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
 
 // Listener único (registrado uma vez) que fecha o dropdown de busca ao
 // clicar fora dele, evitando acumular listeners a cada remontagem do passo.
@@ -23,10 +23,16 @@ function updateContinueState(container) {
   const btn = container.querySelector('[data-continue]');
   if (!btn) return;
 
-  // Peças com cards (RH) não têm `texto`: o que libera é todo colaborador ter
-  // nome e setor.
-  const comCards = EDITORES_COM_CARDS.has(modoDeEdicao(setor, formato));
-  const pronto = comCards ? prontoRH(state) : { ok: state.texto.trim().length > 0, hint: '' };
+  // Cada peça libera o Continuar por um critério diferente: as de card (RH)
+  // exigem nome e setor de todo mundo; o Encontro Geral exige a data (o
+  // comunicado pode ficar em branco); as demais, o texto.
+  const modo = modoDeEdicao(setor, formato);
+  const comCards = EDITORES_COM_CARDS.has(modo);
+  const pronto = comCards
+    ? prontoRH(state)
+    : modo === 'encontro'
+    ? prontoEncontro(state)
+    : { ok: state.texto.trim().length > 0, hint: '' };
   const hasText = pronto.ok;
   const enabled = hasText && state.fits;
 
@@ -37,14 +43,14 @@ function updateContinueState(container) {
   const hint = container.querySelector('[data-continue-hint]');
   if (hint) {
     hint.textContent = !hasText
-      ? comCards
+      ? comCards || modo === 'encontro'
         ? pronto.hint
         : setor?.tipoTexto === 'comunicado'
         ? 'Escreva o texto do comunicado para continuar.'
         : 'Digite o texto da arte para continuar.'
       : !state.fits
       ? state.avisoEncaixe
-        ? `${state.avisoEncaixe} Abrevie o texto.`
+        ? state.avisoEncaixe
         : state.palavraLonga
         ? `A palavra “${state.palavraLonga}” é muito longa para este formato. Reduza o texto ou escolha outro modelo.`
         : 'Reduza o texto: ele não cabe na área segura (veja o alerta na prévia).'
@@ -60,7 +66,8 @@ function medidaDoFormato(formato) {
 }
 
 function shell({ setor, formato, bodyHtml, comCards = false }) {
-  const isComunicado = setor.tipoTexto === 'comunicado' || formato.editor === 'atencao';
+  const isComunicado =
+    setor.tipoTexto === 'comunicado' || formato.editor === 'atencao' || formato.editor === 'encontro';
   return `
     <div data-edicao-root>
       <button type="button" data-back
@@ -304,6 +311,19 @@ const CAMPO_TEXTO = {
     placeholder: 'Ex: A partir de segunda-feira, o ponto eletrônico passa a ser registrado no novo aplicativo. Procure o RH em caso de dúvida.',
     dica: 'O texto entra abaixo da barra "ATENÇÃO", que já vem impressa na arte. A fonte se ajusta sozinha ao tamanho do texto.',
   },
+  encontro: {
+    icone: 'megaphone',
+    label: 'Texto do comunicado',
+    rows: 6,
+    // 400 e não 600 como no Atenção: a área útil desta peça tem 313 px de
+    // altura (contra 778), e a medição mostrou que ela comporta ~425 caracteres
+    // no pior caso (4 parágrafos: cada quebra custa uma linha inteira). O limite do
+    // campo evita digitar 600 e só descobrir no bloqueio; o Poka-Yoke continua
+    // sendo a rede de segurança de verdade.
+    max: 400,
+    placeholder: 'Ex: O Encontro Geral deste mês vai apresentar os resultados do trimestre e o reconhecimento dos destaques. A presença de todos os setores é obrigatória.',
+    dica: 'O texto entra entre a ilustração e a linha de horário e local. A fonte se ajusta sozinha ao tamanho do texto.',
+  },
   livre: {
     icone: 'edit',
     label: 'Texto da arte',
@@ -376,7 +396,15 @@ export function renderEdicaoStep(container) {
   // demais casos — um setor pode misturar texto e cards.
   const modo = modoDeEdicao(setor, formato);
   const comCards = EDITORES_COM_CARDS.has(modo);
-  const bodyHtml = modo === 'busca' ? bodyAB() : comCards ? bodyRH(formato, state) : bodyTextoLivre(modo);
+  // O Encontro Geral é o comunicado de texto livre + um campo de data logo
+  // abaixo; o resto da tela é exatamente o do Atenção.
+  const comData = modo === 'encontro';
+  const bodyHtml =
+    modo === 'busca'
+      ? bodyAB()
+      : comCards
+      ? bodyRH(formato, state)
+      : bodyTextoLivre(modo) + (comData ? campoData() : '');
 
   container.innerHTML = shell({ setor, formato, bodyHtml, comCards });
   wireCommon(container);
@@ -384,6 +412,7 @@ export function renderEdicaoStep(container) {
   if (modo === 'busca') wireBuscaAB(container, state);
   else if (comCards) wireRH(container, formato);
   else wireTextoLivre(container, state);
+  if (comData) wireCampoData(container);
 
   updateContinueState(container);
 }

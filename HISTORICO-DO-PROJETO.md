@@ -800,6 +800,113 @@ medidos por pixel; `ajustarFaixa` real confirmando "Departamento Pessoal" em 1 l
 9 e 4 pessoas com esse setor em todos os cards liberando a exportação; nenhum card acima de
 y 411. Suítes v5–v8 repetidas (v8 atualizada para a grade nova): 216 verdes.
 
+### 3.18 Encontro Geral: o quarto template do RH
+
+Uma peça 100 % texto com dois campos independentes — o comunicado no miolo e a **data** ao lado
+do ícone de calendário que já vem impresso na arte. O horário ("15hOO") e o local ("No Teatro do
+Pratagy Resort") são parte do PNG e não se editam.
+
+**O arquivo tinha outro nome.** O pedido apontava `RH/encontro-geral.png`; o arquivo real é
+`RH/Encontro Geral - Grupo Pratagy - 1080x1440px.png`, no mesmo padrão dos outros três.
+
+#### Medições (1080×1440)
+
+| Elemento | Caixa | Centro vertical |
+|---|---|---|
+| Ilustração (megafone e pessoas) | x 58–443 · y 43–**491** (o ponto mais baixo é uma engrenagem em x 377–426) | — |
+| Badge "Encontro Geral" | x 480–980 · y 150–378 | — |
+| **Vão limpo, 100 % livre na largura inteira** | **y 492–853** | 672,5 |
+| Ícone de calendário | x 189–225 · y 864–897 | 880,5 |
+| Ícone de relógio | x 482–516 · y 862–898 | 880 |
+| Texto "15hOO" | x 531–610 · y 871–891 | 881 |
+| Ícone de local | x 666–700 · y 863–899 | 881 |
+| "No Teatro do / Pratagy Resort" | x 714–890 · y 854–908 (2 linhas) | 881 |
+| Frase "Juntos, fazemos…" | x 190–891 · y 1004–1078 | — |
+
+Espaço bruto entre o calendário e o relógio: **256 px** (x 226–481). Gaps de referência da própria
+arte: ícone→texto **14 px**; texto→ícone, separando grupos, **55 px**.
+
+**A medição que decidiu o layout:** a fileira de ícones (x 189–890) e a frase impressa de baixo
+(x 190–891) têm **exatamente a mesma largura, 702 px, simétricas no centro (540)**. Essa é a coluna
+de conteúdo da peça — a margem lateral do comunicado não foi escolhida, foi lida da arte.
+
+**Tipografia dos irmãos impressos:** "15hOO" mede 80 px e "Pratagy Resort" 177 px; os dois batem em
+**Fibra One Heavy (800) a 24 px**, e o bloco de duas linhas de 55 px dá **entrelinha 1,15**. Cor
+amostrada: **#004F9F**, a mesma do Atenção. A data usa exatamente esses valores, então ela lê como
+parte da arte e não como um texto colado por cima.
+
+| Área | Caixa | Origem |
+|---|---|---|
+| **Comunicado** | x 189–891 · y 516–829 (702×313) | coluna de conteúdo da arte; 24 px de respiro da engrenagem (491) e da fileira de ícones (854); centro em 672,5, o centro exato do vão |
+| **Data** | x 239–443 (204 px) · y 853–909 (56 px) | 239 = 225 + os 14 px de gap ícone→texto da arte; centro em 881, o mesmo dos três ícones e dos dois textos impressos |
+
+#### Arquitetura: nem componente novo, nem modo novo no `cardRenderer`
+
+As duas opções levantadas no pedido foram descartadas, porque **o motor já fazia tudo**:
+
+- `drawTextBlock` já aceita `align: 'left'` (usa `safeAreaPx.x` como origem) e
+  `verticalAlign: 'middle'`; `fitFontSize` já dá o auto-shrink, a quebra só por espaço e o
+  `palavraLonga` do Poka-Yoke. Os dois já estavam exportados desde a 3.17.1 — **`engine.js` não
+  mudou nesta rodada**.
+- `cardRenderer.js` existe para desenhar uma *pílula dimensionada pelo texto*: padding derivado do
+  corpo, cor de fundo, raio. A data não tem pílula, não tem padding e a caixa dela é fixa (o vão
+  entre dois ícones impressos), não derivada do texto. Um `textAlign: 'left'` ali significaria
+  quatro flags desligando quase tudo que o módulo faz — no módulo de que Talento e Aniversariantes
+  dependem. Risco de regressão por zero reuso. **`cardRenderer.js` também não mudou.**
+
+**O teto de duas linhas não é código.** Com entrelinha 1,15 e piso de 18 px, três linhas medem
+62,1 px e a caixa tem 56: não existe terceira linha que caiba. A regra sai da geometria, e
+`fitFontSize` bloqueia sozinho a partir daí.
+
+O compositor ganhou `desenharComunicado`, que o Atenção e o Encontro compartilham — mesma
+tipografia, mesmo auto-shrink, mesma centralização vertical, cada um com a sua área segura.
+
+#### Casos de data (rodados com o `fitFontSize` real)
+
+| Data | Resultado |
+|---|---|
+| `05/09` | 24 px · 1 linha |
+| `20 de novembro de 2026` | 24 px · 2 linhas |
+| `Sábado, 12 de setembro de 2026` | 21 px · 2 linhas ("Sábado, 12 de" / "setembro de 2026") |
+| `Segunda-feira, 30 de dezembro de 2026` | 19 px · 2 linhas |
+| `Sábado, 12 de setembro de 2026, às 15h em ponto no Teatro` | **bloqueia** |
+| `Superextraordinariamentelongapalavra` | **bloqueia**, nomeando a palavra |
+
+**Por que a caixa tem 204 px e não 188.** O respiro perfeitamente consistente com a arte seria
+55 px (o gap texto→ícone impresso), o que daria 188 px. Mas a 188 px "Segunda-feira, 30 de dezembro
+de 2026" bloqueia — e isso é uma data real, não um caso absurdo. O respiro caiu para 40 px.
+
+Também foi testada a quebra equilibrada do `quebrarEmDuas` contra a quebra gulosa do motor: em
+todos os casos reais o resultado é **idêntico**. Ficou a do motor, que já existia.
+
+#### Dois campos, dois critérios
+
+O comunicado pode ficar **em branco** (um Encontro Geral só com a data é legítimo); a data, não.
+Quem libera o Continuar é `prontoEncontro`. O `maxlength` do comunicado é **400**, não 600 como no
+Atenção: a área tem 313 px de altura contra 778, e a medição mostrou capacidade de ~476 caracteres
+em texto corrido e ~425 no pior caso com quatro parágrafos (cada quebra custa uma linha inteira).
+O Poka-Yoke continua sendo a rede de segurança; o limite do campo só evita digitar 600 para
+descobrir o bloqueio no fim.
+
+**Um remendo de microcópia.** O aviso genérico de encaixe mandava "Abrevie o texto ou reduza a
+quantidade de pessoas" — correto para os cards, sem sentido para uma data. A ação genérica virou
+"Abrevie o conteúdo para liberar a exportação", e o conselho sobre quantidade de pessoas foi para
+dentro do aviso do Aniversariantes, onde ele é verdade.
+
+#### Testes
+
+**Suíte v10, 60 verificações.** A caixa da data é medida **por diferença** contra a mesma arte com
+a data vazia: a fileira de ícones já tem tinta azul impressa, e procurar azul numa janela pegaria
+o "15hOO". O diff isola exatamente os pixels que a data acrescentou — e é assim que o teste prova
+que ela nunca alcança x 482 (o relógio) nem sobe acima de y 829 (a área do comunicado). Verificado
+também: alinhamento à esquerda em x 239, centro vertical em 881, uma linha para data curta e duas
+para longa, bloqueio da data absurda com aviso que fala de data e não de pessoas, comunicado vazio
+liberando, comunicado de 400 caracteres cabendo dentro da área.
+
+Suítes v5–v9 repetidas: **243 verdes**. As v8 e v9 precisaram de ajuste — não por regressão, mas
+porque procuravam o template por **índice** (`FORMATOS_RH[1]`) e cravavam "3 formatos". Passaram a
+buscar por `id`, para não quebrarem de novo no próximo template.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
@@ -875,12 +982,14 @@ js/
     confetti.js             Confete da exportação
     loteModal.js            Modal da impressão em lote
   rh/                       Setor RH: templates, card, grade, compositor, editor de foto, tela
+                            (4 templates: Atenção, Encontro Geral, Talento, Aniversariantes)
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
     steps/                  Uma tela por etapa do fluxo
 
 assets/
   images/{ab,governanca,acquapark}/       Modelos do gerador
+  images/rh/                              Templates do RH (4 peças, 1080×1440)
   catalogo/{ab,manutencao,hospitalidade}/ Artes prontas (300 DPI)
   catalogo/thumbs/                        Miniaturas
   fonts/                                  Fibra One e Satisfy

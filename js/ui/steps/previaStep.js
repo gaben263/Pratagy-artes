@@ -27,7 +27,8 @@ export function renderPreviaStep(container) {
 
   // Mostra o texto exatamente como ele sai na arte.
   const aplicar = (t) => (setor.titleCase ? toTitleCase(t) : t);
-  const isComunicado = setor.tipoTexto === 'comunicado';
+  const isComunicado =
+    setor.tipoTexto === 'comunicado' || formato.editor === 'atencao' || formato.editor === 'encontro';
   const medida = formato.digital
     ? `${formato.largura}×${formato.altura} px`
     : `${formato.mmLargura}×${formato.mmAltura} mm`;
@@ -58,6 +59,7 @@ export function renderPreviaStep(container) {
               )
             : linha(isComunicado ? 'Texto do comunicado' : 'Texto principal', aplicar(state.texto), { destaque: true })
         }
+        ${formato.editor === 'encontro' ? linha('Data do encontro', state.rh.data, { destaque: true }) : ''}
         ${state.textoEs.trim() ? linha('Tradução (ES)', aplicar(state.textoEs)) : ''}
       </dl>
 
