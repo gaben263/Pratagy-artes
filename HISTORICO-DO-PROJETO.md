@@ -1206,6 +1206,87 @@ referência limpa tem de ser a própria imagem desenhada num canvas à parte; e 
 são centralizadas, então contar colunas na projeção da área inteira funde as colunas — conta-se
 na primeira linha, que está sempre completa.
 
+### 3.22 Rodada 2B do RH: Café com Gestor e Show de Talentos
+
+Os dois últimos templates do RH, ambos "texto + campos ao lado de ícones impressos", como o
+Encontro Geral. O setor foi de 14 para **16 templates**.
+
+**O que cada arte já traz impresso decide o formulário.** No Café com Gestor a parte de baixo é
+uma faixa marrom vazia com três ícones (calendário, relógio, pin): texto, data, horário e local
+são editáveis. No Show de Talentos o PNG em branco já vem com o corpo ("Venha prestigiar…", até
+y 1015) **e** com o local ("Teatro Pratagy", x 512–810 · y 1147–1189, `#004F9F`, Heavy ~40) —
+então o Show tem só data e horário, e não mostra textarea (`semTexto`). Um campo que não desenha
+em lugar nenhum seria uma armadilha.
+
+#### Medições
+
+| | Café com Gestor | Show de Talentos |
+|---|---|---|
+| Corpo do texto | x 140–940 · y 743–1075 (800×332): divisão de cores em y 719, calendário em 1099, 24 px de respiro nos dois; largura da coluna do exemplo do RH | impresso |
+| Cor do texto | branco `#FFFFFF` sobre `#5e3712` (10,3:1); SemiBold centrado, o estilo do Encontro | — |
+| Limite do corpo | **500** (pior arranjo, 4 parágrafos: 510 cabem no piso; múltiplo de 50 abaixo — a régua do Encontro, 435 → 400) | — |
+| Calendário / relógio / pin | x 206–264 · y 1099–1159 / x 650–706 · y 1100–1156 / x 393–434 · y 1186–1240 (laranja) | x 237–284 · y 1064–1113 / x 268–317 · y 1141–1190 / x 456–494 (azul; pin fixo) |
+| Caixa da data | x 288–626 (338) · y 1099–1159 — fecha no relógio | x 302–869 (567) · y 1064–1113 — fecha na palmeira direita (x 893) |
+| Caixa do horário | x 730–916 (186) · y 1100–1156 — fecha no grão de café da direita (x 940, y 1077–1167) | x 335–438 (**103**) · y 1141–1190 — fecha no pin |
+| Caixa do local | x 458–940 (482) · y 1186–1240 — espelha a margem esquerda | — |
+| Gap ícone→texto | 24 (o exemplo usa 21 / 22 / 28) | 18, o gap da própria arte entre o pin (494) e o "Teatro Pratagy" (512) |
+| Fonte dos campos | Heavy 42 → piso 30, calibrada no exemplo ("26/03/2026" = 275 px, "Manguezal" = 228) | Heavy 40 → piso 26, o corpo e o azul do "Teatro Pratagy" (dois azuis na mesma linha ficariam estranhos) |
+| Uma linha | pela geometria: caixas de 54–60 px < duas linhas no piso (69) | idem (49 < 60) |
+
+Cada caixa tem a altura do próprio ícone, então o texto centra na linha dele sem cálculo à parte.
+
+#### Limitação conhecida da arte: o horário do Show
+
+O relógio (x 317) e o pin do "Teatro Pratagy" (x 456) estão **na mesma linha, com 138 px entre
+eles**. Descontando o gap e o respiro, o horário tem 103 px: "15H00" mede 139 a 40 e só cabe a
+**28 px** (97); "15h" cabe a 40. O designer desenhou para um horário curto. Decisão do Gabriel:
+publicar assim, porque o RH perde a peça se esperar — o placeholder sugere "15h", o `maxlength`
+é 6, o Poka-Yoke bloqueia o que não couber ("15H00 às 17H00" nunca entra) e o que couber
+encolhido sai menor que a data (o teste registra "15H00" a ~27 px de tinta e "15h" na altura do
+"Teatro Pratagy"). **Alternativa futura:** afastar o pin ~60 px para a direita no PNG e re-medir
+(`largura` do campo `hora` e `x` do `safeAreaMm` do Show).
+
+#### Arquitetura: campos genéricos, gated por template
+
+O Encontro Geral tinha um campo `data` fixo no renderizador, na tela e na prévia. Em vez de
+copiar isso três vezes para "hora" e "local", os três lugares passaram a percorrer uma lista —
+`camposDoEncontro(formato)`: a `campos` do template (Café: data, hora, local; Show: data, hora)
+ou, **no Encontro Geral, o `data` de sempre embrulhado numa lista de um item** com os mesmos
+rótulo, placeholder, ajuda, dica e avisos que ele sempre teve. O template do Encontro não mudou;
+cada campo carrega o que o aviso precisa para nomear o culpado (`nome`, gênero, "ao lado do
+calendário/relógio/pin"), e o estado ganhou `rh.hora` e `rh.local` ao lado de `rh.data`.
+
+"Comportamento idêntico" foi conferido do jeito forte: a suíte serve o código anterior (worktree
+de HEAD, porta 5235) ao lado do novo e compara o canvas do Encontro Geral **pixel a pixel** em três
+cenários (texto + data, só data, data longa em duas linhas) — 0 pixels diferentes —, mais o
+estado do Continuar, o hint, o banner, o texto de ajuda do campo e os dois avisos de encaixe
+("não cabe… nem reduzida em duas linhas" e "palavra larga demais"), palavra por palavra.
+
+Fora isso: `previewPanel` passa `hora` e `local`; a prévia lista os campos pelo rótulo; o
+`setorStep` zera os campos novos ao trocar de setor; um ícone `mapPin` na tela. Motor, setores,
+cards, grade e os 14 templates: intactos.
+
+#### Testes
+
+**Suíte v14, 84 verificações.** Lista de 16 na ordem; Café: cadastro e caixas valor a valor,
+textarea de 500 + três inputs com rótulos, dica própria, Poka-Yoke em ordem (texto → data →
+horário → local), texto do exemplo do RH dentro da área e centrado, em branco, data/horário/local
+ao lado dos ícones (x 288 / 730 / 458, centros y 1129 / 1128 / 1213), texto curto centrado na
+vertical, texto de 500 caracteres cabendo, palavra absurda bloqueando, texto vazio liberando com
+os três campos, campos longos encolhendo e absurdos bloqueando com o culpado nomeado, prévia com
+os quatro itens, PNG 1080×1440. Show: sem textarea, dois inputs, placeholder "Ex: 15h",
+"Teatro Pratagy" confirmado na arte pura, "15h" a 40 e "15H00" a ~27 antes do pin, horário absurdo
+bloqueando, data mais larga possível cabendo, prévia sem linha de texto, arquivo nomeado pela data. Encontro pixel a pixel (acima).
+Os outros 13 templates, os quatro setores, os catálogos e o comunicado do Acqua Park (sem campos
+do RH na tela). Suítes v5–v13 repetidas.
+
+Uma armadilha de teste desta rodada: "absurdo" tem de caber no `maxlength` do input — os
+primeiros casos eram truncados pelo próprio input (a primeira camada do Poka-Yoke) e chegavam ao
+renderizador já cabendo. Os casos ficaram em maiúsculas, dentro do limite ("SEGUNDA-FEIRA
+30/03" = 358 px > 338 no Café). E a data do Show é o caso em que o input é o guarda inteiro: com
+567 px de caixa, nem a data mais larga em maiúsculas nos 32 caracteres estoura (492 no piso) — o
+teste confere isso em vez de fingir um bloqueio.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
@@ -1282,17 +1363,18 @@ js/
     confetti.js             Confete da exportação
     loteModal.js            Modal da impressão em lote
   rh/                       Setor RH: templates, card, grade, compositor, editor de foto, tela
-                            (14 templates: Atenção, Encontro Geral, Talento, Aniversariantes,
+                            (16 templates: Atenção, Encontro Geral, Talento, Aniversariantes,
                             6 comunicados puros — 3.19 —, Destaque ADM/Operacional,
                             Bem Vindos e Gestores de Plantão — 3.20; grade de duas
-                            linhas e ajustes — 3.21)
+                            linhas e ajustes — 3.21; Café com Gestor e Show de
+                            Talentos — 3.22)
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
     steps/                  Uma tela por etapa do fluxo
 
 assets/
   images/{ab,governanca,acquapark}/       Modelos do gerador
-  images/rh/                              Templates do RH (14 peças, 1080×1440)
+  images/rh/                              Templates do RH (16 peças, 1080×1440)
   catalogo/{ab,manutencao,hospitalidade}/ Artes prontas (300 DPI)
   catalogo/thumbs/                        Miniaturas
   fonts/                                  Fibra One e Satisfy

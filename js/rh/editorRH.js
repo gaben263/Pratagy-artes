@@ -15,7 +15,7 @@ import { getState, setState } from '../state.js';
 import { icon } from '../ui/icons.js';
 import { debounce, escapeHtml } from '../utils.js';
 import { montarEditorFoto } from './photoEditor.js';
-import { TIPOS_PLANTAO } from './templates.js';
+import { TIPOS_PLANTAO, camposDoEncontro } from './templates.js';
 
 const novoColaborador = () => ({ nome: '', setor: '', foto: null });
 
@@ -67,42 +67,47 @@ export function prontoPlantao(state) {
   return { ok: true, hint: '' };
 }
 
-// ------------------------------------------------------- Encontro Geral
+// ------------------------------- Encontro Geral, Café com Gestor, Show
 //
-// A data é um campo à parte do comunicado: ela entra ao lado do ícone de
-// calendário que já vem impresso na arte, e é ela (não o texto) que libera o
-// Continuar — um Encontro Geral sem comunicado é legítimo; sem data, não.
+// Os campos ao lado dos ícones impressos são campos à parte do comunicado, e
+// são eles (não o texto) que liberam o Continuar — um Encontro Geral sem
+// comunicado é legítimo; sem data, não. A lista vem de `camposDoEncontro`:
+// no Encontro Geral é o `data` de sempre; no Café, data, horário e local; no
+// Show, data e horário (o local está impresso na arte).
 
-/** O que falta para poder continuar no Encontro Geral: a data. */
-export function prontoEncontro(state) {
-  return state.rh?.data?.trim()
-    ? { ok: true, hint: '' }
-    : { ok: false, hint: 'Preencha a data do encontro para continuar.' };
+/** O que falta para poder continuar: o primeiro campo vazio, pelo nome. */
+export function prontoEncontro(state, formato) {
+  for (const campo of camposDoEncontro(formato)) {
+    if (!state.rh?.[campo.id]?.trim()) return { ok: false, hint: campo.dicaVazio };
+  }
+  return { ok: true, hint: '' };
 }
 
-export function campoData() {
-  return `
+export function camposEncontro(formato) {
+  return camposDoEncontro(formato)
+    .map(
+      (campo) => `
     <div data-campo-data class="mt-4 border-t border-slate-100 pt-4">
       <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
-        ${icon('calendar', { size: 14, className: 'text-slate-400' })} Data do encontro
+        ${icon(campo.icone, { size: 14, className: 'text-slate-400' })} ${escapeHtml(campo.rotulo)}
       </label>
-      <input type="text" data-data-input maxlength="60" autocomplete="off"
-        placeholder="Ex: Sábado, 12 de setembro"
+      <input type="text" data-data-input="${campo.id}" maxlength="${campo.maxCaracteres}" autocomplete="off"
+        placeholder="${escapeHtml(campo.placeholder)}"
         class="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm font-semibold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
-      <p class="mt-1.5 text-xs text-slate-400">
-        Entra ao lado do calendário, à esquerda. O horário e o local já vêm impressos na arte.
-        Datas longas quebram em duas linhas com a fonte reduzida.
-      </p>
+      <p class="mt-1.5 text-xs text-slate-400">${escapeHtml(campo.ajuda)}</p>
     </div>
-  `;
+  `
+    )
+    .join('');
 }
 
 export function wireCampoData(container) {
-  const input = container.querySelector('[data-data-input]');
-  if (!input) return;
-  input.value = getState().rh.data;
-  const commitData = debounce(() => setState({ rh: { ...getState().rh, data: input.value } }), 150);
-  input.addEventListener('input', commitData);
+  for (const input of container.querySelectorAll('[data-data-input]')) {
+    const id = input.dataset.dataInput;
+    input.value = getState().rh[id] || '';
+    const commit = debounce(() => setState({ rh: { ...getState().rh, [id]: input.value } }), 150);
+    input.addEventListener('input', commit);
+  }
 }
 
 // ------------------------------------------------------------------ HTML

@@ -42,10 +42,11 @@ function initialState() {
     // Motivo em texto quando o encaixe falha por outra razão que não uma
     // palavra longa (ex.: nome que não cabe no card do RH). Nomeia o culpado.
     avisoEncaixe: null,
-    // RH: colaboradores da peça atual (nome, setor, foto em memória) e a data
-    // do Encontro Geral. Nunca vai para IndexedDB/localStorage — recarregar a
-    // página apaga tudo (LGPD).
-    rh: { colaboradores: [], data: '', tipoPlantao: '' },
+    // RH: colaboradores da peça atual (nome, setor, foto em memória), a data
+    // (Encontro Geral, Plantão, Café, Show), o horário e o local (Café, Show)
+    // e o tipo de plantão. Nunca vai para IndexedDB/localStorage — recarregar
+    // a página apaga tudo (LGPD).
+    rh: { colaboradores: [], data: '', hora: '', local: '', tipoPlantao: '' },
     exported: false,
   };
 }

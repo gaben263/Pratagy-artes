@@ -4,7 +4,7 @@ import { icon } from '../icons.js';
 import { debounce, escapeHtml, toTitleCase } from '../../utils.js';
 import { loadLibrary, searchLibrary, getLoadedLibrary } from '../../data/docxLibrary.js';
 import { modoDeEdicao, EDITORES_COM_CARDS } from '../../rh/templates.js';
-import { bodyRH, wireRH, prontoRH, prontoPlantao, campoData, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
+import { bodyRH, wireRH, prontoRH, prontoPlantao, camposEncontro, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
 
 // Listener único (registrado uma vez) que fecha o dropdown de busca ao
 // clicar fora dele, evitando acumular listeners a cada remontagem do passo.
@@ -33,7 +33,7 @@ function updateContinueState(container) {
       ? prontoPlantao(state)
       : prontoRH(state)
     : modo === 'encontro'
-    ? prontoEncontro(state)
+    ? prontoEncontro(state, formato)
     : { ok: state.texto.trim().length > 0, hint: '' };
   const hasText = pronto.ok;
   const enabled = hasText && state.fits;
@@ -360,6 +360,8 @@ const CAMPO_TEXTO = {
 function bodyTextoLivre(modo, formato) {
   const campo = CAMPO_TEXTO[modo] || CAMPO_TEXTO.livre;
   const max = formato?.maxCaracteres || campo.max;
+  // A dica do Encontro fala na ilustração dele; o Café traz a sua.
+  const dica = formato?.dicaTexto || campo.dica;
   return `
     <div>
       <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-600">
@@ -369,7 +371,7 @@ function bodyTextoLivre(modo, formato) {
         placeholder="${escapeHtml(campo.placeholder)}"
         class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light"></textarea>
       <div class="mt-1.5 flex items-start justify-between gap-3">
-        <p class="text-xs text-slate-400">${campo.dica}</p>
+        <p class="text-xs text-slate-400">${dica}</p>
         <p data-char-count class="shrink-0 text-xs tabular-nums text-slate-400"></p>
       </div>
     </div>
@@ -421,21 +423,23 @@ export function renderEdicaoStep(container) {
   const modo = modoDeEdicao(setor, formato);
   const comCards = EDITORES_COM_CARDS.has(modo);
   // O Encontro Geral é o comunicado de texto livre + um campo de data logo
-  // abaixo; o resto da tela é exatamente o do Atenção.
+  // abaixo; o resto da tela é exatamente o do Atenção. O Café com Gestor e o
+  // Show de Talentos são o mesmo editor com a sua lista de campos — e o Show,
+  // que já traz o corpo impresso na arte, não mostra o textarea.
   const comData = modo === 'encontro';
   const bodyHtml =
     modo === 'busca'
       ? bodyAB()
       : comCards
       ? bodyRH(formato, state)
-      : bodyTextoLivre(modo, formato) + (comData ? campoData() : '');
+      : (formato?.semTexto ? '' : bodyTextoLivre(modo, formato)) + (comData ? camposEncontro(formato) : '');
 
   container.innerHTML = shell({ setor, formato, bodyHtml, comCards });
   wireCommon(container);
 
   if (modo === 'busca') wireBuscaAB(container, state);
   else if (comCards) wireRH(container, formato);
-  else wireTextoLivre(container, state);
+  else if (!formato?.semTexto) wireTextoLivre(container, state);
   if (comData) wireCampoData(container);
 
   updateContinueState(container);

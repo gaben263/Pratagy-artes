@@ -1,12 +1,14 @@
 // Compositor das peças do RH: desenha o template e, por cima, o texto de
-// comunicado (Atenção, Encontro Geral e os comunicados puros), a data do
-// Encontro Geral, os cards de colaborador (Talento e a grade de círculos do
-// Aniversariantes, Destaque e Bem Vindos) ou o gestor do Plantão.
+// comunicado (Atenção, Encontro Geral e os comunicados puros), os campos ao
+// lado dos ícones impressos (data do Encontro Geral; data, horário e local do
+// Café com Gestor; data e horário do Show de Talentos), os cards de
+// colaborador (Talento e a grade de círculos do Aniversariantes, Destaque e
+// Bem Vindos) ou o gestor do Plantão.
 //
 // Devolve o mesmo contrato do motor (`fits` + motivo) para que a prévia, o
 // Continuar, a Prévia e o Download bloqueiem pelo mecanismo que já existe.
 
-import { CORES, TIPOS_PLANTAO } from './templates.js';
+import { CORES, TIPOS_PLANTAO, camposDoEncontro } from './templates.js';
 import { computeSafeAreaPx, fitFontSize, drawTextBlock } from '../canvas/engine.js';
 import { medirCard, desenharCard, desenharFoto, ajustarFaixa, alturaDaFaixa, desenharFaixa } from './cardRenderer.js';
 import { colunasPara, medidasPorLinhas, distribuir, ESCALAS_FOTO } from './gridLayout.js';
@@ -67,41 +69,53 @@ function renderAtencao(ctx, formato, texto) {
  *
  * `fits` é derivado do render, como no resto do sistema — não dá para forjar.
  */
-function renderEncontro(ctx, formato, texto, data) {
-  const comunicado = desenharComunicado(ctx, formato, texto);
+//
+// Os campos vêm de `camposDoEncontro(formato)`: a lista `campos` do template
+// (Café com Gestor, Show de Talentos) ou, no Encontro Geral, o `data` de
+// sempre embrulhado numa lista de um item — o caminho dele é o mesmo de
+// antes, só escrito uma vez. `valores` é o `rh` do estado ({ data, hora,
+// local }); campo vazio não desenha nem bloqueia (quem exige é a tela).
+function renderEncontro(ctx, formato, texto, valores) {
+  const comunicado = formato.semTexto ? { fits: true, palavraLonga: null } : desenharComunicado(ctx, formato, texto);
 
-  const cfg = formato.data;
-  const dataFinal = (data || '').trim();
-  if (!dataFinal) return { ...comunicado, aviso: null };
+  for (const cfg of camposDoEncontro(formato)) {
+    const valor = (valores?.[cfg.id] || '').trim();
+    if (!valor) continue;
 
-  const caixa = { x: cfg.x, y: cfg.y, width: cfg.largura, height: cfg.altura };
-  const bloco = fitFontSize(ctx, dataFinal, caixa, {
-    minSize: cfg.piso,
-    maxSize: cfg.corpo,
-    weight: cfg.peso,
-    lineHeightRatio: cfg.entrelinha,
-  });
-  drawTextBlock(ctx, {
-    ...bloco,
-    weight: cfg.peso,
-    color: cfg.cor,
-    align: 'left',
-    safeAreaPx: caixa,
-    verticalAlign: 'middle',
-    canvasWidth: formato.largura,
-  });
+    const caixa = { x: cfg.x, y: cfg.y, width: cfg.largura, height: cfg.altura };
+    const bloco = fitFontSize(ctx, valor, caixa, {
+      minSize: cfg.piso,
+      maxSize: cfg.corpo,
+      weight: cfg.peso,
+      lineHeightRatio: cfg.entrelinha,
+    });
+    drawTextBlock(ctx, {
+      ...bloco,
+      weight: cfg.peso,
+      color: cfg.cor,
+      align: 'left',
+      safeAreaPx: caixa,
+      verticalAlign: 'middle',
+      canvasWidth: formato.largura,
+    });
 
-  // O comunicado reporta a palavra longa dele pelo caminho de sempre; a data
-  // precisa dizer que o problema é a data, senão o aviso manda "reduzir o
-  // texto" quando o texto está impecável.
-  if (!bloco.fits) {
-    return {
-      fits: false,
-      palavraLonga: null,
-      aviso: bloco.palavraLonga
-        ? `A data “${bloco.palavraLonga}” tem uma palavra larga demais para o espaço ao lado do calendário.`
-        : 'A data não cabe ao lado do calendário, nem reduzida em duas linhas.',
-    };
+    // O comunicado reporta a palavra longa dele pelo caminho de sempre; o
+    // campo precisa dizer que o problema é ele (a data, o horário, o local),
+    // senão o aviso manda "reduzir o texto" quando o texto está impecável.
+    if (!bloco.fits) {
+      const nome = cfg.nome;
+      const artigo = cfg.genero === 'f' ? 'A' : 'O';
+      const reduzida = cfg.genero === 'f' ? 'reduzida' : 'reduzido';
+      return {
+        fits: false,
+        palavraLonga: null,
+        aviso: bloco.palavraLonga
+          ? `${artigo} ${nome} “${bloco.palavraLonga}” tem uma palavra larga demais para o espaço ao lado do ${cfg.aoLadoDe}.`
+          : cfg.umaLinha
+          ? `${artigo} ${nome} não cabe ao lado do ${cfg.aoLadoDe}, mesmo ${reduzida}.`
+          : `${artigo} ${nome} não cabe ao lado do ${cfg.aoLadoDe}, nem ${reduzida} em duas linhas.`,
+      };
+    }
   }
   return { ...comunicado, aviso: null };
 }
@@ -247,10 +261,10 @@ function renderAniversariantes(ctx, formato, colaboradores) {
 
 /**
  * @param {HTMLCanvasElement} canvas
- * @param {{ image: HTMLImageElement, formato: object, texto?: string, data?: string, tipoPlantao?: string, colaboradores: object[] }} opts
+ * @param {{ image: HTMLImageElement, formato: object, texto?: string, data?: string, hora?: string, local?: string, tipoPlantao?: string, colaboradores: object[] }} opts
  * @returns {{ fits: boolean, aviso: string|null, palavraLonga?: string|null }}
  */
-export function renderRH(canvas, { image, formato, texto, data, tipoPlantao, colaboradores }) {
+export function renderRH(canvas, { image, formato, texto, data, hora, local, tipoPlantao, colaboradores }) {
   const { largura, altura } = formato;
   canvas.width = largura;
   canvas.height = altura;
@@ -263,7 +277,7 @@ export function renderRH(canvas, { image, formato, texto, data, tipoPlantao, col
   if (formato.editor === 'atencao' || formato.editor === 'texto') {
     return renderAtencao(ctx, formato, texto);
   }
-  if (formato.editor === 'encontro') return renderEncontro(ctx, formato, texto, data);
+  if (formato.editor === 'encontro') return renderEncontro(ctx, formato, texto, { data, hora, local });
 
   const lista = (colaboradores || []).filter(Boolean);
   if (formato.editor === 'talento') {

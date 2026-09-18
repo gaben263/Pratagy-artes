@@ -3,6 +3,7 @@ import { getState, goToStep } from '../../state.js';
 import { icon } from '../icons.js';
 import { escapeHtml, toTitleCase } from '../../utils.js';
 import { motivoNaoCoube } from '../common.js';
+import { camposDoEncontro } from '../../rh/templates.js';
 
 function linha(label, valor, { destaque = false } = {}) {
   return `
@@ -13,6 +14,14 @@ function linha(label, valor, { destaque = false } = {}) {
       }">${escapeHtml(valor)}</dd>
     </div>
   `;
+}
+
+// Os campos ao lado dos ícones (data do Encontro; data, horário e local do
+// Café; data e horário do Show), pelo rótulo de cada um.
+function linhasDosCampos(formato, state) {
+  return camposDoEncontro(formato)
+    .map((campo) => linha(campo.rotulo, state.rh[campo.id] || '', { destaque: true }))
+    .join('');
 }
 
 export function renderPreviaStep(container) {
@@ -60,9 +69,11 @@ export function renderPreviaStep(container) {
                 state.rh.colaboradores.map((c) => `${c.nome} · ${c.setor}`).join('\n'),
                 { destaque: true }
               )
+            : formato.semTexto
+            ? ''
             : linha(isComunicado ? 'Texto do comunicado' : 'Texto principal', aplicar(state.texto), { destaque: true })
         }
-        ${formato.editor === 'encontro' ? linha('Data do encontro', state.rh.data, { destaque: true }) : ''}
+        ${formato.editor === 'encontro' ? linhasDosCampos(formato, state) : ''}
         ${formato.editor === 'plantao' ? linha('Data do plantão', state.rh.data, { destaque: true }) + linha('Tipo de plantão', state.rh.tipoPlantao, { destaque: true }) : ''}
         ${state.textoEs.trim() ? linha('Tradução (ES)', aplicar(state.textoEs)) : ''}
       </dl>

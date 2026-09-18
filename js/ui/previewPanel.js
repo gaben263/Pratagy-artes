@@ -127,6 +127,8 @@ export async function updatePreview() {
           formato,
           texto: state.texto,
           data: state.rh.data,
+          hora: state.rh.hora,
+          local: state.rh.local,
           tipoPlantao: state.rh.tipoPlantao,
           colaboradores: state.rh.colaboradores,
         })
