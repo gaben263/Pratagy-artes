@@ -1103,6 +1103,109 @@ com o culpado nomeado, prévia sem `&amp;`, PNG 1080×1440. Regressão: Aniversa
 ajuda intacta, 9 pessoas e prévia sem `<br>`; Talento, Atenção, Encontro, Comunicado; os quatro
 setores e os catálogos. Suítes v5–v11 repetidas.
 
+### 3.21 Correções em templates publicados: Plantão, Bem Vindos e Destaques
+
+Quatro frentes sobre peças da 3.20, todas pedidas com o relatório antes do código: (1) o RH
+corrigiu a arte do Plantão; (2) o nome estava alto na faixa; (3) o Bem Vindos precisava de 8
+pessoas e de pílulas verdes; (4) os Destaques precisavam de 8 pessoas.
+
+#### Plantão: a arte corrigida e a re-medição
+
+O diff entre o PNG novo e o publicado tem **3.889 pixels, todos em x 334–414 · y 1023–1146**: os
+dois ícones andaram exatamente 40 px para a esquerda. Círculo, anel, faixa, palmeiras e onda são
+byte-idênticos, então nada mais mudou de lugar.
+
+| Elemento | 3.20 | 3.21 |
+|---|---|---|
+| Círculo branco / anel | centro (540, 617) · ⌀ 384 / raio até 207 | igual |
+| Faixa azul-clara | x 248–830 · y **800**–919 | x 248–830 · y **790**–919 (130 px) |
+| Ícone calendário / relógio | x 375–413 / 376–413 | x **335–373** / **336–373** (centros y 1044 / 1127, iguais) |
+| Início do texto (ícone + 28) | x 441 | x **401** |
+| Caixa de data e tipo | x 441–861 (420) | x **401–861 (460)** |
+| Palmeira direita / onda | x ≥ 877 / y 1238 | igual |
+
+A faixa não mudou — eu é que a tinha medido errado: a janela de busca começava em y 800 e cortou
+os 10 px de cima. "Noturno e Fim de Semana" (410 px) fica com 50 px de folga na caixa, em vez
+de 10.
+
+**O nome desceu na faixa.** Na 3.20 as maiúsculas do nome começavam 28 px abaixo do topo da faixa
+e o setor terminava 14 px acima da base — o bloco estava alto. No exemplo preenchido do RH, as
+maiúsculas do "Mario Cesar" começam ~41 px abaixo do topo e o vão nome→setor é ~12. A decisão foi
+**casar com o exemplo**: nome 46 px Heavy (era 48; piso 34) na caixa y 826–878 e setor 32 Regular
+na caixa y 878–915. Medido no canvas: maiúsculas em y 828 (38 px do topo), setor de 880 a 904,
+descendentes do "Departamento Pessoal" em 911 — 8 px da base da faixa, nada cortado. As caixas
+continuam menores que duas linhas no piso (52 < 78; 37 < 55), então o "uma linha só" segue
+saindo da geometria, sem regra à parte.
+
+#### Bem Vindos e Destaques: 8 pessoas pedem outra grade
+
+A grade da 3.17 põe 7–9 pessoas em **três linhas**. O vão do Bem Vindos tem 613 px (os dois
+textos impressos são o limite — não há como estender), e três linhas de cards precisam de 758,
+ou 623 mesmo com fotos de 105 px. A referência do RH para 8 pessoas resolve com **4 colunas × 2
+linhas** — e é isso que entrou: um modo **"duas linhas"** em `gridLayout.js`, ligado por
+template (`grade: 'duasLinhas'`). Nele, colunas = ⌈n/2⌉, a foto é limitada pela largura da célula
+(com 14 px de folga para a pílula) e as fontes vêm do número de colunas. **Quem não declara o
+flag — o Aniversariantes — passa pelos mesmos caminhos de antes**: o teste confere os três tiers
+antigos, as escalas e as colunas por n, valor a valor.
+
+As fontes de 3 e 4 colunas saíram de simulação com as funções reais de medição, nos nomes e
+setores mais longos da referência ("Alexssandro Davis", "Luciciley de Souza", "Departamento
+Pessoal"): o maior par em que todos cabem na pílula da célula. Com 4 colunas o card tem 174 px
+(Bem Vindos) ou 184 (Destaques) e a pílula 157/166 — "Alexssandro" sozinho só cabe a 14 px. 18/14
+é **exatamente o tamanho das pílulas da referência de 8 pessoas** (na escala de 1080), então é o
+que o RH já aceita — mas é pequeno, e foi avisado antes de entrar. A alternativa (a grade de três
+linhas nos Destaques, onde caberia) daria fontes maiores e fotos menores, e duas formas de "8" na
+mesma família; a consistência com a referência pesou mais.
+
+| n | colunas × linhas | Bem Vindos (760×613): foto · fontes | Destaques (800×750): foto · fontes |
+|---|---|---|---|
+| 1 | 1×1 | 320 · 40/30 | 320 · 40/30 |
+| 2 | 2×1 | 320 · 40/30 | 320 · 40/30 |
+| 3–4 | 2×2 | 175 (escala 0,7) · 32/24 — como na 3.20 | 250 · 32/24 |
+| 5–6 | 3×2 | 156 (0,7) · 26/20 | 237 · 26/20 |
+| 7–8 | 4×2 | 160 · 18/14 | 170 · 18/14 |
+
+Os Destaques cresceram de y 445–981 para **445–1195**: o "parabéns" manuscrito (y 1005–1230) é
+decorativo e pode ficar sob os cards; o limite real são as ondas verdes, cuja crista mais alta,
+medida coluna a coluna em x 250–800, está em y 1219 (as palmeiras são verde-oliva e ficaram fora
+do predicado). 24 px de respiro → 1195. O teste confere que nenhum pixel é desenhado abaixo de
+1195 com 1 a 8 pessoas. Com 4 pessoas o bloco mede exatamente 750 px — zero de folga, mas cabe.
+
+**Verde fixo nas pílulas do Bem Vindos.** Todas as pílulas de nome, de todas as pessoas, no mesmo
+verde — não existe mapa setor → cor nem sobrescrita por pessoa (o teste põe 4 setores diferentes
+e confere as 4 células). O verde é o da onda da própria arte: moda de 31 amostras ao longo da
+crista (y 1244–1271), **`#8dc139`** (mediana `#91c43f`; o token `status.green` do Tailwind,
+`#8FB82A`, é indistinguível a olho). A referência do RH usa texto branco nessas pílulas, mas
+branco sobre `#8dc139` dá **2,1:1** — reprova no mínimo de 3:1 para texto grande —, então o texto
+ficou no `#004F9F` das outras pílulas de nome (3,8:1). A pílula do setor não mudou.
+
+O que mudou de código fora do `gridLayout`: `render.js` passa `formato.grade` (duas linhas);
+`editorRH.js` descreve a distribuição do modo de duas linhas no texto de ajuda; `templates.js`.
+Motor, `cardRenderer`, setores e os outros dez templates do RH: intactos.
+
+#### Testes
+
+**Suíte v13, 182 verificações.** `gridLayout` sem o flag idêntico à 3.17 (colunas por n, os três
+tiers, escalas; `distribuir` sem `colunas` nas medidas cai em `colunasPara`); com o flag, 3
+colunas → 237 · 26/20 e 4 colunas → 170/160 · 18/14. Destaques e Bem Vindos de 1 a 8: libera,
+dentro da área, colunas e linhas contadas nas projeções da máscara de diferença contra a arte pura
+(4×2 com 7–8, 3×2 com 5–6, 2×2 com 3–4), cor da pílula presente em cada coluna, nenhuma tinta
+abaixo de y 1195 nos Destaques, 8 com os nomes/setores mais longos da referência cabendo, nome
+absurdo bloqueando com o culpado nomeado, 9 corrigido para 8, PNG 1080×1440. Plantão: asset
+servido é a arte corrigida (1.560.824 bytes), ícones em x 335–373 no canvas, nome com maiúsculas
+a 38 px do topo da faixa e setor não cortado, data e tipo a x 402 (gap de 29 px do ícone), os
+três tipos terminando antes da palmeira (x1 535 / 642 / 809), Poka-Yoke em ordem, tipo forjado,
+nome/setor/data longos e absurdos. Aniversariantes com 2, 4, 6, 8 e 9: 2×1, 2×2, 2×3, 3×3, 3×3,
+`#FDD945` presente e nem `#f7a600` nem `#8dc139` na área. Os outros nove templates do RH, os
+quatro setores e os catálogos. Suítes v5–v12 repetidas (a v12 atualizada para a nova
+especificação: máximos, verde, x 401 e caixas da faixa).
+
+Duas armadilhas de medição desta rodada, para não repetir: a "arte vazia" lida do canvas **não é
+vazia** — o editor abre com uma pessoa em branco e o placeholder azul já está no centro, então a
+referência limpa tem de ser a própria imagem desenhada num canvas à parte; e linhas incompletas
+são centralizadas, então contar colunas na projeção da área inteira funde as colunas — conta-se
+na primeira linha, que está sempre completa.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
@@ -1181,7 +1284,8 @@ js/
   rh/                       Setor RH: templates, card, grade, compositor, editor de foto, tela
                             (14 templates: Atenção, Encontro Geral, Talento, Aniversariantes,
                             6 comunicados puros — 3.19 —, Destaque ADM/Operacional,
-                            Bem Vindos e Gestores de Plantão — 3.20)
+                            Bem Vindos e Gestores de Plantão — 3.20; grade de duas
+                            linhas e ajustes — 3.21)
     previewPanel.js         Prévia ao vivo
     stepper.js, common.js, icons.js
     steps/                  Uma tela por etapa do fluxo

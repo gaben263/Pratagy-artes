@@ -176,7 +176,7 @@ export function bodyRH(formato, state) {
   getState().rh.colaboradores.length = atual.length;
   return `
     <div data-rh-root data-editor="aniversariantes" class="space-y-4">
-      ${max > 1 ? blocoQuantidade(max, atual.length) : ''}
+      ${max > 1 ? blocoQuantidade(max, atual.length, formato.grade) : ''}
       <div data-lista class="space-y-3">
         ${atual.map((c, i) => linhaColaborador(i, c, { forma: 'circulo', mostrarNumero: max > 1 })).join('')}
       </div>
@@ -184,12 +184,15 @@ export function bodyRH(formato, state) {
   `;
 }
 
-// Campo "Quantas pessoas?" da grade. Um template de uma pessoa só (Destaque)
-// não mostra o bloco: um campo que só aceita um valor é ruído para o RH. O
-// texto de ajuda descreve a distribuição só até o máximo da peça.
-function blocoQuantidade(max, atual) {
+// Campo "Quantas pessoas?" da grade. Um template de uma pessoa só não mostra
+// o bloco: um campo que só aceita um valor é ruído para o RH. O texto de
+// ajuda descreve a distribuição só até o máximo da peça — e, no modo de duas
+// linhas (Bem Vindos, Destaques), a distribuição por colunas.
+function blocoQuantidade(max, atual, grade) {
   const distribuicao =
-    max <= 2
+    grade === 'duasLinhas'
+      ? `1 no centro, 2 lado a lado, a partir de 3 em duas linhas (até ${max} em quatro colunas)`
+      : max <= 2
       ? '1 no centro, 2 lado a lado'
       : max <= 6
       ? `1 no centro, 2 lado a lado, até ${max} em duas colunas`

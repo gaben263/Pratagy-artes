@@ -178,14 +178,31 @@ const CORES_2A = {
   faixaSetor: { fundo: '#004F9F', texto: '#FFFFFF' },
 };
 
+// Bem Vindos (3.21): a pílula do nome é VERDE FIXO em todas as pessoas — não
+// existe mapa setor → cor nem sobrescrita por pessoa. O verde é o da onda da
+// própria arte: moda de 31 amostras ao longo da crista (y 1244–1271), #8dc139
+// (mediana #91c43f; o token `status.green` do Tailwind, #8FB82A, é
+// indistinguível a olho). A referência do RH usa texto branco, mas branco
+// sobre #8dc139 dá 2,1:1 — reprova no mínimo de 3:1 para texto grande —,
+// então o texto fica no azul das outras pílulas de nome (3,8:1). A pílula do
+// setor não muda.
+const CORES_BEM_VINDOS = {
+  faixaNome: { fundo: '#8dc139', texto: '#004F9F' },
+  faixaSetor: CORES_2A.faixaSetor,
+};
+
 // Destaque ADM e Destaque Operacional são a MESMA arte com outro título (diff
-// pixel a pixel: só x 178–902 · y 180–421 muda). A área é uma só, calculada a
-// partir do título mais baixo (Operacional, y 421) e do "parabéns" manuscrito
-// branco, que começa em y 1005 — 24 px de respiro de cada lado. A arte é foto
+// pixel a pixel: só x 178–902 · y 180–421 muda). A área é uma só, a partir do
+// título mais baixo (Operacional, y 421) com 24 px de respiro. A arte é foto
 // de fundo inteiro, sem obstáculo lateral: 140–940, como o Aniversariantes.
-// O card de 1 pessoa (foto 320 + pílulas = 461 px) fica centrado com folga;
-// a grade comportaria 2, mas o título é singular — máximo 1.
-const AREA_DESTAQUE = { x0: 140, y0: 445, x1: 940, y1: 981 };
+//
+// EMBAIXO (3.21): o "parabéns" manuscrito branco (y 1005–1230) é decorativo e
+// pode ficar sob os cards — o limite real são as ondas verdes, que não podem
+// ser cruzadas. A crista mais alta, medida coluna a coluna em x 250–800, está
+// em y 1219 (as palmeiras são verde-oliva e não entram na medição); 24 px de
+// respiro → 1195. Vão de 750 px, contra 536 da rodada 2A.
+// Máximo 8, no modo de duas linhas da grade (ver gridLayout.js).
+const AREA_DESTAQUE = { x0: 140, y0: 445, x1: 940, y1: 1195 };
 const destaque = ({ id, nome, descricao }) => ({
   ...BASE,
   id,
@@ -193,33 +210,37 @@ const destaque = ({ id, nome, descricao }) => ({
   descricao,
   imagem: `assets/images/rh/${id}.png`,
   editor: 'aniversariantes',
-  maxColaboradores: 1,
+  maxColaboradores: 8,
+  grade: 'duasLinhas',
   cores: CORES_2A,
   areaCards: AREA_DESTAQUE,
   safeAreaMm: safeAreaMmDePx({ ...BASE, ...AREA_DESTAQUE }),
 });
 
 const CARDS_2A = [
-  destaque({ id: 'destaque-adm', nome: 'Destaque Administrativo', descricao: 'Colaborador destaque da área administrativa' }),
+  destaque({ id: 'destaque-adm', nome: 'Destaque Administrativo', descricao: 'Até 8 destaques da área administrativa' }),
   // O arquivo de origem chama-se "Destaque do Mês", mas a arte diz
   // "Colaborador Destaque Operacional" — o nome e o id seguem a arte.
-  destaque({ id: 'destaque-operacional', nome: 'Destaque Operacional', descricao: 'Colaborador destaque da área operacional' }),
+  destaque({ id: 'destaque-operacional', nome: 'Destaque Operacional', descricao: 'Até 8 destaques da área operacional' }),
   {
     ...BASE,
     id: 'bem-vindos',
     nome: 'Sejam Bem Vindos',
-    descricao: 'Boas-vindas a até 4 novos colaboradores',
+    descricao: 'Boas-vindas a até 8 novos colaboradores',
     imagem: 'assets/images/rh/bem-vindos.png',
     editor: 'aniversariantes',
     // O vão entre os dois textos impressos (o de boas-vindas termina em y 486,
     // "Mais uma vez, seja bem-vindo(a)!" começa em 1133) tem 646 px — contra
-    // 763 do Aniversariantes. Com os degraus de foto da grade compartilhada:
-    // respiro 24 → só 1–2 cabem; respiro 16 → 3–4 cabem com foto de 175 px;
-    // 5+ precisariam de 623 px, que a arte não tem. Máximo 4, respiro 16.
+    // 763 do Aniversariantes; com respiro de 16, 613. Três linhas de cards não
+    // cabem aí (precisariam de 623 mesmo com fotos de 105 px), por isso a peça
+    // usa o modo de duas linhas da grade: até 8 em 4 colunas × 2 linhas, como
+    // na referência do RH (3.21). Os dois textos impressos são o limite — não
+    // há como estender a área.
     // Largura: 160–920 (760); a partir de 800 px o confete vermelho da
     // esquerda (x ≈ 140, y 540–640) entra na área e empurra o topo para 644.
-    maxColaboradores: 4,
-    cores: CORES_2A,
+    maxColaboradores: 8,
+    grade: 'duasLinhas',
+    cores: CORES_BEM_VINDOS,
     areaCards: { x0: 160, y0: 503, x1: 920, y1: 1116 },
     safeAreaMm: safeAreaMmDePx({ ...BASE, x0: 160, y0: 503, x1: 920, y1: 1116 }),
   },
@@ -232,8 +253,13 @@ export const TIPOS_PLANTAO = ['Noturno', 'Fim de Semana', 'Noturno e Fim de Sema
 
 // G&G — Gestores de Plantão. Tudo medido no PNG e calibrado no exemplo
 // preenchido do RH (Mario Cesar / Alimentos & Bebidas / 05/09 e 06/09 / Fim de
-// Semana): a largura do "Mario Cesar" impresso bate com Heavy 48 px, a do
-// "Alimentos & Bebidas" com Regular 32, e a do "05/09 e 06/09" com Heavy 32.
+// Semana): a largura do "Alimentos & Bebidas" impresso bate com Regular 32 e
+// a do "05/09 e 06/09" com Heavy 32.
+//
+// 3.21: a arte foi corrigida pelo RH — o diff contra a anterior tem 3.889 px,
+// todos em x 334–414 · y 1023–1146: os dois ícones andaram 40 px para a
+// esquerda. Círculo, anel, faixa, palmeiras e onda são idênticos. Na mesma
+// rodada a faixa foi re-medida (começa em 790, não 800) e o nome desceu.
 const PLANTAO_GESTORES = {
   ...BASE,
   id: 'plantao-gestores',
@@ -247,26 +273,34 @@ const PLANTAO_GESTORES = {
   // os dois são uma forma só. A foto leva 4 px de sangria para cobrir a borda
   // anti-aliased do branco.
   foto: { cx: 540, cy: 617, diametro: 388 },
-  // Faixa azul-clara impressa: x 248–830 · y 800–919, #4cc2f1. Não é
-  // desenhada — o texto entra nela. Nome e setor centrados no eixo (540), cada
-  // um na sua caixa de UMA linha: a altura da caixa é menor que duas linhas no
-  // piso (nome: 2×34×1,15 = 78 > 56; setor: 2×24×1,15 = 55 > 38), então não
-  // existe segunda linha que caiba e `fitFontSize` bloqueia sozinho.
+  // Faixa azul-clara impressa: x 248–830 · y 790–919 (130 px), #4cc2f1. Não
+  // é desenhada — o texto entra nela. Nome e setor centrados no eixo (540),
+  // cada um na sua caixa de UMA linha, alinhada ao meio.
+  //
+  // POSIÇÃO (3.21): a rodada 2A deixou o bloco alto na faixa — as maiúsculas
+  // do nome a 28 px do topo e o setor a 14 da base. No exemplo do RH, as
+  // maiúsculas do "Mario Cesar" começam ~41 px abaixo do topo e o vão
+  // nome→setor é ~12. Casando com o exemplo: nome 46 px Heavy na caixa
+  // 826–878 (maiúsculas em ~831) e setor 32 Regular em 878–915 (base da linha
+  // ~905, descendentes em ~912, 7 px da base da faixa). Nada é cortado. As
+  // caixas continuam menores que duas linhas no piso (nome: 2×34×1,15 = 78 >
+  // 52; setor: 2×24×1,15 = 55 > 37), então `fitFontSize` bloqueia sozinho.
   faixa: {
     x0: 278, x1: 800, // 583 de faixa menos 30 de padding de cada lado
     cor: '#004F9F',
-    nome: { y0: 812, altura: 56, corpo: 48, piso: 34, peso: 800 },
-    setor: { y0: 870, altura: 38, corpo: 32, piso: 24, peso: 400 },
+    nome: { y0: 826, altura: 52, corpo: 46, piso: 34, peso: 800 },
+    setor: { y0: 878, altura: 37, corpo: 32, piso: 24, peso: 400 },
   },
-  // Ícones brancos impressos: calendário x 375–413 (centro y 1044), relógio
-  // x 376–413 (centro y 1127). O texto começa em x 441 (413 + 28, o gap
-  // ícone→texto do exemplo). Limite direito 861: a palmeira da direita invade
-  // a linha do relógio a partir de x 877; as duas linhas usam a mesma caixa
-  // para ficarem alinhadas. Altura 40: uma linha de 32 (36,8) cabe, duas no
-  // piso de 24 (55) não. "Noturno e Fim de Semana", a opção mais longa, mede
-  // 410 px a 32 — cabe sem encolher, então o tipo é sempre do mesmo tamanho.
+  // Ícones brancos impressos (arte corrigida, 3.21): calendário x 335–373
+  // (centro y 1044), relógio x 336–373 (centro y 1127). O texto começa em
+  // x 401 (373 + 28, o gap ícone→texto do exemplo). Limite direito 861: a
+  // palmeira da direita invade a linha do relógio a partir de x 877; as duas
+  // linhas usam a mesma caixa para ficarem alinhadas. Altura 40: uma linha
+  // de 32 (36,8) cabe, duas no piso de 24 (55) não. "Noturno e Fim de
+  // Semana", a opção mais longa, mede 410 px a 32 — cabe nos 460 com 50 de
+  // folga (eram 10), então o tipo é sempre do mesmo tamanho.
   linhas: {
-    x0: 441, largura: 420, cor: '#FFFFFF', corpo: 32, piso: 24, peso: 800, entrelinha: 1.15,
+    x0: 401, largura: 460, cor: '#FFFFFF', corpo: 32, piso: 24, peso: 800, entrelinha: 1.15,
     data: { y0: 1024, altura: 40 },
     tipo: { y0: 1107, altura: 40 },
   },

@@ -1,4 +1,5 @@
-// Distribuição de N cards na área útil do Aniversariantes do Dia.
+// Distribuição de N cards na área útil das peças em grade (Aniversariantes,
+// Destaques, Bem Vindos).
 //
 // Regra aprovada na 3.17: 1 pessoa centralizada; 2 lado a lado; 3–6 em duas
 // colunas; 7–9 em três. Linhas incompletas ficam centralizadas. O bloco inteiro
@@ -9,20 +10,44 @@
 // linha. Quando um nome quebra em duas e o bloco estoura a área (800×763 px),
 // o compositor reduz só as fotos em passos (`escala` 0,92 → 0,7) até caber;
 // os nomes continuam legíveis. Se nem a 0,7 couber, `fits: false`.
+//
+// MODO "DUAS LINHAS" (3.21): o Bem Vindos e os Destaques têm vãos mais baixos
+// que o Aniversariantes (613 e 750 px), onde três linhas de cards não cabem —
+// e a referência do RH para 8 pessoas resolve com 4 colunas × 2 linhas. Um
+// template declara `grade: 'duasLinhas'` e a grade passa a crescer em colunas
+// (colunas = ⌈n/2⌉), com a foto limitada pela largura da célula e fontes por
+// número de colunas. Quem não declara (Aniversariantes) continua idêntico:
+// nenhum caminho abaixo muda de resultado sem o flag.
 
-export function colunasPara(n) {
+export const GRADE_DUAS_LINHAS = 'duasLinhas';
+
+export function colunasPara(n, grade) {
   if (n <= 1) return 1;
+  if (grade === GRADE_DUAS_LINHAS) return n <= 2 ? 2 : Math.ceil(n / 2);
   if (n <= 6) return 2;
   return 3;
 }
 
 export const ESCALAS_FOTO = [1, 0.92, 0.85, 0.78, 0.7];
 
+// Fontes e gaps de 3 e 4 colunas no modo de duas linhas. Vieram de simulação
+// com as funções reais de medição, nos nomes e setores mais longos da
+// referência ("Alexssandro Davis", "Luciciley de Souza", "Departamento
+// Pessoal"): o maior par de fontes em que todos cabem na pílula da célula.
+// 18/14 em 4 colunas é o tamanho das pílulas da referência de 8 pessoas.
+const TIERS_POR_COLUNAS = {
+  3: { fotoDiametro: 250, fonteNome: 26, fonteSetor: 20, gapFoto: 10, gapFaixas: 8, gapLinhas: 20 },
+  4: { fotoDiametro: 250, fonteNome: 18, fonteSetor: 14, gapFoto: 8, gapFaixas: 6, gapLinhas: 16 },
+};
+
 /** Medidas de cada card em função do número de linhas da grade. */
-export function medidasPorLinhas(linhas, larguraArea, colunas, escala = 1) {
+export function medidasPorLinhas(linhas, larguraArea, colunas, escala = 1, grade) {
   const larguraCelula = larguraArea / colunas;
+  const duasLinhas = grade === GRADE_DUAS_LINHAS;
   const base =
-    linhas <= 1
+    duasLinhas && colunas >= 3
+      ? TIERS_POR_COLUNAS[Math.min(colunas, 4)]
+      : linhas <= 1
       // Uma linha só: a altura permitiria mais, mas com 2 pessoas a célula tem
       // 400 px e o card 384 — 320 já é quase o limite lateral. Fica 320.
       ? { fotoDiametro: 320, fonteNome: 40, fonteSetor: 30, gapFoto: 12, gapFaixas: 10, gapLinhas: 0 }
@@ -34,7 +59,10 @@ export function medidasPorLinhas(linhas, larguraArea, colunas, escala = 1) {
   // Um card sozinho não precisa da largura toda: 420 px mantém a faixa
   // proporcional à foto.
   const larguraCard = Math.min(Math.round(larguraCelula) - 16, 420);
-  return { ...base, fotoDiametro: Math.round(base.fotoDiametro * escala), larguraCelula, larguraCard };
+  // No modo de duas linhas a célula é que limita a foto (4 colunas em 760 px
+  // dão cards de 174): 14 px de folga lateral para a pílula ainda sobrar.
+  const fotoTeto = duasLinhas ? Math.min(base.fotoDiametro, larguraCard - 14) : base.fotoDiametro;
+  return { ...base, fotoDiametro: Math.round(fotoTeto * escala), larguraCelula, larguraCard, colunas };
 }
 
 /**
@@ -46,7 +74,9 @@ export function medidasPorLinhas(linhas, larguraArea, colunas, escala = 1) {
  * @returns {{ posicoes: {x:number,y:number}[], alturaBloco: number, colunas: number, linhas: number, medidas: object }}
  */
 export function distribuir(n, alturas, area, medidas) {
-  const colunas = colunasPara(n);
+  // As colunas vêm das medidas (é lá que o modo da grade foi decidido); o
+  // fallback mantém quem chama com medidas montadas à mão.
+  const colunas = medidas.colunas || colunasPara(n);
   const linhas = Math.ceil(n / colunas);
   const larguraArea = area.x1 - area.x0;
 

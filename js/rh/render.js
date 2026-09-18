@@ -220,14 +220,16 @@ function renderAniversariantes(ctx, formato, colaboradores) {
   const n = colaboradores.length;
   if (!n) return { fits: true, aviso: null };
 
-  const colunas = colunasPara(n);
+  // `formato.grade` liga o modo de duas linhas (Bem Vindos, Destaques); sem
+  // ele a grade é a do Aniversariantes.
+  const colunas = colunasPara(n, formato.grade);
   const linhas = Math.ceil(n / colunas);
 
   // Fotos no tamanho do caso comum; se nomes em duas linhas estourarem a área,
   // reduz só as fotos, passo a passo, até caber (os nomes ficam legíveis).
   let medidas, medidos, grade;
   for (const escala of ESCALAS_FOTO) {
-    medidas = { ...medidasPorLinhas(linhas, area.x1 - area.x0, colunas, escala), cores: formato.cores };
+    medidas = { ...medidasPorLinhas(linhas, area.x1 - area.x0, colunas, escala, formato.grade), cores: formato.cores };
     medidos = colaboradores.map((c) => medirCard(ctx, c, medidas));
     grade = distribuir(n, medidos.map((m) => m.altura), area, medidas);
     if (grade.cabe) break;
