@@ -70,10 +70,13 @@ function blobToDataUrl(blob) {
   });
 }
 
-/** Baixa o PNG original do catálogo, com um nome de arquivo amigável. */
+/** Extensão real do arquivo do catálogo (as peças de Esportes e Lazer são JPG). */
+const extensaoDe = (arquivo) => (arquivo.split('.').pop() || 'png').toLowerCase();
+
+/** Baixa a imagem original do catálogo (PNG ou JPG), com um nome de arquivo amigável. */
 export async function exportCatalogPNG({ arquivo }, nomeArquivo) {
   const blob = await fetchBlob(arquivo);
-  triggerDownload(blob, `${slugify(nomeArquivo)}.png`);
+  triggerDownload(blob, `${slugify(nomeArquivo)}.${extensaoDe(arquivo)}`);
 }
 
 /**
@@ -91,11 +94,12 @@ export async function exportCatalogPDF({ arquivo, mmLargura, mmAltura }, nomeArq
   const pdf = new jsPDF({ orientation, unit: 'mm', format: [mmLargura, mmAltura] });
 
   const dataUrl = await blobToDataUrl(await fetchBlob(arquivo));
+  const formato = extensaoDe(arquivo) === 'png' ? 'PNG' : 'JPEG';
 
   try {
-    pdf.addImage(dataUrl, 'PNG', 0, 0, mmLargura, mmAltura, undefined, 'FAST');
+    pdf.addImage(dataUrl, formato, 0, 0, mmLargura, mmAltura, undefined, 'FAST');
   } catch (err) {
-    console.warn('Embutir o PNG direto falhou, tentando via Canvas:', err);
+    console.warn('Embutir a imagem direto falhou, tentando via Canvas:', err);
     const img = await new Promise((resolve, reject) => {
       const el = new Image();
       el.onload = () => resolve(el);

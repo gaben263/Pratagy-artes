@@ -1,6 +1,6 @@
 # Sistema de Artes — Pratagy
 
-Sistema interno de artes oficiais do Pratagy Beach. Seis módulos:
+Sistema interno de artes oficiais do Pratagy Beach. Sete módulos:
 
 | Módulo | O que faz |
 |---|---|
@@ -9,6 +9,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Seis módulos:
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) mais o gerador da carta de boas-vindas manuscrita em A4 |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 | **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
+| **Esportes e Lazer** | Catálogo da programação mensal de lazer (shows, música ao vivo, piscina, fitness, bingo, cinema, programação infantil de 4 a 6 e de 7 a 12 anos): 50 peças de novembro de 2026, em A4 para impressão e nos formatos de tela (TV vertical e horizontal, stories, feed, banner do app). Peças de tela baixam só a imagem; as A4 também em PDF |
 | **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 100K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto |
 
 > Cada setor mostra uma categoria só, definida em `categoriaCatalogo`. `fluxo: 'catalogo'` abre
@@ -112,6 +113,15 @@ Três regras valem para esses valores:
 1. **As margens laterais são simétricas** (`left = right`). O texto centralizado usa o eixo central da arte; margens assimétricas deslocam a composição visualmente.
 2. **A faixa vertical evita as ilustrações**, em vez de cobrir toda a altura útil. O sol e as palmeiras ficam concentrados no topo e na base: incluí-los estrangula a caixa inteira e força quebras de linha desnecessárias no miolo, que está livre.
 3. **Nas artes de A&B há 5–8 mm de respiro da onda azul.** A onda superior do 8x5 termina a 3,4 mm do topo e a inferior a 12,1 mm da base — daí `top: 9.4` e `bottom: 18.1` (6 mm de folga em cada).
+
+## Virando o mês em Esportes e Lazer
+
+As peças ficam em `assets/catalogo/lazer/<id>.jpg` (JPG, 300 DPI) com miniatura em
+`assets/catalogo/thumbs/lazer/<id>.jpg`. Para publicar a programação de outro mês, substitua os
+arquivos **mantendo os IDs** e atualize `tituloCatalogo` do setor `lazer` em `js/data/models.js`
+(ele diz de que mês é a programação). Atração nova ou removida = acrescentar ou apagar o item
+correspondente em `catalogData.js`. O campo `uso` decide a tela de download: `'impressao'` mostra
+instruções de gráfica e PDF; `'tela'` mostra o formato de exibição e baixa só a imagem.
 
 ## Atualizando o catálogo de artes prontas
 

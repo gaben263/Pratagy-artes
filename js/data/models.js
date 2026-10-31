@@ -243,6 +243,27 @@ export const SETORES = {
     formatos: FORMATOS_RH,
   },
 
+  // Esportes e Lazer: peças da programação mensal de lazer (shows, música ao vivo,
+  // piscina, fitness, bingo, cinema), em impressão A4 e nos formatos de tela.
+  // Só catálogo: as peças são refeitas a cada mês sobre os PSDs do Marketing e
+  // publicadas em assets/catalogo/lazer/. O título do catálogo diz de qual mês é
+  // a programação publicada — atualize-o junto com os arquivos.
+  lazer: {
+    id: 'lazer',
+    nome: 'Esportes e Lazer',
+    sigla: 'LAZER',
+    corDestaque: '#004F9F',
+    icone: 'lazer',
+    fluxo: 'catalogo',
+    categoriaCatalogo: 'lazer',
+    tituloCatalogo: 'Programação de lazer — novembro de 2026',
+    subtituloCatalogo:
+      'Peças do mês para imprimir em A4 e para as TVs, stories e app. Busque pela atração ou pelo formato.',
+    permiteTraducao: false,
+    titleCase: false,
+    formatos: [],
+  },
+
   // Black Friday 2026: cards de comemoração de meta dos vendedores, sobre as
   // artes aprovadas da campanha (js/blackfriday/templates.js). As pessoas vêm
   // de uma lista fixa com foto (js/blackfriday/vendedores.js), escolhidas por

@@ -11,6 +11,7 @@ const DESCRICOES = {
   governanca: 'Cartões de hóspede, check-out e a carta de boas-vindas personalizável.',
   acquapark: 'Comunicados do parque aquático para WhatsApp e murais.',
   rh: 'Comunicados, avisos e convites internos, mais as peças com foto: Talento do Mês, Aniversariantes, Destaque, Bem Vindos e Plantão.',
+  lazer: 'Programação mensal de lazer: shows, música ao vivo, piscina, fitness, infantil, bingo e cinema, para impressão e TV.',
   blackfriday: 'Cards de comemoração dos vendedores: meta batida, valor já vendido, meta com ajuda e Top 3.',
 };
 

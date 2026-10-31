@@ -1331,6 +1331,60 @@ absurdo, mesma pessoa em duas posições), prévia, PNG exportado com nome
 `arte-bf-2026-ja-vendi-italo-1-5mi.png`. Comparação lado a lado com a referência aprovada. Regressão:
 RH (Atenção, Talento), Acqua Park e catálogo do A&B sem erro de console.
 
+### 3.24 Setor Esportes e Lazer: programação de novembro
+
+**Pedido.** Um setor novo, "Esportes e Lazer", para publicar as peças da programação mensal de
+lazer — começando por novembro de 2026, a partir das peças de outubro e do Word com a programação.
+Manter a identidade das peças, trocar o selo "Outubro no Pratagy" pelo de novembro, deixar de fora
+as pastas "Arquivos abertos" (só leitura dos PSDs, autorizada) e "Video Tv Hospede".
+
+**Decisão: catálogo, não gerador.** São 32 peças muito diferentes entre si (grades de 8 shows,
+listas de 7 dias, pôster de filme). O setor é um catálogo como Manutenção; um gerador editável fica
+para depois.
+
+**Como as peças foram refeitas.** Fora do sistema, em Python: cada PSD foi recomposto (psd-tools)
+com as camadas de texto ocultas, o que dá o fundo limpo com qualidade de origem (diferença média
+< 1 nível de cor contra os JPG exportados). O texto novo foi desenhado na Fibra One com kerning GPOS
+e o tracking do PSD; ícones, logo e selos saíram das próprias camadas. Exceção: no Show Nordeste o
+psd-tools não reproduz o modo de mesclagem do "Com a equipe Peixe Boi", então a base é o JPG de
+outubro e só o retângulo da data veio do fundo limpo.
+
+**O que mudou nas peças.** Shows Teatrais passou de 7 para 8 linhas (Udara e Samba em quartas
+diferentes, Xuxa entrou) com nota "às segundas não há espetáculo"; "FROZEM" corrigido. Programação
+Completa com selo de novembro (mesmo tratamento do Banner MyGuest: passagens sobre as ondas). Música
+ao Vivo sem o H3Samba e com corpo único nos estilos (outubro tinha três corpos). Lazer na Piscina com
+Segundas e quartas / Sábados (Xou da Xôxa) / Demais dias (aula de dança). Fitness com 5 blocos
+(alongamento e funcional entraram). Bingo com uma data só, Cine com pôster do Hotel Transilvânia 4
+montado a partir do key visual horizontal + logo, Xuxa sem "Estreia / Dia das Crianças", Samba no
+dia 25, Nordeste toda quinta. Na TV vertical do Lazer na Piscina a camada de texto do PSD não
+renderiza a coluna esquerda (o JPG de outubro já tinha saído sem 10h15/10h30) — o bloco foi
+redesenhado inteiro.
+
+**No sistema.** Itens com `extensao: 'jpg'` (fotos pesariam 3–4× em PNG) e `uso`: 'impressao'
+(A4, instruções de gráfica + PDF) ou 'tela' (TV, stories, feed, banner: formato de exibição e só a
+imagem). `exportCatalogPNG/PDF` passaram a respeitar a extensão (PDF embute JPEG sem recompressão).
+Material dos A4 sugerido como "Papel couché", marcado como sugestão a validar.
+
+**Testes.** Chrome headless via DevTools Protocol: 32 cards, busca "tv vertical" → 9, modais de
+tela e de impressão, PDF gerado com o JPEG embutido (`/DCTDecode`), sem erro de console novo.
+
+### 3.25 Esportes e Lazer: revisão de novembro e Programação Infantil
+
+**Correções pedidas.** Música ao Vivo (TV horizontal) ganhou a linha "Todos os dias das 20h às
+22h30"; Show Samba (TV horizontal) ganhou "Equipe Peixe Boi" sob o PRATAGY; Xou da Xôxa passou para
+as sextas 6 e 20 (o Word dizia "sábado dias 6 e 20", mas 6 e 20/11/2026 são sextas — confirmado com o
+usuário).
+
+**Bug meu.** No A4 do Samba o "PRATAGY" sumiu: o PSD tem dois grupos chamados "DATA" e o filtro
+de camadas comparava pelo nome. A primeira correção comparou pelo bbox do grupo e falhou de outro
+jeito — o bbox de um grupo é recalculado pelos filhos visíveis e muda assim que o texto é ocultado,
+então o ícone escapava. Ficou por `layer_id`.
+
+**Programação Infantil.** 18 peças novas — 7 a 12 anos (PDF) e 4 a 6 anos (Word), 9 de cada (3 páginas × A4, TV vertical, TV horizontal),
+a partir do PDF da recreação. O texto foi normalizado: horários HH:MM, atividade em caixa de frase,
+local na coluna própria, "Momento hidratação" unificado. Cada página traz dias inteiros (em outubro
+a quarta ficava partida entre duas páginas); o corpo é o mesmo nas três páginas de cada formato.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi

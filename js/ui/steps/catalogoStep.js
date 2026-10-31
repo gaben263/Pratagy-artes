@@ -31,6 +31,7 @@ const PLACEHOLDER_BUSCA = {
   ab: 'Ex: tapioca, vegano, sem glúten, sorvete…',
   hospitalidade: 'Ex: cartão VIP, check-out, aniversariante…',
   manutencao: 'Ex: proibido fumar, poço, academia, luvas…',
+  lazer: 'Ex: bingo, fitness, cinema, TV vertical…',
 };
 
 // ------------------------------------------------------------------ Cartões
@@ -54,9 +55,15 @@ function cardCatalogo(item) {
           <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
             ${icon('ruler', { size: 11 })} ${escapeHtml(item.size)}
           </span>
-          <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
-            ${icon('sticker', { size: 11 })} ${escapeHtml(item.printMaterial)}
-          </span>
+          ${
+            item.uso === 'tela'
+              ? `<span class="inline-flex items-center gap-1 rounded-md bg-brand-light/60 px-1.5 py-0.5 text-[10px] font-semibold text-brand-deep">
+                   ${icon('monitor', { size: 11 })} ${escapeHtml(item.formato)}
+                 </span>`
+              : `<span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+                   ${icon('sticker', { size: 11 })} ${escapeHtml(item.printMaterial)}
+                 </span>`
+          }
         </div>
       </div>
     </button>
@@ -110,10 +117,37 @@ function botaoDownload(kind, iconName, titulo, descricao) {
 /** Milímetros no padrão pt-BR: 124,5 e não 124.5. */
 const mm = (valor) => String(valor).replace('.', ',');
 
+/**
+ * Peças de tela (TV, stories, feed, banner do app) não vão para a gráfica: em vez
+ * das instruções de impressão, o modal diz onde a peça é exibida e o tamanho em
+ * pixels, e o download é só a imagem — um PDF "físico" de uma tela não faz sentido.
+ */
+function blocoTela(item) {
+  const ext = item.extensao.toUpperCase();
+  return `
+    <div class="rounded-xl border border-brand-vivid/30 bg-brand-light/25 p-4">
+      <p class="mb-3 flex items-center gap-1.5 font-fibra text-[11px] font-extrabold uppercase tracking-wider text-brand-deep">
+        ${icon('monitor', { size: 14 })} Exibição em tela
+      </p>
+      <dl class="space-y-2">
+        ${linhaInfo('Formato', escapeHtml(item.formato), { destaque: true })}
+        ${linhaInfo('Tamanho', `${item.largura}×${item.altura} px`, { destaque: true })}
+        ${linhaInfo('Arquivo', ext)}
+      </dl>
+      <p class="mt-3 flex items-start gap-1.5 border-t border-brand-vivid/25 pt-3 text-xs leading-relaxed text-slate-500">
+        ${icon('info', { size: 13, className: 'mt-0.5' })}
+        <span>Envie o arquivo como está, sem redimensionar: ele já tem o tamanho exato da tela.</span>
+      </p>
+    </div>
+  `;
+}
+
 function modalHtml(item) {
   const cat = CATEGORIAS[item.categoria];
   const { mmLargura, mmAltura } = tamanhoMm(item);
   const medida = `${mm(mmLargura)}×${mm(mmAltura)} mm`;
+  const ext = item.extensao.toUpperCase();
+  const tela = item.uso === 'tela';
 
   return `
     <div class="max-h-[88vh] overflow-y-auto">
@@ -136,6 +170,7 @@ function modalHtml(item) {
         </div>
 
         <div class="space-y-4">
+          ${tela ? blocoTela(item) : `
           <div class="rounded-xl border border-brand-vivid/30 bg-brand-light/25 p-4">
             <p class="mb-3 flex items-center gap-1.5 font-fibra text-[11px] font-extrabold uppercase tracking-wider text-brand-deep">
               ${icon('printer', { size: 14 })} Instruções de impressão
@@ -154,7 +189,7 @@ function modalHtml(item) {
                      <span>Material sugerido como padrão do sistema. Confirme com o time de Marketing antes de mandar imprimir em quantidade.</span>
                    </p>`
             }
-          </div>
+          </div>`}
 
           <div>
             <p class="mb-2 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
@@ -170,10 +205,16 @@ function modalHtml(item) {
             </div>
           </div>
 
-          <div class="grid gap-2.5 sm:grid-cols-2">
-            ${botaoDownload('pdf', 'printer', 'Baixar PDF', `Impressão · ${medida}`)}
-            ${botaoDownload('png', 'image', 'Baixar PNG', `Arquivo original · ${item.largura}×${item.altura} px`)}
-          </div>
+          ${
+            tela
+              ? `<div class="grid gap-2.5">
+                   ${botaoDownload('png', 'image', `Baixar ${ext}`, `Pronto para a tela · ${item.largura}×${item.altura} px`)}
+                 </div>`
+              : `<div class="grid gap-2.5 sm:grid-cols-2">
+                   ${botaoDownload('pdf', 'printer', 'Baixar PDF', `Impressão · ${medida}`)}
+                   ${botaoDownload('png', 'image', `Baixar ${ext}`, `Arquivo original · ${item.largura}×${item.altura} px`)}
+                 </div>`
+          }
         </div>
       </div>
     </div>
@@ -193,7 +234,8 @@ async function baixar(kind, item, btn) {
     const { mmLargura, mmAltura } = tamanhoMm(item);
     if (kind === 'png') await exportCatalogPNG(item, item.titulo);
     else await exportCatalogPDF({ arquivo: item.arquivo, mmLargura, mmAltura }, item.titulo);
-    showToast(`${item.titulo} — ${kind.toUpperCase()} baixado.`, { type: 'success' });
+    const rotulo = kind === 'pdf' ? 'PDF' : item.extensao.toUpperCase();
+    showToast(`${item.titulo} — ${rotulo} baixado.`, { type: 'success' });
     comemorar();
   } catch (err) {
     console.error(err);
