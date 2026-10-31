@@ -119,7 +119,13 @@ export function renderDownloadStep(container) {
   // colaborador. No Encontro Geral o comunicado pode estar vazio, e aí quem
   // identifica a peça é a data.
   const primeiroNome = state.rh.colaboradores[0]?.nome.trim().split(/\s+/)[0] || '';
-  const identificador = resumoTexto || primeiroNome || state.rh.data.trim();
+  // Black Friday: o nome de quem aparece primeiro no card e a conquista
+  // ("arte-bf-2026-ja-vendi-italo-500k").
+  const bf =
+    formato.editor === 'blackfriday'
+      ? [state.bf.pessoas[formato.slots[0]]?.nome, formato.comConquista ? state.bf.conquista : ''].filter(Boolean).join(' ')
+      : '';
+  const identificador = bf || resumoTexto || primeiroNome || state.rh.data.trim();
   const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${identificador}`;
 
   container.innerHTML = `

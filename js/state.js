@@ -1,6 +1,7 @@
 // Estado central da aplicação (padrão pub-sub simples, sem framework).
 
 import { getSetor } from './data/models.js';
+import { estadoBFInicial } from './blackfriday/templates.js';
 
 // O caminho não é mais único: setores de catálogo abrem a busca de artes
 // prontas em vez do gerador de Canvas, e de lá ainda podem entrar no gerador
@@ -47,6 +48,9 @@ function initialState() {
     // e o tipo de plantão. Nunca vai para IndexedDB/localStorage — recarregar
     // a página apaga tudo (LGPD).
     rh: { colaboradores: [], data: '', hora: '', local: '', tipoPlantao: '' },
+    // Black Friday: as pessoas de cada posição do card (vendedor, ajudante,
+    // top1–3: id do vendedor, nome na arte, foto em memória) e a conquista.
+    bf: estadoBFInicial(),
     exported: false,
   };
 }

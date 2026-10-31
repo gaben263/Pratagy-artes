@@ -3,6 +3,7 @@ import { CATALOGO } from '../../data/catalogData.js';
 import { getState, setState, goToStep, primeiroPasso } from '../../state.js';
 import { icon } from '../icons.js';
 import { confirmModal } from '../common.js';
+import { estadoBFInicial } from '../../blackfriday/templates.js';
 
 const DESCRICOES = {
   ab: 'Identificação de pratos do buffet e artes prontas de alimentos e bebidas.',
@@ -10,6 +11,7 @@ const DESCRICOES = {
   governanca: 'Cartões de hóspede, check-out e a carta de boas-vindas personalizável.',
   acquapark: 'Comunicados do parque aquático para WhatsApp e murais.',
   rh: 'Comunicados, avisos e convites internos, mais as peças com foto: Talento do Mês, Aniversariantes, Destaque, Bem Vindos e Plantão.',
+  blackfriday: 'Cards de comemoração dos vendedores: meta batida, valor já vendido, meta com ajuda e Top 3.',
 };
 
 /** Rodapé do cartão: o setor de catálogo conta artes prontas, os demais, formatos. */
@@ -55,6 +57,7 @@ async function handleSelect(setorId) {
     palavraLonga: null,
     avisoEncaixe: null,
     rh: { colaboradores: [], data: '', hora: '', local: '', tipoPlantao: '' },
+    bf: estadoBFInicial(),
     exported: false,
   });
 

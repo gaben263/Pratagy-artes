@@ -5,6 +5,7 @@ import { icon } from './icons.js';
 import { emptyState, motivoNaoCoube } from './common.js';
 import { modoDeEdicao, EDITORES_RH } from '../rh/templates.js';
 import { renderRH } from '../rh/render.js';
+import { renderBF } from '../blackfriday/render.js';
 
 const imageCache = new Map();
 let showGuide = false;
@@ -31,7 +32,11 @@ async function getCachedImage(src) {
  * para a prévia ficar instantânea quando o usuário escolher o modelo).
  */
 export function preloadSetorImages(setor) {
-  setor.formatos.forEach((f) => getCachedImage(f.imagem).catch(() => {}));
+  setor.formatos.forEach((f) => {
+    getCachedImage(f.imagem).catch(() => {});
+    // Máscaras dos círculos da Black Friday.
+    f.fotos?.forEach((foto) => getCachedImage(foto.mascara).catch(() => {}));
+  });
 }
 
 export function mountPreviewPanel(container) {
@@ -121,7 +126,15 @@ export async function updatePreview() {
     const modo = modoDeEdicao(setor, formato);
     // As peças do RH têm compositor próprio (que usa o motor por baixo para o
     // texto do Atenção); todo o resto é o motor direto.
-    const resultado = EDITORES_RH.has(modo)
+    // Black Friday: as máscaras dos círculos são imagens à parte, carregadas
+    // (e guardadas no mesmo cache) antes do desenho, que é síncrono.
+    const mascaras =
+      modo === 'blackfriday'
+        ? new Map(await Promise.all(formato.fotos.map(async (f) => [f.mascara, await getCachedImage(f.mascara)])))
+        : null;
+    const resultado = mascaras
+      ? renderBF(canvas, { image, formato, bf: state.bf, mascaras })
+      : EDITORES_RH.has(modo)
       ? renderRH(canvas, {
           image,
           formato,

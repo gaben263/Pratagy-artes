@@ -1,6 +1,6 @@
 # Sistema de Artes — Pratagy
 
-Sistema interno de artes oficiais do Pratagy Beach. Quatro módulos:
+Sistema interno de artes oficiais do Pratagy Beach. Seis módulos:
 
 | Módulo | O que faz |
 |---|---|
@@ -9,6 +9,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Quatro módulos:
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) mais o gerador da carta de boas-vindas manuscrita em A4 |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 | **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
+| **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 100K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto |
 
 > Cada setor mostra uma categoria só, definida em `categoriaCatalogo`. `fluxo: 'catalogo'` abre
 > direto na busca; `fluxo: 'gerador'` (Acqua Park) vai direto para o Canvas. Hospitalidade e A&B
@@ -57,6 +58,11 @@ js/
     lote.js                  folha A4 com várias placas (grade por formato + PDF)
   ui/
     loteModal.js             modal da impressão em lote (quantidade, diagrama, gerar)
+  blackfriday/
+    templates.js             os 4 cards (medições em px, máscaras, textos, conquistas)
+    vendedores.js            lista de vendedores com foto e enquadramento inicial
+    render.js                compositor: arte + fotos mascaradas + textos, devolve `fits`
+    editorBF.js              seletor de vendedor com foto, nome na arte e conquista
   rh/
     templates.js             os 3 templates do RH (medições em px, áreas seguras, cores das faixas)
     cardRenderer.js          card de colaborador: foto (círculo/quadrado), faixas que crescem com o texto
@@ -69,6 +75,7 @@ js/
     stepper.js, common.js, icons.js
 assets/
   images/{ab,governanca,acquapark}/             modelos oficiais do gerador (PNG)
+  images/blackfriday/                           artes da Black Friday, máscaras dos círculos e vendedores/ (JPG + thumbs/)
   catalogo/{ab,manutencao,hospitalidade}/       artes prontas do catálogo (PNG, 300 DPI)
   catalogo/thumbs/                              miniaturas das artes prontas (JPG)
   fonts/                                        Fibra One (.otf) e Satisfy (.ttf)
@@ -84,7 +91,13 @@ assets/
 - **jsPDF** — exportação em PDF no tamanho físico real da arte
 - **Lucide Icons** — ícones da interface (com fallback inline caso o CDN seja bloqueado)
 
-As tipografias são locais, não vêm de CDN: **Fibra One** (interface e artes) e **Satisfy** (carta de Hospitalidade).
+As tipografias são locais, não vêm de CDN: **Fibra One** (interface e artes), **Satisfy** (carta de Hospitalidade) e **Intro Black** (cards da Black Friday).
+
+## Vendedores da Black Friday
+
+Para incluir alguém: converta a foto para JPG (lado menor até 1000 px, nome ASCII sem espaço), salve em `assets/images/blackfriday/vendedores/<id>.jpg`, gere a miniatura de 160 px em `.../thumbs/<id>.jpg` e acrescente a linha em `js/blackfriday/vendedores.js` com o enquadramento inicial (`zoom`, `cx`, `cy` — `{ zoom: 1, cx: 0.5, cy: 0.4 }` serve de partida para foto de meio corpo). HEIC/HEIF precisa ser convertido: o Chrome e o Edge não abrem.
+
+> **Privacidade:** diferente das peças do RH (fotos só em memória), as fotos dos vendedores ficam em `assets/` e vão para o deploy, porque o seletor precisa delas. Se o site for público, qualquer pessoa com o link vê as fotos. Para tirá-las do site, acrescente `/assets/images/blackfriday/vendedores/` ao `.vercelignore` e rode o sistema localmente.
 
 ## Atualizando os modelos oficiais
 

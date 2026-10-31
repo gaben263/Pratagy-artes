@@ -42,6 +42,7 @@
 //    miolo, que está livre.
 
 import { FORMATOS_RH } from '../rh/templates.js';
+import { FORMATOS_BF } from '../blackfriday/templates.js';
 
 export const SETORES = {
   ab: {
@@ -240,6 +241,26 @@ export const SETORES = {
     tipoTexto: 'rh',
     titleCase: false,
     formatos: FORMATOS_RH,
+  },
+
+  // Black Friday 2026: cards de comemoração de meta dos vendedores, sobre as
+  // artes aprovadas da campanha (js/blackfriday/templates.js). As pessoas vêm
+  // de uma lista fixa com foto (js/blackfriday/vendedores.js), escolhidas por
+  // seletor — não há upload obrigatório nem campo de nome em branco.
+  blackfriday: {
+    id: 'blackfriday',
+    nome: 'Black Friday',
+    sigla: 'BF 2026',
+    corDestaque: '#A3120C',
+    icone: 'blackfriday',
+    fluxo: 'gerador',
+    permiteTraducao: false,
+    tipoTexto: 'blackfriday',
+    titleCase: false,
+    tituloFormato: 'Qual card de comemoração?',
+    subtituloFormato: 'Escolha a peça. Todas saem em 1080×1440 px, para WhatsApp e redes.',
+    dicaModelo: 'A foto entra no círculo, atrás das faixas, e os nomes e o valor nas faixas da arte, na fonte da campanha.',
+    formatos: FORMATOS_BF,
   },
 };
 

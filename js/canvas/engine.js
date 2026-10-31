@@ -41,6 +41,8 @@ export function ensureFontsReady() {
       document.fonts.load(`${WEIGHT_SECUNDARIO} 24px ${FONT_FAMILY}`),
       document.fonts.load(`${WEIGHT_PRINCIPAL} 24px ${FONT_FAMILY}`),
       document.fonts.load(`${WEIGHT_CORPO} 24px ${FONT_FAMILY_MANUSCRITA}`),
+      // Intro Black: cards da Black Friday (js/blackfriday/render.js).
+      document.fonts.load(`24px 'Intro Black'`),
     ])
       .then(() => document.fonts.ready)
       .catch(() => document.fonts.ready);

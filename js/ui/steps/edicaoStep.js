@@ -5,6 +5,7 @@ import { debounce, escapeHtml, toTitleCase } from '../../utils.js';
 import { loadLibrary, searchLibrary, getLoadedLibrary } from '../../data/docxLibrary.js';
 import { modoDeEdicao, EDITORES_COM_CARDS } from '../../rh/templates.js';
 import { bodyRH, wireRH, prontoRH, prontoPlantao, camposEncontro, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
+import { bodyBF, wireBF, prontoBF } from '../../blackfriday/editorBF.js';
 
 // Listener único (registrado uma vez) que fecha o dropdown de busca ao
 // clicar fora dele, evitando acumular listeners a cada remontagem do passo.
@@ -27,8 +28,10 @@ function updateContinueState(container) {
   // exigem nome e setor de todo mundo; o Encontro Geral exige a data (o
   // comunicado pode ficar em branco); as demais, o texto.
   const modo = modoDeEdicao(setor, formato);
-  const comCards = EDITORES_COM_CARDS.has(modo);
-  const pronto = comCards
+  const comCards = EDITORES_COM_CARDS.has(modo) || modo === 'blackfriday';
+  const pronto = modo === 'blackfriday'
+    ? prontoBF(state, formato)
+    : comCards
     ? modo === 'plantao'
       ? prontoPlantao(state)
       : prontoRH(state)
@@ -69,6 +72,16 @@ function medidaDoFormato(formato) {
 
 function shell({ setor, formato, bodyHtml, comCards = false }) {
   const isComunicado = setor.tipoTexto === 'comunicado' || COMUNICADOS.has(formato.editor);
+  const titulo =
+    formato.editor === 'blackfriday'
+      ? formato.slots.length > 1
+        ? 'Escolha os vendedores'
+        : 'Escolha o vendedor'
+      : comCards
+      ? 'Preencha os colaboradores'
+      : isComunicado
+      ? 'Escreva o comunicado'
+      : 'Preencha o texto da arte';
   return `
     <div data-edicao-root>
       <button type="button" data-back
@@ -81,9 +94,7 @@ function shell({ setor, formato, bodyHtml, comCards = false }) {
           style="background:${setor.corDestaque}">${setor.sigla}</span>
         <span class="text-xs font-semibold text-slate-400">${formato.nome} &middot; ${medidaDoFormato(formato)}</span>
       </div>
-      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">${
-        comCards ? 'Preencha os colaboradores' : isComunicado ? 'Escreva o comunicado' : 'Preencha o texto da arte'
-      }</h1>
+      <h1 class="font-fibra text-2xl font-extrabold text-brand-deep">${titulo}</h1>
       <p class="mt-1 mb-5 text-slate-500">A prévia é atualizada automaticamente conforme você ${comCards ? 'preenche' : 'digita'}.</p>
 
       <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -428,16 +439,19 @@ export function renderEdicaoStep(container) {
   // que já traz o corpo impresso na arte, não mostra o textarea.
   const comData = modo === 'encontro';
   const bodyHtml =
-    modo === 'busca'
+    modo === 'blackfriday'
+      ? bodyBF(formato)
+      : modo === 'busca'
       ? bodyAB()
       : comCards
       ? bodyRH(formato, state)
       : (formato?.semTexto ? '' : bodyTextoLivre(modo, formato)) + (comData ? camposEncontro(formato) : '');
 
-  container.innerHTML = shell({ setor, formato, bodyHtml, comCards });
+  container.innerHTML = shell({ setor, formato, bodyHtml, comCards: comCards || modo === 'blackfriday' });
   wireCommon(container);
 
-  if (modo === 'busca') wireBuscaAB(container, state);
+  if (modo === 'blackfriday') wireBF(container);
+  else if (modo === 'busca') wireBuscaAB(container, state);
   else if (comCards) wireRH(container, formato);
   else if (!formato?.semTexto) wireTextoLivre(container, state);
   if (comData) wireCampoData(container);

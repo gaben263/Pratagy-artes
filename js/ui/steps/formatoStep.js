@@ -78,10 +78,13 @@ export function renderFormatoStep(container) {
 
   preloadSetorImages(setor);
 
+  // Um setor pode declarar o próprio texto (Black Friday: os formatos são
+  // peças diferentes, não tamanhos).
   const titulo =
-    setor.tipoTexto === 'comunicado' ? 'Qual modelo de comunicado?' : 'Qual o formato da arte?';
-  const subtitulo =
-    setor.tipoTexto === 'comunicado'
+    setor.tituloFormato || (setor.tipoTexto === 'comunicado' ? 'Qual modelo de comunicado?' : 'Qual o formato da arte?');
+  const subtitulo = setor.subtituloFormato
+    ? setor.subtituloFormato
+    : setor.tipoTexto === 'comunicado'
       ? 'Escolha o fundo do comunicado que será publicado.'
       : 'Escolha o tamanho que será impresso.';
 

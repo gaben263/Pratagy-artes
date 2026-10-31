@@ -4,6 +4,8 @@ import { icon } from '../icons.js';
 import { escapeHtml, toTitleCase } from '../../utils.js';
 import { motivoNaoCoube } from '../common.js';
 import { camposDoEncontro } from '../../rh/templates.js';
+import { ROTULOS_SLOT } from '../../blackfriday/templates.js';
+import { getVendedor } from '../../blackfriday/vendedores.js';
 
 function linha(label, valor, { destaque = false } = {}) {
   return `
@@ -22,6 +24,21 @@ function linhasDosCampos(formato, state) {
   return camposDoEncontro(formato)
     .map((campo) => linha(campo.rotulo, state.rh[campo.id] || '', { destaque: true }))
     .join('');
+}
+
+// Black Friday: quem está em cada posição do card (e o nome como sai na arte,
+// quando a peça mostra nome) e a conquista.
+function linhasBF(formato, state) {
+  const comNome = new Set(formato.textos.filter((t) => t.fonte === 'nome').map((t) => t.slot));
+  const pessoas = formato.slots
+    .map((slot) => {
+      const p = state.bf.pessoas[slot];
+      const nome = getVendedor(p?.vendedorId)?.nome || '';
+      const naArte = comNome.has(slot) ? ` (na arte: ${p.nome.trim().toLocaleUpperCase('pt-BR')})` : '';
+      return linha(ROTULOS_SLOT[slot].titulo, nome + naArte, { destaque: true });
+    })
+    .join('');
+  return pessoas + (formato.comConquista ? linha('Conquista', state.bf.conquista, { destaque: true }) : '');
 }
 
 export function renderPreviaStep(container) {
@@ -60,7 +77,9 @@ export function renderPreviaStep(container) {
         ${linha('Setor', setor.nome)}
         ${linha('Formato', `${formato.nome} · ${medida}`)}
         ${
-          state.rh.colaboradores.length && !state.texto.trim()
+          formato.editor === 'blackfriday'
+            ? linhasBF(formato, state)
+            : state.rh.colaboradores.length && !state.texto.trim()
             ? linha(
                 state.rh.colaboradores.length === 1 ? 'Colaborador' : `Colaboradores (${state.rh.colaboradores.length})`,
                 // `linha` já escapa; escapar aqui de novo mostrava "&amp;" em

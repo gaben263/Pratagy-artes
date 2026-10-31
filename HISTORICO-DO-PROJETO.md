@@ -1287,6 +1287,50 @@ renderizador já cabendo. Os casos ficaram em maiúsculas, dentro do limite ("SE
 567 px de caixa, nem a data mais larga em maiúsculas nos 32 caracteres estoura (492 no piso) — o
 teste confere isso em vez de fingir um bloqueio.
 
+### 3.23 Setor Black Friday: cards de comemoração dos vendedores
+
+Sexto setor, para a campanha **Black Friday Pratagy 2026**. Quatro peças 1080×1440, sobre as artes
+"Sem Texto" aprovadas (pasta de trabalho `BFP 2026 - COMEMORAÇÃO VENDEDORES/VISUALIZAÇÃO`):
+
+| Peça | Pessoas | Texto variável |
+|---|---|---|
+| Já Vendi | vendedor | nome (faixa vermelha) + conquista (pílula dourada): 100K…900K, 1MI, 1,1MI…2MI |
+| Meta Batida | vendedor | nome |
+| Meta com Ajuda | vendedor + ajudante | nome dos dois — o do ajudante entra na pílula de baixo, onde a referência repetia "META BATIDA!" |
+| Top 3 | 1º, 2º, 3º | nenhum (a referência mostra só as fotos) |
+
+**Medição.** Diff pixel a pixel entre "Com texto" e "Sem texto": o que muda é só o texto. Dele saíram
+o centro de cada texto, a altura de maiúscula e a cor (`#820d02` no dourado, branco no vermelho,
+`#16151c` na tira do "JÁ VENDI"). A fonte é a **Intro Black** da pasta da campanha: largura e
+maiúscula batem em todos os textos (maiúscula = 0,705 do corpo). Exceção: o "JÁ VENDI" da referência
+é de outra família, mais larga; sai em Intro Black com a mesma altura de maiúscula.
+
+**Fotos atrás das faixas.** Os círculos brancos ficam parcialmente sob as faixas, e o PNG é achatado.
+Cada círculo ganhou uma máscara feita do próprio branco da arte (região clara conectada ao centro,
+alfa pelo menor canal 170→248): a foto entra só onde a arte era branca — atrás da faixa, atrás dos
+selos 1-2-3 do Top 3 — e funde no brilho dourado da borda. No Top 3 as máscaras do 2º e do 3º
+descontam o disco do 1º, que está na frente.
+
+**Vendedores.** 26 fotos da pasta `fotos/` (JPG, PNG, HEIC, HEIF; até 26 MB) viraram JPG com lado
+menor de até 1000 px, nome ASCII, + miniaturas de 160 px (5,8 MB no total). O enquadramento inicial
+vem de detecção de rosto (OpenCV): janela de 3,1× a altura do rosto, centro um pouco abaixo dos olhos.
+Acertou 25 de 26; a Rebeca Santos foi ajustada à mão. O usuário ainda arrasta e dá zoom (editor de
+foto do RH, reaproveitado).
+
+**Tela.** Seletor próprio com foto (combobox: busca por nome sem acento, setas, Enter, Esc); quem já
+está em outra posição do card fica desabilitado. O nome na arte vem com o primeiro nome e é editável.
+Conquista é `<select>` com as 20 opções — o compositor confere o valor de novo. Nome que não cabe nem
+no piso bloqueia a exportação nomeando o nome.
+
+**Privacidade.** As fotos ficam em `assets/` e vão para o deploy (o seletor precisa delas), ao
+contrário das fotos do RH, que ficam só em memória. Ver README.
+
+**Testes.** Fluxo completo nos quatro cards no Chrome (Playwright): 26 pessoas no seletor, escolha por
+teclado e por clique, conquistas 100K→2MI na ordem, bloqueios (sem vendedor, sem conquista, nome
+absurdo, mesma pessoa em duas posições), prévia, PNG exportado com nome
+`arte-bf-2026-ja-vendi-italo-1-5mi.png`. Comparação lado a lado com a referência aprovada. Regressão:
+RH (Atenção, Talento), Acqua Park e catálogo do A&B sem erro de console.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
