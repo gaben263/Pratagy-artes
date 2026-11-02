@@ -114,12 +114,32 @@ Três regras valem para esses valores:
 2. **A faixa vertical evita as ilustrações**, em vez de cobrir toda a altura útil. O sol e as palmeiras ficam concentrados no topo e na base: incluí-los estrangula a caixa inteira e força quebras de linha desnecessárias no miolo, que está livre.
 3. **Nas artes de A&B há 5–8 mm de respiro da onda azul.** A onda superior do 8x5 termina a 3,4 mm do topo e a inferior a 12,1 mm da base — daí `top: 9.4` e `bottom: 18.1` (6 mm de folga em cada).
 
+## Editor da programação de lazer
+
+Em **Esportes e Lazer › Editar a programação do mês**, qualquer pessoa altera datas, horários e
+atrações e baixa as peças atualizadas (JPG para tela, PDF + JPG para A4). Cada atração é editada uma
+vez e vale para todos os formatos; a Programação Completa é montada a partir dos Shows Teatrais.
+
+- `js/lazer/dados.js`: a programação publicada, em campos. As edições ficam salvas só no navegador
+  (localStorage); "Salvar programação" baixa um `.json` que outra pessoa abre em "Abrir programação".
+- `js/lazer/pecas.js`: os modelos de cada atração, desenhados em Canvas sobre os fundos oficiais.
+  Texto longo encolhe para caber; abaixo de 70% do corpo o download é bloqueado e o aviso diz qual
+  campo encurtar.
+- `js/lazer/kit.js`: desenho de texto (tracking, linha de base, encaixe), caixas e imagens.
+- `js/lazer/medidas.js` (gerado): posições de caixas e ícones medidas nos PSDs.
+- `assets/lazer/fundos/`: as peças sem os textos editáveis, uma por formato. `assets/lazer/icones/`:
+  ícones, logos, selo do mês e pôster padrão.
+
+Os fundos e as medidas saem dos PSDs do Marketing por um script em Python (psd-tools), fora deste
+repositório. Se o layout de uma peça mudar no PSD, os fundos precisam ser exportados de novo.
+
 ## Virando o mês em Esportes e Lazer
 
 As peças ficam em `assets/catalogo/lazer/<id>.jpg` (JPG, 300 DPI) com miniatura em
 `assets/catalogo/thumbs/lazer/<id>.jpg`. Para publicar a programação de outro mês, substitua os
 arquivos **mantendo os IDs** e atualize `tituloCatalogo` do setor `lazer` em `js/data/models.js`
-(ele diz de que mês é a programação). Atração nova ou removida = acrescentar ou apagar o item
+(ele diz de que mês é a programação), atualize `PROGRAMACAO_PUBLICADA` e `VERSAO` em
+`js/lazer/dados.js` e troque o selo em `assets/lazer/icones/`. Atração nova ou removida = acrescentar ou apagar o item
 correspondente em `catalogData.js`. O campo `uso` decide a tela de download: `'impressao'` mostra
 instruções de gráfica e PDF; `'tela'` mostra o formato de exibição e baixa só a imagem.
 

@@ -1385,6 +1385,35 @@ a partir do PDF da recreação. O texto foi normalizado: horários HH:MM, ativid
 local na coluna própria, "Momento hidratação" unificado. Cada página traz dias inteiros (em outubro
 a quarta ficava partida entre duas páginas); o corpo é o mesmo nas três páginas de cada formato.
 
+### 3.26 Editor da programação de lazer
+
+**Pedido.** Que o usuário comum consiga visualizar e editar as informações das peças da
+programação de lazer, sem depender do Marketing para cada mudança.
+
+**Decisão.** Um passo próprio (`lazer`) a partir do catálogo, com o formulário à esquerda e a peça
+real à direita, redesenhada a cada tecla. Cada atração é editada uma vez e vale para os 2 ou 3
+formatos; a Programação Completa sai dos Shows Teatrais (nada é digitado duas vezes). Mês e selo
+são campos gerais; o pôster do Cine aceita envio com zoom e posição.
+
+**Compartilhamento.** O site é estático: as edições ficam no localStorage de quem editou. O usuário
+escolheu o "arquivo de programação" (.json) para levar a edição a outro computador ou colega, com a
+explicação na própria tela (por que o arquivo existe e os 3 passos para usá-lo).
+
+**Como as peças são desenhadas.** Os modelos em Python que produziram novembro foram portados para
+Canvas (`js/lazer/pecas.js`). Fundos sem os textos editáveis saíram dos PSDs; para tudo virar campo,
+alguns fundos limparam mais coisas que antes (caixas da Piscina, horário e local do Samba, Nordeste e
+Cine). Comparados lado a lado, os 48 desenhos reproduzem as peças publicadas.
+
+**Encaixe.** Texto que não cabe encolhe e gera aviso; abaixo de 70% vira bloqueio de download com o
+nome do campo. Nos Shows Teatrais, nome longo sem complemento quebra em duas linhas (como "TRIBUTO /
+A MICHAEL JACKSON") em vez de encolher; a grade da Programação Completa se compacta quando há mais
+atrações que o previsto.
+
+**Testes.** Chrome headless via DevTools Protocol: edição, adicionar/remover/mover linhas, troca de
+formato e página, rascunho salvo, abrir arquivo válido e inválido, voltar à publicada, PDF/JPG,
+largura de 390 px. Bug achado no teste: a faixa de atrações esticava a coluna da grade (faltava
+`min-w-0` no `#step-container`).
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi

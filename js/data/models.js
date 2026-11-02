@@ -257,6 +257,11 @@ export const SETORES = {
     fluxo: 'catalogo',
     categoriaCatalogo: 'lazer',
     tituloCatalogo: 'Programação de lazer — novembro de 2026',
+    // Cartão no topo do catálogo: abre o editor da programação (js/lazer/).
+    acaoEditor: {
+      titulo: 'Editar a programação do mês',
+      descricao: 'Altere datas, horários e atrações e baixe as peças atualizadas em todos os formatos.',
+    },
     subtituloCatalogo:
       'Peças do mês para imprimir em A4 e para as TVs, stories e app. Busque pela atração ou pelo formato.',
     permiteTraducao: false,

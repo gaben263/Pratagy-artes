@@ -39,3 +39,22 @@
   font-style: normal;
   font-display: block;
 }
+
+/* Fibra One UltraBold: só no local do Cine Pratagy (Esportes e Lazer), como no PSD. */
+@font-face {
+  font-family: 'Fibra One';
+  src: url('../assets/fonts/FibraOne-UltraBold.otf') format('opentype');
+  font-weight: 750;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Bebas Neue Bold (licença OFL): só na data do Show Nordeste. Nome próprio para
+   não colidir com uma Bebas instalada na máquina do usuário. */
+@font-face {
+  font-family: 'Bebas Neue Pratagy';
+  src: url('../assets/fonts/BebasNeue-Bold.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}

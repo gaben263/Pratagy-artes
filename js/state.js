@@ -12,10 +12,14 @@ const GERADOR = ['formato', 'modelo', 'edicao', 'previa', 'download'];
 const FLUXO_GERADOR = ['setor', ...GERADOR];
 const FLUXO_CATALOGO = ['setor', 'catalogo'];
 const FLUXO_CATALOGO_GERADOR = ['setor', 'catalogo', ...GERADOR];
+// Esportes e Lazer: do catálogo para o editor da programação do mês (um passo só,
+// com prévia e download dentro dele).
+const FLUXO_LAZER = ['setor', 'catalogo', 'lazer'];
 
 export const STEP_LABELS = {
   setor: 'Setor',
   catalogo: 'Catálogo',
+  lazer: 'Editar programação',
   formato: 'Formato',
   modelo: 'Modelo',
   edicao: 'Texto',
@@ -82,6 +86,7 @@ export function getStepOrder(s = state) {
   if (!setor) return FLUXO_GERADOR;
 
   if (setor.fluxo === 'catalogo') {
+    if (s.modo === 'lazer') return FLUXO_LAZER;
     return s.modo === 'gerador' ? FLUXO_CATALOGO_GERADOR : FLUXO_CATALOGO;
   }
 
@@ -125,6 +130,11 @@ export function goBack() {
 
 export function canReachStep(stepId) {
   return getStepOrder().indexOf(stepId) <= state.maxStepIndex;
+}
+
+/** Sai do catálogo de Esportes e Lazer para o editor da programação do mês. */
+export function entrarNoEditorLazer() {
+  setState({ modo: 'lazer', step: 'lazer', maxStepIndex: Math.max(state.maxStepIndex, FLUXO_LAZER.indexOf('lazer')) });
 }
 
 /**

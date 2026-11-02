@@ -16,7 +16,7 @@
 
 import { CATEGORIAS, buscarCatalogo, getItemCatalogo, tamanhoMm } from '../../data/catalogData.js';
 import { getSetor } from '../../data/models.js';
-import { getState, goToStep, goBack, entrarNoGerador } from '../../state.js';
+import { getState, goToStep, goBack, entrarNoGerador, entrarNoEditorLazer } from '../../state.js';
 import { icon } from '../icons.js';
 import { debounce, escapeHtml } from '../../utils.js';
 import { openModal, showToast, emptyState } from '../common.js';
@@ -301,7 +301,7 @@ export function renderCatalogoStep(container) {
   container.dataset.sig = signature;
 
   const categoria = setor.categoriaCatalogo || 'todos';
-  const gerador = setor.acaoGerador && setor.formatos.length ? setor.acaoGerador : null;
+  const gerador = setor.acaoGerador && setor.formatos.length ? setor.acaoGerador : setor.acaoEditor || null;
 
   container.innerHTML = `
     <div data-catalogo-root>
@@ -372,6 +372,10 @@ export function renderCatalogoStep(container) {
   container.querySelector('[data-back]').addEventListener('click', goBack);
 
   container.querySelector('[data-gerador]')?.addEventListener('click', () => {
+    if (setor.acaoEditor) {
+      entrarNoEditorLazer();
+      return;
+    }
     // Com um único formato disponível, a tela de escolha de formato seria um
     // beco com um cartão só: vamos direto para a confirmação do modelo.
     const unico = setor.formatos.length === 1 ? setor.formatos[0].id : null;
