@@ -418,7 +418,7 @@ const ITENS = [
     printMaterial: 'Papel couché',
     bestFormat: 'PDF',
     arquivoOriginal: 'Programação Completa - Flyer.jpg',
-    tags: ['programação completa', 'programação do mês', 'novembro', 'shows', 'teatro', 'agenda', 'impressão a4'],
+    tags: ['programação completa', 'programação do mês', 'novembro', 'shows', 'teatro', 'agenda', 'outras atividades', 'alongamento', 'sunset', 'dance party', 'bingo', 'impressão a4'],
   },
   {
     id: 'programacao-completa-tv-vertical',
@@ -431,7 +431,7 @@ const ITENS = [
     altura: 1920,
     extensao: 'jpg',
     arquivoOriginal: 'Programação Completa Tv - Flyer.jpg',
-    tags: ['programação completa', 'programação do mês', 'novembro', 'shows', 'teatro', 'agenda', 'tv vertical'],
+    tags: ['programação completa', 'programação do mês', 'novembro', 'shows', 'teatro', 'agenda', 'outras atividades', 'alongamento', 'sunset', 'dance party', 'bingo', 'tv vertical'],
   },
   {
     id: 'programacao-completa-tv-horizontal',
@@ -444,7 +444,7 @@ const ITENS = [
     altura: 1080,
     extensao: 'jpg',
     arquivoOriginal: 'Programação Completa - Tv Hospede.jpg',
-    tags: ['programação completa', 'programação do mês', 'novembro', 'shows', 'teatro', 'agenda', 'tv horizontal'],
+    tags: ['programação completa', 'programação do mês', 'novembro', 'shows', 'teatro', 'agenda', 'outras atividades', 'alongamento', 'sunset', 'dance party', 'bingo', 'tv horizontal'],
   },
   {
     id: 'banner-myguest',
@@ -485,7 +485,7 @@ const ITENS = [
     printMaterial: 'Papel couché',
     bestFormat: 'PDF',
     arquivoOriginal: 'Espetáculo Teatral Impressão.jpg',
-    tags: ['shows teatrais', 'espetáculo', 'teatro', 'frozen', 'udara', 'samba', 'nordeste', 'fadas e duendes', 'xuxa', 'michael jackson', 'cine', 'impressão a4'],
+    tags: ['shows teatrais', 'espetáculo', 'teatro', 'frozen', 'udara', 'samba', 'nordeste', 'fadas e duendes', 'xou da xôxa', 'michael jackson', 'cine', 'impressão a4'],
   },
   {
     id: 'shows-teatrais-tv-vertical',
@@ -498,7 +498,7 @@ const ITENS = [
     altura: 1920,
     extensao: 'jpg',
     arquivoOriginal: 'Espetáculo Teatral Tv Vertical.jpg',
-    tags: ['shows teatrais', 'espetáculo', 'teatro', 'frozen', 'udara', 'samba', 'nordeste', 'fadas e duendes', 'xuxa', 'michael jackson', 'cine', 'tv vertical'],
+    tags: ['shows teatrais', 'espetáculo', 'teatro', 'frozen', 'udara', 'samba', 'nordeste', 'fadas e duendes', 'xou da xôxa', 'michael jackson', 'cine', 'tv vertical'],
   },
   {
     id: 'shows-teatrais-tv-horizontal',
@@ -511,7 +511,7 @@ const ITENS = [
     altura: 1080,
     extensao: 'jpg',
     arquivoOriginal: 'Espetáculo Teatral Tv Horizontal.jpg',
-    tags: ['shows teatrais', 'espetáculo', 'teatro', 'frozen', 'udara', 'samba', 'nordeste', 'fadas e duendes', 'xuxa', 'michael jackson', 'cine', 'tv horizontal'],
+    tags: ['shows teatrais', 'espetáculo', 'teatro', 'frozen', 'udara', 'samba', 'nordeste', 'fadas e duendes', 'xou da xôxa', 'michael jackson', 'cine', 'tv horizontal'],
   },
   {
     id: 'musica-ao-vivo-impressao',
@@ -526,7 +526,7 @@ const ITENS = [
     printMaterial: 'Papel couché',
     bestFormat: 'PDF',
     arquivoOriginal: 'Musica Ao Vivo - Impressão.jpg',
-    tags: ['música ao vivo', 'bar da piscina', 'mpb', 'sertanejo', 'forró', 'pagode', 'axé', 'noite', 'impressão a4'],
+    tags: ['música ao vivo', 'bar da piscina', 'mpb', 'samba', 'sertanejo', 'forró', 'pagode', 'axé', 'noite', 'impressão a4'],
   },
   {
     id: 'musica-ao-vivo-tv-vertical',
@@ -539,7 +539,7 @@ const ITENS = [
     altura: 1920,
     extensao: 'jpg',
     arquivoOriginal: 'Musica Ao Vivo Tv.jpg',
-    tags: ['música ao vivo', 'bar da piscina', 'mpb', 'sertanejo', 'forró', 'pagode', 'axé', 'noite', 'tv vertical'],
+    tags: ['música ao vivo', 'bar da piscina', 'mpb', 'samba', 'sertanejo', 'forró', 'pagode', 'axé', 'noite', 'tv vertical'],
   },
   {
     id: 'musica-ao-vivo-tv-horizontal',
@@ -552,7 +552,7 @@ const ITENS = [
     altura: 1080,
     extensao: 'jpg',
     arquivoOriginal: 'Musica Ao Vivo Tv Horizontal.jpg',
-    tags: ['música ao vivo', 'bar da piscina', 'mpb', 'sertanejo', 'forró', 'pagode', 'axé', 'noite', 'tv horizontal'],
+    tags: ['música ao vivo', 'bar da piscina', 'mpb', 'samba', 'sertanejo', 'forró', 'pagode', 'axé', 'noite', 'tv horizontal'],
   },
   {
     id: 'lazer-na-piscina-impressao',
@@ -567,7 +567,7 @@ const ITENS = [
     printMaterial: 'Papel couché',
     bestFormat: 'PDF',
     arquivoOriginal: 'Lazer na Piscina - Impressão.jpg',
-    tags: ['lazer na piscina', 'piscina', 'hidro', 'alongamento', 'jogos', 'aula de dança', 'xou da xôxa', 'recreação', 'impressão a4'],
+    tags: ['lazer na piscina', 'piscina', 'hidro', 'alongamento', 'jogos', 'aula de dança', 'recreação', 'impressão a4'],
   },
   {
     id: 'lazer-na-piscina-tv-vertical',
@@ -580,7 +580,7 @@ const ITENS = [
     altura: 1920,
     extensao: 'jpg',
     arquivoOriginal: 'Lazer na Piscina - TV.jpg',
-    tags: ['lazer na piscina', 'piscina', 'hidro', 'alongamento', 'jogos', 'aula de dança', 'xou da xôxa', 'recreação', 'tv vertical'],
+    tags: ['lazer na piscina', 'piscina', 'hidro', 'alongamento', 'jogos', 'aula de dança', 'recreação', 'tv vertical'],
   },
   {
     id: 'lazer-na-piscina-tv-horizontal',
@@ -593,7 +593,7 @@ const ITENS = [
     altura: 1080,
     extensao: 'jpg',
     arquivoOriginal: 'Lazer na Piscina - Full TV.jpg',
-    tags: ['lazer na piscina', 'piscina', 'hidro', 'alongamento', 'jogos', 'aula de dança', 'xou da xôxa', 'recreação', 'tv horizontal'],
+    tags: ['lazer na piscina', 'piscina', 'hidro', 'alongamento', 'jogos', 'aula de dança', 'recreação', 'tv horizontal'],
   },
   {
     id: 'fitness-feed',
@@ -730,9 +730,9 @@ const ITENS = [
     tags: ['cine pratagy', 'cinema', 'filme', 'hotel transilvânia', 'teatro', 'domingo', 'tv horizontal'],
   },
   {
-    id: 'show-da-xuxa-impressao',
+    id: 'xou-da-xoxa-impressao',
     categoria: 'lazer',
-    titulo: 'Show da Xuxa — Impressão A4',
+    titulo: 'Xou da Xôxa — Impressão A4',
     formato: 'Impressão A4',
     uso: 'impressao',
     size: 'A4 Vertical',
@@ -741,21 +741,21 @@ const ITENS = [
     extensao: 'jpg',
     printMaterial: 'Papel couché',
     bestFormat: 'PDF',
-    arquivoOriginal: 'Programação Show da Xuxa - Impressão.jpg',
-    tags: ['show da xuxa', 'xuxa', 'infantil', 'crianças', 'teatro', 'sexta', 'impressão a4'],
+    arquivoOriginal: 'Programação Xou da Xoxa - Impressão.jpg',
+    tags: ['xou da xôxa', 'xoxa', 'xuxa', 'infantil', 'crianças', 'teatro', 'sexta', 'impressão a4'],
   },
   {
-    id: 'show-da-xuxa-tv-vertical',
+    id: 'xou-da-xoxa-tv-vertical',
     categoria: 'lazer',
-    titulo: 'Show da Xuxa — TV vertical',
+    titulo: 'Xou da Xôxa — TV vertical',
     formato: 'TV vertical',
     uso: 'tela',
     size: '1080×1920 px',
     largura: 1080,
     altura: 1920,
     extensao: 'jpg',
-    arquivoOriginal: 'Programação Show da Xuxa - Tv Vertical.jpg',
-    tags: ['show da xuxa', 'xuxa', 'infantil', 'crianças', 'teatro', 'sexta', 'tv vertical'],
+    arquivoOriginal: 'Programação Xou da Xoxa - Tv Vertical.jpg',
+    tags: ['xou da xôxa', 'xoxa', 'xuxa', 'infantil', 'crianças', 'teatro', 'sexta', 'tv vertical'],
   },
   {
     id: 'show-samba-impressao',

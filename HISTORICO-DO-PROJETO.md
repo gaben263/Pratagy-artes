@@ -1414,6 +1414,28 @@ formato e página, rascunho salvo, abrir arquivo válido e inválido, voltar à 
 largura de 390 px. Bug achado no teste: a faixa de atrações esticava a coluna da grade (faltava
 `min-w-0` no `#step-container`).
 
+### 3.27 Alterações de novembro (02/11)
+
+**Pedido.** Programação Completa com os shows **e** as outras atividades (Xou da Xôxa uma vez só);
+pôster do Cine com o "4" no título; Xou da Xôxa fora do card da Piscina; arte nova do Xou da Xôxa
+(antes "Show da Xuxa"); revisão do Word.
+
+**Decisões.**
+- `outras.linhas` em `dados.js` (Alongamento, Sunset, Dance Party, Bingo), editável na própria
+  Programação Completa. `linhasCompleta()` junta com os Shows Teatrais, ordena por dia e horário e
+  descarta a atividade com o mesmo nome de um show. Horário com intervalo vira "DAS 16H30 ÀS 17H45".
+- Com 12 cards a grade só encolhe na **altura**; a largura dos cards se mantém (texto ganha folga).
+  Na TV vertical o topo e o limite da grade foram ajustados (772–1658) para os 12 cards passarem em 75%.
+- Word dizia "Sábado dias 6 e 20" para o Xou da Xôxa em "Outras atividades", mas 6 e 20/11 são
+  sextas (e é o que está na arte e na lista de shows): mantido sexta.
+- Música: terça virou "Samba com H3Samba".
+- Xou da Xôxa: catálogo usa as artes do Marketing sem retoque (ids `xou-da-xoxa-*`); o editor usa
+  fundo e ícones novos tirados dos PSDs (a logo fica no fundo).
+- Pôster do Cine: o PNG oficial de 356×512 ampliado em duas etapas com nitidez leve. Suave no A4;
+  trocar quando houver versão em alta.
+- As peças alteradas do catálogo foram geradas pelo próprio editor (iguais ao que o usuário baixa).
+  `VERSAO` subiu para `2026-11-b`, descartando rascunhos antigos.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi

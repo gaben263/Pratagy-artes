@@ -114,12 +114,40 @@ function teatral(c) {
 }
 
 // ------------------------------------------------------- Programação Completa
+const DIAS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
+const semAcento = (t) => (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const ordemDia = (dia) => {
+  const i = DIAS.indexOf(semAcento(dia).slice(0, 3));
+  return i < 0 ? 99 : i;
+};
+const minutos = (h) => {
+  const m = /(\d{1,2})\s*[h:]\s*(\d{2})?/i.exec(h || '');
+  return m ? Number(m[1]) * 60 + Number(m[2] || 0) : 0;
+};
+
+/**
+ * Shows Teatrais + outras atividades, em ordem de dia da semana e horário.
+ * Uma "outra atividade" com o mesmo nome de um show não se repete.
+ */
+export function linhasCompleta(d) {
+  const shows = d.teatral.linhas;
+  const nomes = new Set(shows.map((l) => semAcento(l.atracao)));
+  const outras = (d.outras?.linhas || []).filter((l) => l.atracao.trim() && !nomes.has(semAcento(l.atracao)));
+  return [...shows, ...outras]
+    .map((l, i) => ({ l, i }))
+    .sort((a, b) => ordemDia(a.l.dia) - ordemDia(b.l.dia) || minutos(a.l.horario) - minutos(b.l.horario) || a.i - b.i)
+    .map(({ l }) => l);
+}
+
+/** "16h30 às 17h45" -> "das 16h30 às 17h45"; "20h00" -> "às 20h00". */
+const rotuloHora = (h) => (/\s(às|as|a)\s/i.test(h) ? `das ${h}` : `às ${h}`);
+
 function cardsCompleta(d) {
-  return d.teatral.linhas.map((l) => ({
+  return linhasCompleta(d).map((l) => ({
     t1: M(l.atracao),
     t2: M(l.complemento),
     q: l.datas.trim() ? [M(l.dia) + ' ', rotuloDatas(l.datas)] : [M(todaTodo(l.dia)) + ' ', M(l.dia)],
-    hora: M(`às ${l.horario}`),
+    hora: M(rotuloHora(l.horario)),
     local: M(l.local) + ',',
   }));
 }
@@ -138,7 +166,7 @@ function cardCompleta(ctx, x0, top, w, h, s, c, rel) {
   const cx = x0 + w / 2;
   texto(ctx, cx, b1, c.local, 'heavy', caber(ctx, rel, c.local, 'heavy', L, w - 50 * s, 0, 'Local'), COR.branco, { align: 'c' });
   linhaMista(ctx, cx, b1 + lh, [[c.q[0], 'regular', L], [c.q[1], 'heavy', L]], COR.branco, { align: 'c', maxw: w - 50 * s, rel, campo: 'Datas' });
-  texto(ctx, cx, b1 + 2 * lh, c.hora, 'heavy', L, COR.branco, { align: 'c' });
+  texto(ctx, cx, b1 + 2 * lh, c.hora, 'heavy', caber(ctx, rel, c.hora, 'heavy', L, w - 50 * s, 0, 'Horário'), COR.branco, { align: 'c' });
 }
 
 function completa(c) {
@@ -149,20 +177,21 @@ function completa(c) {
     const esp = `ESPECIAL DE ${M(d.mes)}`;
     texto(ctx, mx, b2, esp, 'heavy', caber(ctx, rel, esp, 'heavy', ms, mw, 0, 'Mês'), COR.deep, { align: 'c' });
     const cards = cardsCompleta(d);
-    // Linhas de cards; com mais atrações que o previsto, a grade inteira encolhe
-    // (cards, títulos e espaços) para caber até o limite de baixo da peça.
+    // Linhas de cards; com mais atrações que o previsto, a grade encolhe na altura
+    // (cards, textos e espaços) para caber até o limite de baixo da peça. A largura
+    // dos cards se mantém, o que dá folga aos textos.
     const linhas = Math.ceil(cards.length / c.porLinha);
     const natural = (linhas - 1) * c.pitch + c.h;
     const k = Math.min(1, (c.limite - c.top) / natural);
     if (k < 0.75) {
-      rel.erros.push(`A Programação Completa (${c.nome}) não comporta ${cards.length} atrações. Remova alguma linha dos Shows Teatrais.`);
+      rel.erros.push(`A Programação Completa (${c.nome}) não comporta ${cards.length} atrações. Remova alguma atração dos Shows Teatrais ou das outras atividades.`);
     } else if (k < 1) {
       rel.reducoes.push({ campo: 'Quantidade de atrações', texto: '', fator: k });
     }
     let i = 0;
     for (let ln = 0; ln < linhas; ln++) {
       const n = Math.min(c.porLinha, cards.length - i);
-      const w = c.w * k, gap = c.gap * k;
+      const w = c.w, gap = c.gap;
       const total = n * w + (n - 1) * gap;
       const top = c.top + ln * c.pitch * k;
       for (let j = 0; j < n; j++) cardCompleta(ctx, c.cx - total / 2 + j * (w + gap), top, w, c.h * k, c.s * k, cards[i++], rel);
@@ -308,7 +337,7 @@ function step(c) {
   };
 }
 
-// --------------------------------------------- Bingo, Xuxa, Samba, Nordeste
+// ---------------------------------------- Bingo, Xou da Xôxa, Samba, Nordeste
 function bingo(c) {
   return (ctx, d, R, rel) => {
     const ic = R.ic;
@@ -322,8 +351,6 @@ function xuxa(c) {
   return (ctx, d, R, rel) => {
     const ic = R.ic;
     const x = d.xuxa;
-    const lg = ic.logo;
-    ctx.drawImage(lg, c.cx - lg.naturalWidth / 2, c.logoCy - lg.naturalHeight / 2);
     linhaIcones(ctx, c.cxData, c.centro - c.dist / 2, [[ic.calendario, x.quando]], c.a, ROSA, c.gi, 0, { rel, campo: 'Datas' });
     linhaIcones(ctx, c.cxInfo, c.centro + c.dist / 2, [[ic.relogio, x.hora], [ic.pin, x.local]], c.b, ROSA, c.gi, c.gg, { rel, campo: 'Horário e local' });
   };
@@ -471,10 +498,10 @@ export const ATRACOES = [
     ],
   },
   {
-    id: 'completa', nome: 'Programação Completa', resumo: 'Montada a partir dos Shows Teatrais', derivada: 'teatral',
+    id: 'completa', nome: 'Programação Completa', resumo: 'Shows Teatrais e outras atividades',
     formatos: [
       F(A4, 'completa-a4', completa({ nome: 'Impressão A4', selo: [1240, 150, 1180], manchete: [1240, 1224, 1387, 135.7, 2050], top: 1655, pitch: 420, limite: 2860, porLinha: 3, w: 712, h: 201, gap: 25, s: 1, cx: 1240 }), { comSelo: true }),
-      F(TVV, 'completa-tvv', completa({ nome: 'TV vertical', selo: [540, 70, 600], manchete: [540, 606, 666, 50.4, 900], top: 802, pitch: 210, limite: 1640, porLinha: 2, w: 454, h: 128, gap: 21, s: 454 / 712, cx: 540 }), { comSelo: true }),
+      F(TVV, 'completa-tvv', completa({ nome: 'TV vertical', selo: [540, 70, 600], manchete: [540, 606, 666, 50.4, 900], top: 772, pitch: 210, limite: 1658, porLinha: 2, w: 454, h: 128, gap: 21, s: 454 / 712, cx: 540 }), { comSelo: true }),
       F(TVH, 'completa-tvh', completa({ nome: 'TV horizontal', selo: [440, 236, 560], manchete: [1395, 164, 225, 50.9, 820], top: 338, pitch: 172, limite: 820, porLinha: 3, w: 294, h: 83, gap: 10, s: 294 / 712, cx: 1375 }), { comSelo: true }),
     ],
   },
@@ -525,10 +552,10 @@ export const ATRACOES = [
     ],
   },
   {
-    id: 'xuxa', nome: 'Show da Xuxa', resumo: 'Datas, horário e local',
+    id: 'xuxa', nome: 'Xou da Xôxa', resumo: 'Datas, horário e local',
     formatos: [
-      F(A4, 'xuxa-a4', xuxa({ cx: 1240, logoCy: 560, centro: 2176, a: 88.3, b: 80.4, gi: 30, gg: 64, dist: 188, cxData: 1209, cxInfo: 1143 }), { icones: icones('xuxa-a4', ['calendario', 'relogio', 'pin', 'logo']) }),
-      F(TVV, 'xuxa-tvv', xuxa({ cx: 540, logoCy: 360, centro: 1157, a: 50.9, b: 46.3, gi: 17, gg: 36, dist: 106, cxData: 540, cxInfo: 534 }), { icones: icones('xuxa-tvv', ['calendario', 'relogio', 'pin', 'logo']) }),
+      F(A4, 'xuxa-a4', xuxa({ centro: 2175, a: 88.3, b: 80.4, gi: 27, gg: 64, dist: 180, cxData: 1240, cxInfo: 1143 }), { icones: icones('xuxa-a4', ['calendario', 'relogio', 'pin']) }),
+      F(TVV, 'xuxa-tvv', xuxa({ centro: 1159, a: 45.9, b: 46.3, gi: 13, gg: 36, dist: 104, cxData: 540, cxInfo: 534 }), { icones: icones('xuxa-tvv', ['calendario', 'relogio', 'pin']) }),
     ],
   },
   {

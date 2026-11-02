@@ -8,7 +8,7 @@
 // Para virar o mês: atualize este objeto junto com as peças do catálogo e
 // troque VERSAO (o rascunho antigo de quem editou o mês passado é descartado).
 
-export const VERSAO = '2026-11';
+export const VERSAO = '2026-11-b';
 const CHAVE = 'pratagy-lazer-programacao';
 
 const TP = 'Tablado próximo ao teatro';
@@ -28,11 +28,22 @@ export const PROGRAMACAO_PUBLICADA = {
       { dia: 'Quarta-feira', datas: '25', atracao: 'Show Samba', complemento: '', horario: '21h00', local: 'No teatro', destaque: false },
       { dia: 'Quinta-feira', datas: '', atracao: 'Show Nordeste', complemento: '', horario: '21h00', local: 'No teatro', destaque: false },
       { dia: 'Sexta-feira', datas: '13 e 27', atracao: 'Show Fadas e Duendes', complemento: '', horario: '20h00', local: 'No teatro', destaque: false },
-      { dia: 'Sexta-feira', datas: '6 e 20', atracao: 'Show da Xuxa', complemento: '', horario: '20h00', local: 'No teatro', destaque: false },
+      { dia: 'Sexta-feira', datas: '6 e 20', atracao: 'Xou da Xôxa', complemento: '', horario: '20h00', local: 'No teatro', destaque: false },
       { dia: 'Sábado', datas: '', atracao: 'Tributo a Michael Jackson', complemento: '', horario: '21h00', local: 'No teatro', destaque: false },
       { dia: 'Domingo', datas: '', atracao: 'Cine Pratagy', complemento: 'Hotel Transilvânia 4', horario: '19h30', local: 'No teatro', destaque: false },
     ],
     nota: 'Às segundas-feiras não há espetáculo no teatro.',
+  },
+
+  // Entram na Programação Completa junto com os Shows Teatrais (em ordem de dia e
+  // horário). Uma atração que já está nos Shows Teatrais não é repetida.
+  outras: {
+    linhas: [
+      { dia: 'Terça-feira', datas: '17 e 24', atracao: 'Aula de Alongamento', complemento: '', horario: '07h00', local: 'No tablado em frente à academia' },
+      { dia: 'Sexta-feira', datas: '20', atracao: 'Sunset Pratagy', complemento: 'Voz e violão com Well Filho', horario: '16h30 às 17h45', local: 'Na praia' },
+      { dia: 'Sábado', datas: '21', atracao: 'Dance Party Pratagy', complemento: 'Com a equipe Peixe-Boi', horario: '16h00', local: 'Na piscina' },
+      { dia: 'Domingo', datas: '8, 15 e 22', atracao: 'Bingo', complemento: '', horario: '17h00', local: 'Na área da piscina' },
+    ],
   },
 
   musica: {
@@ -40,7 +51,7 @@ export const PROGRAMACAO_PUBLICADA = {
     local: 'Bar da Piscina',
     dias: [
       { dia: 'Segunda', estilo: 'MPB' },
-      { dia: 'Terça', estilo: 'Eclético com Anderson Peba' },
+      { dia: 'Terça', estilo: 'Samba com H3Samba' },
       { dia: 'Quarta', estilo: 'Sertanejo com Jonas Melo' },
       { dia: 'Quinta', estilo: 'Samba e pagode' },
       { dia: 'Sexta', estilo: 'Forró com Manu Paes' },
@@ -53,7 +64,6 @@ export const PROGRAMACAO_PUBLICADA = {
     todosOsDias: [A('10h15', 'Alongamento'), A('10h30', 'Momento esporte'), A('11h30', 'Hidro recreativa'), A('14h30', 'Jogos e desafios')],
     blocos: [
       { quando: 'Segundas e quartas', hora: '16h15', atividade: 'Hidro recreativa' },
-      { quando: 'Sextas 6 e 20', hora: '16h15', atividade: 'Xou da Xôxa' },
       { quando: 'Demais dias', hora: '16h00', atividade: 'Aula de dança' },
     ],
   },
@@ -161,5 +171,6 @@ export async function lerArquivo(file) {
   if (!p || typeof p !== 'object' || !p.teatral || !p.musica) {
     throw new Error('Este arquivo não é um arquivo de programação do Sistema de Artes.');
   }
+  p.versao = VERSAO;
   return completar(p);
 }

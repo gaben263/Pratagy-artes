@@ -118,7 +118,8 @@ Três regras valem para esses valores:
 
 Em **Esportes e Lazer › Editar a programação do mês**, qualquer pessoa altera datas, horários e
 atrações e baixa as peças atualizadas (JPG para tela, PDF + JPG para A4). Cada atração é editada uma
-vez e vale para todos os formatos; a Programação Completa é montada a partir dos Shows Teatrais.
+vez e vale para todos os formatos; a Programação Completa junta os Shows Teatrais com as outras
+atividades do mês (em ordem de dia e horário, sem repetir atração).
 
 - `js/lazer/dados.js`: a programação publicada, em campos. As edições ficam salvas só no navegador
   (localStorage); "Salvar programação" baixa um `.json` que outra pessoa abre em "Abrir programação".

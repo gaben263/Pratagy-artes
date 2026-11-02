@@ -2,8 +2,8 @@
 //
 // A pessoa escolhe uma atração, altera as informações num formulário simples e
 // vê a peça real se redesenhar ao lado, em qualquer formato. Cada atração é
-// editada uma vez e vale para todos os formatos dela; a Programação Completa é
-// montada a partir dos Shows Teatrais.
+// editada uma vez e vale para todos os formatos dela; a Programação Completa
+// junta os Shows Teatrais com as outras atividades do mês.
 //
 // Assim como o catálogo, este passo monta o próprio DOM uma vez e o atualiza
 // diretamente: um setState global a cada tecla recriaria os campos e o cursor
@@ -33,11 +33,11 @@ const FORMULARIOS = {
   teatral: [
     {
       tipo: 'lista', c: 'teatral.linhas', r: 'Atrações no teatro', nomeItem: 'atração',
-      dica: 'A ordem aqui é a ordem das linhas na peça. A Programação Completa usa esta mesma lista.',
+      dica: 'A ordem aqui é a ordem das linhas na peça. A Programação Completa também usa esta lista.',
       resumo: (i) => `${i.atracao || 'Nova atração'} · ${i.dia}`,
       novo: () => ({ dia: 'Segunda-feira', datas: '', atracao: '', complemento: '', horario: '20h00', local: 'No teatro', destaque: false }),
       campos: [
-        T('atracao', 'Atração', { ph: 'Show da Xuxa' }),
+        T('atracao', 'Atração', { ph: 'Xou da Xôxa' }),
         T('complemento', 'Complemento', { ph: 'Opcional. Ex.: Uma aventura congelante' }),
         DIA(),
         T('datas', 'Datas', { ph: '3, 17 e 24', dica: 'Deixe vazio quando for toda semana.' }),
@@ -51,8 +51,22 @@ const FORMULARIOS = {
   completa: [
     {
       tipo: 'aviso',
-      texto: 'Esta peça é montada automaticamente com as atrações dos Shows Teatrais. Para mudar um card, edite a atração em Shows Teatrais.',
+      texto: 'Os shows entram aqui sozinhos, a partir dos Shows Teatrais. Abaixo ficam as outras atividades do mês. Na peça, tudo aparece em ordem de dia da semana e horário.',
       botao: { r: 'Editar Shows Teatrais', ir: 'teatral' },
+    },
+    {
+      tipo: 'lista', c: 'outras.linhas', r: 'Outras atividades', nomeItem: 'atividade',
+      dica: 'Uma atividade com o mesmo nome de um show não aparece duas vezes.',
+      resumo: (i) => `${i.atracao || 'Nova atividade'} · ${i.dia}`,
+      novo: () => ({ dia: 'Segunda-feira', datas: '', atracao: '', complemento: '', horario: '', local: '' }),
+      campos: [
+        T('atracao', 'Atividade', { ph: 'Sunset Pratagy' }),
+        T('complemento', 'Complemento', { ph: 'Opcional. Ex.: Voz e violão com Well Filho' }),
+        DIA(),
+        T('datas', 'Datas', { ph: '20', dica: 'Deixe vazio quando for toda semana.' }),
+        T('horario', 'Horário', { ph: '16h30 às 17h45', curto: true }),
+        T('local', 'Local', { ph: 'Na praia', curto: true }),
+      ],
     },
   ],
   musica: [
