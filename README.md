@@ -10,7 +10,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Sete módulos:
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 | **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
 | **Esportes e Lazer** | Catálogo da programação mensal de lazer (shows, música ao vivo, piscina, fitness, bingo, cinema, programação infantil de 4 a 6 e de 7 a 12 anos): 50 peças de novembro de 2026, em A4 para impressão e nos formatos de tela (TV vertical e horizontal, stories, feed, banner do app). Peças de tela baixam só a imagem; as A4 também em PDF |
-| **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 100K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto |
+| **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 50K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto |
 
 > Cada setor mostra uma categoria só, definida em `categoriaCatalogo`. `fluxo: 'catalogo'` abre
 > direto na busca; `fluxo: 'gerador'` (Acqua Park) vai direto para o Canvas. Hospitalidade e A&B

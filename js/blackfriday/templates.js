@@ -37,16 +37,20 @@ export const ALTURA_MAIUSCULA = 0.705;
 
 const COR = { dourado: '#820d02', vermelho: '#FFFFFF', tira: '#16151c' };
 
-// Conquistas: de 100K a 900K de cem em cem mil, e de 1MI a 2MI de cem em cem
-// mil. O `valor` é o texto da arte ("1,1MI" com vírgula, como se fala); o
-// `rotulo` é o que o select mostra.
-export const CONQUISTAS = [
-  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({ valor: `${n}00K`, rotulo: `${n}00K · R$ ${n}00 mil` })),
-  ...[10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((n) => {
-    const mi = n % 10 === 0 ? String(n / 10) : `${Math.floor(n / 10)},${n % 10}`;
-    return { valor: `${mi}MI`, rotulo: `${mi}MI · R$ ${mi} ${n === 10 ? 'milhão' : 'milhões'}` };
-  }),
-];
+// Conquistas, em milhares de reais: de 50K a 95K nos degraus combinados com a
+// campanha, de 100K a 500K de cem em cem mil e, de 500K a 2MI, de cinquenta em
+// cinquenta mil. O `valor` é o texto da arte ("1,05MI" com vírgula, como se
+// fala); o `rotulo` é o que o select mostra.
+const faixa = (de, ate, passo) =>
+  Array.from({ length: (ate - de) / passo + 1 }, (_, i) => de + i * passo);
+
+const MILHARES = [50, 60, 70, 75, 80, 85, 90, 95, ...faixa(100, 400, 100), ...faixa(500, 2000, 50)];
+
+export const CONQUISTAS = MILHARES.map((m) => {
+  if (m < 1000) return { valor: `${m}K`, rotulo: `${m}K · R$ ${m} mil` };
+  const mi = String(m / 1000).replace('.', ',');
+  return { valor: `${mi}MI`, rotulo: `${mi}MI · R$ ${mi} ${m === 1000 ? 'milhão' : 'milhões'}` };
+});
 
 const foto = (slot, n, { x, y, cx, cy, d }) => ({ slot, mascara: `${PASTA}/${n}`, x, y, cx, cy, d });
 
@@ -55,7 +59,7 @@ export const FORMATOS_BF = [
     ...BASE,
     id: 'ja-vendi',
     nome: 'Já Vendi',
-    descricao: 'Vendedor + valor já vendido (100K a 2MI)',
+    descricao: 'Vendedor + valor já vendido (50K a 2MI)',
     imagem: `${PASTA}/ja-vendi.png`,
     slots: ['vendedor'],
     comConquista: true,

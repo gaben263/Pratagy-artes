@@ -1294,7 +1294,7 @@ Sexto setor, para a campanha **Black Friday Pratagy 2026**. Quatro peças 1080×
 
 | Peça | Pessoas | Texto variável |
 |---|---|---|
-| Já Vendi | vendedor | nome (faixa vermelha) + conquista (pílula dourada): 100K…900K, 1MI, 1,1MI…2MI |
+| Já Vendi | vendedor | nome (faixa vermelha) + conquista (pílula dourada): 50K…95K, 100K…500K, 550K…950K e 1MI…2MI de 50 em 50 mil |
 | Meta Batida | vendedor | nome |
 | Meta com Ajuda | vendedor + ajudante | nome dos dois — o do ajudante entra na pílula de baixo, onde a referência repetia "META BATIDA!" |
 | Top 3 | 1º, 2º, 3º | nenhum (a referência mostra só as fotos) |
