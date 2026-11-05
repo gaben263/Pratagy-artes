@@ -38,13 +38,12 @@ export const ALTURA_MAIUSCULA = 0.705;
 const COR = { dourado: '#820d02', vermelho: '#FFFFFF', tira: '#16151c' };
 
 // Conquistas, em milhares de reais: de 50K a 95K nos degraus combinados com a
-// campanha, de 100K a 500K de cem em cem mil e, de 500K a 2MI, de cinquenta em
-// cinquenta mil. O `valor` é o texto da arte ("1,05MI" com vírgula, como se
-// fala); o `rotulo` é o que o select mostra.
+// campanha e, de 100K a 2MI, de cinquenta em cinquenta mil. O `valor` é o texto
+// da arte ("1,05MI" com vírgula, como se fala); o `rotulo` é o que o select mostra.
 const faixa = (de, ate, passo) =>
   Array.from({ length: (ate - de) / passo + 1 }, (_, i) => de + i * passo);
 
-const MILHARES = [50, 60, 70, 75, 80, 85, 90, 95, ...faixa(100, 400, 100), ...faixa(500, 2000, 50)];
+const MILHARES = [50, 60, 70, 75, 80, 85, 90, 95, ...faixa(100, 2000, 50)];
 
 export const CONQUISTAS = MILHARES.map((m) => {
   if (m < 1000) return { valor: `${m}K`, rotulo: `${m}K · R$ ${m} mil` };
