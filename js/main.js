@@ -13,6 +13,7 @@ import { renderEdicaoStep } from './ui/steps/edicaoStep.js';
 import { renderPreviaStep } from './ui/steps/previaStep.js';
 import { renderDownloadStep } from './ui/steps/downloadStep.js';
 import { renderLazerStep } from './ui/steps/lazerStep.js';
+import { renderFolhaStep } from './ui/steps/folhaStep.js';
 
 // Aquece a fonte e a biblioteca de pratos já na abertura da página, para que
 // nenhuma etapa do fluxo precise esperar por elas depois. A leitura do .docx
@@ -29,6 +30,7 @@ const STEP_RENDERERS = {
   previa: renderPreviaStep,
   download: renderDownloadStep,
   lazer: renderLazerStep,
+  folha: renderFolhaStep,
 };
 
 const stepperEl = document.getElementById('stepper-container');
@@ -59,9 +61,10 @@ function render() {
   renderStepper(stepperEl);
   STEP_RENDERERS[state.step]?.(stepEl);
 
-  // O catálogo não tem Canvas para pré-visualizar, e o editor do Lazer tem a
-  // própria prévia: nos dois a coluna da direita sai e o conteúdo ocupa a largura toda.
-  const semPrevia = state.step === 'catalogo' || state.step === 'lazer';
+  // O catálogo não tem Canvas para pré-visualizar, e o editor do Lazer e a folha
+  // A4 têm a própria prévia: neles a coluna da direita sai e o conteúdo ocupa a
+  // largura toda.
+  const semPrevia = ['catalogo', 'lazer', 'folha'].includes(state.step);
   previewEl.classList.toggle('hidden', semPrevia);
   appGridEl.classList.toggle(CLASSE_COLUNA_PREVIA, !semPrevia);
   if (!semPrevia) updatePreview();

@@ -20,7 +20,7 @@ const TIPO_RENDER = {
   livre: 'manutencao',
 };
 
-async function getCachedImage(src) {
+export async function getCachedImage(src) {
   if (imageCache.has(src)) return imageCache.get(src);
   const promise = loadImage(src);
   imageCache.set(src, promise);

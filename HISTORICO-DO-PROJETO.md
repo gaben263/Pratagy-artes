@@ -1438,6 +1438,39 @@ pôster do Cine com o "4" no título; Xou da Xôxa fora do card da Piscina; arte
 
 ---
 
+### 3.28 Folha A4 montada: peças diferentes na mesma folha
+
+**Pedido.** O lote (3.16) repete uma arte só. A equipe do A&B imprime pratos diferentes na mesma
+folha, e o lote precisava continuar existindo.
+
+**O que entrou.** Um passo novo, **Montar folha** (`js/ui/steps/folhaStep.js`), aberto pelo cartão
+"Montar folha A4" no catálogo do A&B ou por "Adicionar a uma folha A4" no Download. A pessoa busca
+o prato, escolhe o tamanho e a quantidade, e vê a folha real em escala, com as artes verdadeiras.
+Enter adiciona o primeiro resultado e devolve o foco à busca, para lançar vários pratos em sequência.
+O modal de lote, `calcularGrade`, `posicoes` e `exportLotePDF` não mudaram.
+
+**Decisões.**
+- "Peças diferentes" foi lido como pratos diferentes **e** tamanhos diferentes (8×5, 8×10 e 10×15).
+  As artes prontas do catálogo de A&B ficaram de fora: são A4 ou quase, ocupam a folha sozinhas.
+- Sem campo de texto livre: só a biblioteca oficial, a mesma regra do gerador.
+- Encaixe nos espaços livres (`montarFolhas`), não em linhas fixas: maiores primeiro, cada peça no
+  espaço mais alto e mais à esquerda. Linhas desperdiçam papel quando 8×5 e 8×10 se misturam. Mantém
+  margem de 10 mm e calha de 3 mm, com a placa sempre em pé.
+- Cada folha escolhe em pé ou deitada pelo papel aproveitado (empate → em pé), e o que não couber
+  abre outra folha em vez de bloquear. O PDF pode misturar orientações.
+- `state.folha` guarda arte e quantidade; miniatura e PDF são renderizados pelo mesmo `renderCanvas`
+  do PNG individual. Repetir uma arte aponta para a imagem já embutida, inclusive entre páginas.
+- Uma arte que não cabe no tamanho escolhido é apontada na lista e bloqueia o PDF até trocar o tamanho.
+- A folha sobrevive à criação de outras artes no meio do caminho. "Nova arte" e recarregar esvaziam.
+
+**Testes.** Módulo: 3.000 combinações aleatórias sem peça perdida, fora da margem ou a menos de
+3 mm da vizinha; com um tamanho só, o encaixe reproduz exatamente posições e orientação da grade do
+lote. Navegador (Edge via Playwright): fluxo completo, foco, várias folhas, bloqueio por texto que
+não cabe, celular a 390 px sem rolagem lateral, entrada pelo Download e lote antigo com o mesmo nome
+de arquivo. PDFs conferidos nos bytes: A4 exato, medidas físicas, uma imagem por arte.
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:
@@ -1507,7 +1540,7 @@ js/
   canvas/
     engine.js               Motor de renderização
     export.js               Exportação PNG/PDF
-    lote.js                 Folha A4 com várias placas (grade + PDF)
+    lote.js                 Folha A4: grade de uma arte e encaixe de peças diferentes (+ PDF)
   ui/
     confetti.js             Confete da exportação
     loteModal.js            Modal da impressão em lote

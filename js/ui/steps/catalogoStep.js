@@ -16,7 +16,7 @@
 
 import { CATEGORIAS, buscarCatalogo, getItemCatalogo, tamanhoMm } from '../../data/catalogData.js';
 import { getSetor } from '../../data/models.js';
-import { getState, goToStep, goBack, entrarNoGerador, entrarNoEditorLazer } from '../../state.js';
+import { getState, goToStep, goBack, entrarNoGerador, entrarNoEditorLazer, entrarNaFolha } from '../../state.js';
 import { icon } from '../icons.js';
 import { debounce, escapeHtml } from '../../utils.js';
 import { openModal, showToast, emptyState } from '../common.js';
@@ -35,6 +35,32 @@ const PLACEHOLDER_BUSCA = {
 };
 
 // ------------------------------------------------------------------ Cartões
+
+/** A descrição mostra a folha em andamento, para quem saiu e quer voltar a ela. */
+function cardFolha(setor) {
+  const placas = getState().folha.reduce((soma, p) => soma + p.quantidade, 0);
+  return `
+    <button type="button" data-folha
+      class="group mb-6 flex w-full items-center gap-3.5 rounded-2xl border-2 bg-white p-4 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
+      style="border-color:${setor.corDestaque}33">
+      <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
+        style="background:${setor.corDestaque}">
+        ${icon('layers', { size: 22 })}
+      </span>
+      <span class="min-w-0 flex-1">
+        <span class="block font-fibra font-extrabold text-brand-deep">Montar folha A4</span>
+        <span class="block text-xs text-slate-500">${
+          placas
+            ? `Sua folha tem ${placas} ${placas === 1 ? 'placa' : 'placas'}. Continue de onde parou`
+            : 'Junte pratos e tamanhos diferentes na mesma folha para imprimir'
+        }</span>
+      </span>
+      <span class="shrink-0 text-slate-300 transition-colors group-hover:text-brand-blue">
+        ${icon('arrowRight', { size: 20 })}
+      </span>
+    </button>
+  `;
+}
 
 // O selo de categoria não entra no card: cada aba mostra uma categoria só, então
 // repeti-lo em todos os cards era ruído. Ele fica só no modal, onde identifica a
@@ -329,7 +355,7 @@ export function renderCatalogoStep(container) {
         gerador
           ? `
         <button type="button" data-gerador
-          class="group mb-6 flex w-full items-center gap-3.5 rounded-2xl border-2 bg-white p-4 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
+          class="group ${setor.permiteLote ? 'mb-3' : 'mb-6'} flex w-full items-center gap-3.5 rounded-2xl border-2 bg-white p-4 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
           style="border-color:${setor.corDestaque}33">
           <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-sm"
             style="background:${setor.corDestaque}">
@@ -343,6 +369,8 @@ export function renderCatalogoStep(container) {
             ${icon('arrowRight', { size: 20 })}
           </span>
         </button>
+
+        ${setor.permiteLote ? cardFolha(setor) : ''}
 
         <div class="mb-4 flex items-center gap-3">
           <span class="h-px flex-1 bg-slate-200"></span>
@@ -381,6 +409,8 @@ export function renderCatalogoStep(container) {
     const unico = setor.formatos.length === 1 ? setor.formatos[0].id : null;
     entrarNoGerador(unico);
   });
+
+  container.querySelector('[data-folha]')?.addEventListener('click', () => entrarNaFolha());
 
   const busca = container.querySelector('[data-busca]');
   const aplicarBusca = debounce(() => {

@@ -4,7 +4,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Sete módulos:
 
 | Módulo | O que faz |
 |---|---|
-| **Alimentos & Bebidas** | Dois caminhos: gera a identificação de pratos a partir da biblioteca oficial (.docx), com tradução em espanhol — individual ou em folha A4 com várias placas —, ou baixa uma das 5 artes prontas |
+| **Alimentos & Bebidas** | Dois caminhos: gera a identificação de pratos a partir da biblioteca oficial (.docx), com tradução em espanhol — individual, em folha A4 com várias placas da mesma arte ou em folha A4 montada com pratos e tamanhos diferentes —, ou baixa uma das 5 artes prontas |
 | **Manutenção** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar. Só consulta — não gera arte |
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) mais o gerador da carta de boas-vindas manuscrita em A4 |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
@@ -56,9 +56,10 @@ js/
   canvas/
     engine.js                motor de renderização (texto + quebra de linha + auto-shrink)
     export.js                exportação PNG/PDF
-    lote.js                  folha A4 com várias placas (grade por formato + PDF)
+    lote.js                  folha A4: grade de uma arte e encaixe de peças diferentes (+ PDF)
   ui/
     loteModal.js             modal da impressão em lote (quantidade, diagrama, gerar)
+    steps/folhaStep.js       montagem da folha A4 com pratos e tamanhos diferentes
   blackfriday/
     templates.js             os 4 cards (medições em px, máscaras, textos, conquistas)
     vendedores.js            lista de vendedores com foto e enquadramento inicial

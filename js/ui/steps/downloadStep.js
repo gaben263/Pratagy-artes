@@ -1,5 +1,5 @@
 import { getSetor, getFormato } from '../../data/models.js';
-import { getState, setState, goToStep, resetApp } from '../../state.js';
+import { getState, setState, goToStep, resetApp, entrarNaFolha } from '../../state.js';
 import { icon } from '../icons.js';
 import { exportPNG, exportPDF } from '../../canvas/export.js';
 import { ensureFontsReady } from '../../canvas/engine.js';
@@ -175,6 +175,14 @@ export function renderDownloadStep(container) {
                 descricao: `Até ${calcularGrade(formato).max} placas numa folha A4 para imprimir aqui no resort`,
                 habilitado: state.fits,
                 classe: 'sm:col-span-2',
+              }) +
+              cardExport({
+                kind: 'folha',
+                iconName: 'plus',
+                titulo: 'Adicionar a uma folha A4',
+                descricao: 'Junte esta placa com outros pratos e tamanhos na mesma folha',
+                habilitado: state.fits,
+                classe: 'sm:col-span-2',
               })
             : ''
         }
@@ -195,6 +203,10 @@ export function renderDownloadStep(container) {
       if (btn.disabled) return;
       if (btn.dataset.export === 'lote') {
         abrirLoteModal(formato, (quantidade) => handleLote(formato, quantidade));
+        return;
+      }
+      if (btn.dataset.export === 'folha') {
+        entrarNaFolha({ pt: state.texto, es: state.textoEs, formatoId: formato.id, quantidade: 1 });
         return;
       }
       handleExport(btn.dataset.export, formato, nomeArquivo, btn);

@@ -15,11 +15,14 @@ const FLUXO_CATALOGO_GERADOR = ['setor', 'catalogo', ...GERADOR];
 // Esportes e Lazer: do catálogo para o editor da programação do mês (um passo só,
 // com prévia e download dentro dele).
 const FLUXO_LAZER = ['setor', 'catalogo', 'lazer'];
+// A&B: do catálogo para a montagem da folha A4 com peças diferentes.
+const FLUXO_FOLHA = ['setor', 'catalogo', 'folha'];
 
 export const STEP_LABELS = {
   setor: 'Setor',
   catalogo: 'Catálogo',
   lazer: 'Editar programação',
+  folha: 'Montar folha',
   formato: 'Formato',
   modelo: 'Modelo',
   edicao: 'Texto',
@@ -55,6 +58,10 @@ function initialState() {
     // Black Friday: as pessoas de cada posição do card (vendedor, ajudante,
     // top1–3: id do vendedor, nome na arte, foto em memória) e a conquista.
     bf: estadoBFInicial(),
+    // Folha A4 em montagem: { pt, es, formatoId, quantidade } por arte. Fica fora
+    // de `texto`/`formatoId` para sobreviver à criação de outras artes no meio
+    // do caminho; só "Nova arte" ou recarregar a página esvazia a folha.
+    folha: [],
     exported: false,
   };
 }
@@ -87,6 +94,7 @@ export function getStepOrder(s = state) {
 
   if (setor.fluxo === 'catalogo') {
     if (s.modo === 'lazer') return FLUXO_LAZER;
+    if (s.modo === 'folha') return FLUXO_FOLHA;
     return s.modo === 'gerador' ? FLUXO_CATALOGO_GERADOR : FLUXO_CATALOGO;
   }
 
@@ -135,6 +143,31 @@ export function canReachStep(stepId) {
 /** Sai do catálogo de Esportes e Lazer para o editor da programação do mês. */
 export function entrarNoEditorLazer() {
   setState({ modo: 'lazer', step: 'lazer', maxStepIndex: Math.max(state.maxStepIndex, FLUXO_LAZER.indexOf('lazer')) });
+}
+
+/** Identifica uma arte da folha: mesmo prato em outro tamanho é outra arte. */
+export const chavePeca = ({ formatoId, pt, es }) => `${formatoId}|${pt}|${es}`;
+
+/**
+ * Grava a folha juntando as linhas da mesma arte, para que adicionar um prato
+ * repetido ou trocar o tamanho para um já presente some em vez de duplicar.
+ */
+export function gravarFolha(pecas) {
+  const porChave = new Map();
+  for (const peca of pecas) {
+    const chave = chavePeca(peca);
+    const atual = porChave.get(chave);
+    porChave.set(chave, atual ? { ...atual, quantidade: atual.quantidade + peca.quantidade } : peca);
+  }
+  setState({ folha: [...porChave.values()], exported: false });
+}
+
+/**
+ * Abre a montagem da folha, opcionalmente levando uma placa pronta (Download).
+ */
+export function entrarNaFolha(peca = null) {
+  if (peca) gravarFolha([...state.folha, peca]);
+  setState({ modo: 'folha', step: 'folha', maxStepIndex: Math.max(state.maxStepIndex, FLUXO_FOLHA.indexOf('folha')) });
 }
 
 /**

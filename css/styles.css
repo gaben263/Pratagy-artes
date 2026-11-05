@@ -62,3 +62,37 @@ body {
 .overflow-y-auto::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Montagem da folha A4: a folha fica sobre uma base de corte azul, com a grade
+   de 1 cm em escala (a folha tem 300 px de largura = 210 mm). */
+.folha-base {
+  background-color: #004f9f;
+  background-image: linear-gradient(rgba(192, 229, 251, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 229, 251, 0.14) 1px, transparent 1px);
+  background-size: 14.29px 14.29px;
+}
+
+.folha-papel {
+  box-shadow: 0 16px 28px -14px rgba(0, 25, 60, 0.75);
+}
+
+@keyframes folha-pousa {
+  from {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.folha-pousa {
+  animation: folha-pousa 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .folha-pousa {
+    animation: none;
+  }
+}

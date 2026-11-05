@@ -94,3 +94,126 @@ export async function exportLotePDF(canvas, formato, quantidade, nomeArquivo) {
 
   pdf.save(`${slugify(nomeArquivo)}.pdf`);
 }
+
+// ---------------------------------------------------------------------------
+// Folha montada: peças diferentes na mesma A4
+//
+// A grade acima só serve quando todas as peças têm o mesmo tamanho. Com 8×5,
+// 8×10 e 10×15 juntas, linhas fixas desperdiçam papel: um 8×5 ao lado de um
+// 8×10 deixaria um buraco que cabe outro 8×5. Por isso aqui as peças são
+// encaixadas nos espaços livres, sempre no mais alto e mais à esquerda que
+// couber, e as maiores entram primeiro.
+//
+// A calha é tratada somando GAP_MM à peça e à área útil: assim duas peças nunca
+// ficam a menos de 3 mm, e a última não precisa de calha até a margem.
+// ---------------------------------------------------------------------------
+
+const ORIENTACOES = {
+  portrait: { largura: A4_MM.largura, altura: A4_MM.altura },
+  landscape: { largura: A4_MM.altura, altura: A4_MM.largura },
+};
+
+const cruza = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const contem = (a, b) => a.x <= b.x && a.y <= b.y && a.x + a.w >= b.x + b.w && a.y + a.h >= b.y + b.h;
+
+/** Tira de um espaço livre a área ocupada; sobram até 4 faixas (podem se sobrepor). */
+function recortar(livre, ocupado) {
+  return [
+    { x: livre.x, y: livre.y, w: ocupado.x - livre.x, h: livre.h },
+    { x: ocupado.x + ocupado.w, y: livre.y, w: livre.x + livre.w - ocupado.x - ocupado.w, h: livre.h },
+    { x: livre.x, y: livre.y, w: livre.w, h: ocupado.y - livre.y },
+    { x: livre.x, y: ocupado.y + ocupado.h, w: livre.w, h: livre.y + livre.h - ocupado.y - ocupado.h },
+  ].filter((r) => r.w > 0 && r.h > 0);
+}
+
+function encaixar(itens, paginaMm) {
+  let livres = [
+    {
+      x: 0,
+      y: 0,
+      w: paginaMm.largura - 2 * MARGEM_MM + GAP_MM,
+      h: paginaMm.altura - 2 * MARGEM_MM + GAP_MM,
+    },
+  ];
+  const colocadas = [];
+  const sobra = [];
+
+  for (const item of itens) {
+    const w = item.mmLargura + GAP_MM;
+    const h = item.mmAltura + GAP_MM;
+    const espaco = livres
+      .filter((r) => r.w >= w && r.h >= h)
+      .sort((a, b) => a.y - b.y || a.x - b.x)[0];
+
+    if (!espaco) {
+      sobra.push(item);
+      continue;
+    }
+
+    const ocupado = { x: espaco.x, y: espaco.y, w, h };
+    colocadas.push({ ...item, x: MARGEM_MM + ocupado.x, y: MARGEM_MM + ocupado.y });
+    const novos = livres.flatMap((r) => (cruza(r, ocupado) ? recortar(r, ocupado) : [r]));
+    livres = novos.filter((r, i) => !novos.some((o, j) => i !== j && contem(o, r) && (!contem(r, o) || j < i)));
+  }
+
+  return { colocadas, sobra };
+}
+
+const areaDe = (lista) => lista.reduce((soma, p) => soma + p.mmLargura * p.mmAltura, 0);
+
+/**
+ * Distribui as peças em quantas folhas A4 forem precisas.
+ *
+ * Cada folha escolhe sozinha entre em pé e deitada: fica com a que aproveita
+ * mais papel (empate → em pé, como na grade). Três 10×15, por exemplo, abrem
+ * uma folha deitada com duas, e a terceira segue para a próxima.
+ *
+ * @param {Array<{mmLargura:number, mmAltura:number}>} itens - uma entrada por
+ *   placa física; os demais campos são preservados em cada colocação.
+ * @returns {Array<{orientacao:'portrait'|'landscape', paginaMm:{largura:number, altura:number},
+ *                  pecas:Array<{x:number, y:number, mmLargura:number, mmAltura:number}>}>}
+ */
+export function montarFolhas(itens) {
+  // O sort é estável: placas iguais continuam vizinhas na folha.
+  let pendentes = [...itens].sort(
+    (a, b) => b.mmLargura * b.mmAltura - a.mmLargura * a.mmAltura
+  );
+  const folhas = [];
+
+  while (pendentes.length) {
+    const retrato = encaixar(pendentes, ORIENTACOES.portrait);
+    const paisagem = encaixar(pendentes, ORIENTACOES.landscape);
+    const deitada = areaDe(paisagem.colocadas) > areaDe(retrato.colocadas);
+    const { colocadas, sobra } = deitada ? paisagem : retrato;
+
+    if (!colocadas.length) throw new Error('Peça maior que a área útil da folha A4.');
+
+    const orientacao = deitada ? 'landscape' : 'portrait';
+    folhas.push({ orientacao, paginaMm: ORIENTACOES[orientacao], pecas: colocadas });
+    pendentes = sobra;
+  }
+
+  return folhas;
+}
+
+/**
+ * PDF das folhas montadas: uma página A4 por folha, em tamanho físico exato.
+ *
+ * `imagens` guarda uma imagem por arte (chave → data URL), não por placa: como
+ * no lote, repetir a mesma arte aponta para a imagem já embutida, inclusive
+ * entre páginas.
+ */
+export function exportFolhasPDF(folhas, imagens, nomeArquivo) {
+  const { jsPDF } = window.jspdf;
+  const aliases = new Map([...imagens.keys()].map((chave, i) => [chave, `arte-${i}`]));
+
+  const pdf = new jsPDF({ orientation: folhas[0].orientacao, unit: 'mm', format: 'a4' });
+  folhas.forEach((folha, i) => {
+    if (i > 0) pdf.addPage('a4', folha.orientacao);
+    for (const { chave, x, y, mmLargura, mmAltura } of folha.pecas) {
+      pdf.addImage(imagens.get(chave), 'PNG', x, y, mmLargura, mmAltura, aliases.get(chave), 'FAST');
+    }
+  });
+
+  pdf.save(`${slugify(nomeArquivo)}.pdf`);
+}
