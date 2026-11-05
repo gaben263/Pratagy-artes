@@ -329,10 +329,7 @@ function ligarBusca(container) {
 
   const mostrar = debounce((termo) => {
     if (!termo.trim()) return fechar();
-    resultados.innerHTML = renderAutocompleteResults(
-      buscar(termo),
-      'Nenhum prato encontrado. Tente outra palavra.'
-    );
+    resultados.innerHTML = renderAutocompleteResults(buscar(termo));
     resultados.classList.remove('hidden');
   }, 120);
 

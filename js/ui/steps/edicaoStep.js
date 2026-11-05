@@ -123,9 +123,9 @@ function wireCommon(container) {
 
 // ---------- Setor A&B: busca com autocomplete ----------
 
-export function renderAutocompleteResults(entries, semResultado = 'Nenhum item encontrado. Você pode digitar o nome manualmente abaixo.') {
+export function renderAutocompleteResults(entries) {
   if (!entries.length) {
-    return `<p class="px-4 py-3 text-sm text-slate-400">${semResultado}</p>`;
+    return `<p class="px-4 py-3 text-sm text-slate-400">Prato não encontrado. Peça a inclusão ao Setor de Marketing.</p>`;
   }
   return entries
     .map(

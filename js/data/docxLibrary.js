@@ -16,7 +16,7 @@
 import { normalizeSearch } from '../utils.js';
 
 const DOCX_PATH = 'assets/docx/biblioteca_ab.docx';
-const DOCX_VERSION_TAG = 'biblioteca_ab-v2';
+const DOCX_VERSION_TAG = 'biblioteca_ab-v3';
 
 // Itens que vinham dos cardápios oficiais e saíram na revisão de setembro/2026.
 // Mesclados de volta com a tradução anterior, marcados como `legado` para que
@@ -207,7 +207,7 @@ export function getLoadedLibrary() {
  * regra do catálogo de artes prontas. "costelinha barbecue" encontra
  * "Costelinha ao barbecue"; uma busca por frase exata não encontraria.
  */
-export function searchLibrary(entries, query, limit = 8) {
+export function searchLibrary(entries, query, limit = 50) {
   const q = normalizeSearch(query);
   if (!q) return [];
   const termos = q.split(' ');
@@ -218,5 +218,8 @@ export function searchLibrary(entries, query, limit = 8) {
     if (entry.searchKey.startsWith(q)) starts.push(entry);
     else contains.push(entry);
   }
-  return [...starts, ...contains].slice(0, limit);
+  // Nome mais curto primeiro: quem busca "carne" espera "Carne assada" antes de
+  // um prato composto. O sort é estável, então empates seguem a ordem do documento.
+  const curtosPrimeiro = (a, b) => a.pt.length - b.pt.length;
+  return [...starts.sort(curtosPrimeiro), ...contains.sort(curtosPrimeiro)].slice(0, limit);
 }

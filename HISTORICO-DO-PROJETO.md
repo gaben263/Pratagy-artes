@@ -1471,6 +1471,81 @@ de arquivo. PDFs conferidos nos bytes: A4 exato, medidas físicas, uma imagem po
 
 ---
 
+### 3.29 Biblioteca de pratos: 424 → 467 entradas (proteínas genéricas)
+
+**Pedido.** O analista de alimentos mandou o modelo antigo com 6 pratos: Cioba inteira, Carne ao molho
+chimichurri, Carne assada, Coxa e sobrecoxa, Carne suína ao molho de maçã e pera e Filé de peixe
+assado. Nenhum existia com esse nome: a biblioteca era específica demais e a cozinha precisa de
+nomes genéricos. O texto da placa continua sem digitação livre.
+
+**Decisões.**
+- 43 pratos genéricos no próprio `.docx` (as duas cópias), no fim da tabela `1. Carnes, aves, peixes e
+  frutos do mar`: categoria 72 → 115 e total do documento 423 → 466. Os 421 pratos únicos do arquivo
+  anterior conferiram com português e espanhol intactos. `DOCX_VERSION_TAG` foi para `v3`.
+- Montar o nome por menus (proteína + preparo + molho) foi descartado: geraria erro de concordância e
+  combinações nunca revisadas. Se a lista crescer, gerar uma vez, revisar e pôr no documento.
+- **Espanhol dos 43 pratos ainda não validado.** Foi traduzido no padrão rio-platense do documento.
+  Ver "Em aberto".
+- Busca: limite de 8 → 50 resultados, porque "carne" já dá 29 e "frango" 34, e um prato cadastrado
+  podia não aparecer. Nome mais curto primeiro, para o genérico vir antes do composto.
+- Prato não encontrado agora orienta a pedir a inclusão ao Setor de Marketing. A mensagem antiga
+  mandava digitar à mão num campo que é bloqueado.
+
+**Testes (Edge via Playwright, 12 verificações):** 467 entradas; os 43 achados pelo próprio nome em
+primeiro lugar e sem estouro nos 3 tamanhos; cache `v2` substituído na visita seguinte; os 6 do print
+numa folha A4 com PDF; a mensagem do Marketing nas duas telas. O arquivo não foi aberto no Word, só
+lido pelo mesmo leitor do sistema (mammoth).
+
+**Pratos adicionados:**
+
+| Português | Espanhol |
+|---|---|
+| Carne assada | Carne asada |
+| Carne grelhada | Carne a la parrilla |
+| Carne acebolada | Carne con cebolla |
+| Carne de panela | Carne estofada |
+| Carne moída | Carne picada |
+| Carne ao molho chimichurri | Carne con salsa chimichurri |
+| Carne ao molho madeira | Carne con salsa madeira |
+| Carne ao molho de mostarda | Carne con salsa de mostaza |
+| Carne ao molho de ervas | Carne con salsa de hierbas |
+| Carne ao molho de vinho tinto | Carne con salsa de vino tinto |
+| Carne ao molho barbecue | Carne con salsa barbacoa |
+| Carne suína assada | Carne de cerdo asada |
+| Carne suína acebolada | Carne de cerdo con cebolla |
+| Carne suína ao molho de maçã e pera | Carne de cerdo con salsa de manzana y pera |
+| Carne suína ao molho barbecue | Carne de cerdo con salsa barbacoa |
+| Carne suína ao molho de mostarda | Carne de cerdo con salsa de mostaza |
+| Carne suína ao molho de laranja | Carne de cerdo con salsa de naranja |
+| Carne suína ao molho de ervas | Carne de cerdo con salsa de hierbas |
+| Frango assado | Pollo asado |
+| Frango grelhado | Pollo a la parrilla |
+| Frango frito | Pollo frito |
+| Frango ensopado | Pollo estofado |
+| Frango ao molho de ervas | Pollo con salsa de hierbas |
+| Frango ao molho de mostarda | Pollo con salsa de mostaza |
+| Frango ao molho branco | Pollo con salsa blanca |
+| Frango ao molho barbecue | Pollo con salsa barbacoa |
+| Filé de frango grelhado | Filete de pollo a la parrilla |
+| Filé de frango empanado | Filete de pollo rebozado |
+| Coxa e sobrecoxa | Muslo y contramuslo de pollo |
+| Coxa e sobrecoxa grelhada | Muslo y contramuslo de pollo a la parrilla |
+| Peixe assado | Pescado asado |
+| Peixe grelhado | Pescado a la parrilla |
+| Peixe frito | Pescado frito |
+| Peixe inteiro assado | Pescado entero asado |
+| Filé de peixe assado | Filete de pescado asado |
+| Filé de peixe grelhado | Filete de pescado a la parrilla |
+| Filé de peixe ao molho de ervas | Filete de pescado con salsa de hierbas |
+| Filé de peixe ao molho de limão | Filete de pescado con salsa de limón |
+| Filé de peixe ao molho de coco | Filete de pescado con salsa de coco |
+| Posta de peixe assada | Posta de pescado asada |
+| Posta de peixe grelhada | Posta de pescado a la parrilla |
+| Cioba inteira | Cioba entera |
+| Linguiça assada | Salchicha asada |
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:
@@ -1624,6 +1699,9 @@ o JavaScript não consegue limpar (não há Service Worker nem Cache API no proj
 simplesmente param de ser pedidas. Uma rotina versionada rodaria, não acharia nada e gravaria a
 flag: código defensivo que vira bug latente. **Decisão: não implementar.** Se um dia o app passar a
 persistir algo indexado por setor, este parágrafo é o lembrete de que a migração vira necessária.
+
+**Espanhol das proteínas genéricas.** Os 43 pratos da 3.29 foram traduzidos sem validação da
+tradutora; Gabriel vai enviar para revisão. Correções: alterar no `.docx` e subir a `DOCX_VERSION_TAG`.
 
 **Legados da biblioteca.** `Filé de peixe`, `Coxinha frita` e `Costelinha ao barbecue` estão em
 `LEGADOS` (`docxLibrary.js`) porque saíram do `.docx` novo sem confirmação da cozinha. O arquivo
