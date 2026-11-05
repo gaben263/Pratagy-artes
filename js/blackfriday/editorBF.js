@@ -16,7 +16,7 @@ import { getState, setState } from '../state.js';
 import { icon } from '../ui/icons.js';
 import { escapeHtml, normalizeSearch } from '../utils.js';
 import { montarEditorFoto } from '../rh/photoEditor.js';
-import { VENDEDORES, getVendedor, primeiroNome } from './vendedores.js';
+import { VENDEDORES, getVendedor } from './vendedores.js';
 import { CONQUISTAS, ROTULOS_SLOT } from './templates.js';
 
 // Clique fora fecha o seletor aberto. Registrado uma vez, como o da busca do A&B.
@@ -283,7 +283,7 @@ function ligarPessoa(bloco, root) {
     botao.innerHTML = conteudoBotao(vendedor, slot);
 
     const pessoas = getState().bf.pessoas;
-    const pessoa = { vendedorId: id, nome: primeiroNome(vendedor.nome), foto: null };
+    const pessoa = { vendedorId: id, nome: vendedor.nomeArte, foto: null };
     pessoas[slot] = pessoa;
     if (nomeInput) nomeInput.value = pessoa.nome;
     detalhe.classList.remove('hidden');

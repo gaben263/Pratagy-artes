@@ -1325,6 +1325,9 @@ no piso bloqueia a exportação nomeando o nome.
 **Privacidade.** As fotos ficam em `assets/` e vão para o deploy (o seletor precisa delas), ao
 contrário das fotos do RH, que ficam só em memória. Ver README.
 
+**Time My Pratagy.** Entrou depois como 27ª opção do seletor. É uma equipe de quatro pessoas: a foto usa
+enquadramento aberto e `nomeArte` traz o nome completo, porque a regra do primeiro nome deixaria só "TIME".
+
 **Testes.** Fluxo completo nos quatro cards no Chrome (Playwright): 26 pessoas no seletor, escolha por
 teclado e por clique, conquistas 100K→2MI na ordem, bloqueios (sem vendedor, sem conquista, nome
 absurdo, mesma pessoa em duas posições), prévia, PNG exportado com nome

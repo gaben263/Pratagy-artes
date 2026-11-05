@@ -8,7 +8,9 @@
 //
 // O nome é o do arquivo original, sem acento inventado: "Erivaldo Inacio" e
 // "Italo Alves" estão assim na origem. O card mostra só o primeiro nome por
-// padrão; a tela deixa editar ("João Lucas", por exemplo).
+// padrão; a tela deixa editar ("João Lucas", por exemplo). O Time My Pratagy é
+// uma equipe, não uma pessoa: declara o nome completo em `nomeArte`, senão a
+// arte sairia só com "TIME".
 //
 // ENQUADRAMENTO: as fotos são de meio corpo ou corpo inteiro, e o recorte
 // central do círculo mostraria o tronco. `enquadramento` é o ponto de partida
@@ -23,9 +25,10 @@
 
 const PASTA = 'assets/images/blackfriday/vendedores';
 
-const v = (id, nome, enquadramento) => ({
+const v = (id, nome, enquadramento, nomeArte = primeiroNome(nome)) => ({
   id,
   nome,
+  nomeArte,
   foto: `${PASTA}/${id}.jpg`,
   miniatura: `${PASTA}/thumbs/${id}.jpg`,
   enquadramento,
@@ -55,6 +58,7 @@ export const VENDEDORES = [
   v('renata-lira', 'Renata Lira', { zoom: 1, cx: 0.5, cy: 0.3751 }),
   v('rodrigo-montenegro', 'Rodrigo Montenegro', { zoom: 1.089, cx: 0.5408, cy: 0.3253 }),
   v('simone-dos-santos', 'Simone dos Santos', { zoom: 1.415, cx: 0.52, cy: 0.4432 }),
+  v('time-my-pratagy', 'Time My Pratagy', { zoom: 1.15, cx: 0.518, cy: 0.495 }, 'Time My Pratagy'),
   v('veronica-bulamah', 'Veronica Bulamah', { zoom: 1.605, cx: 0.5025, cy: 0.4815 }),
   v('victoria-ferreira', 'Victória Ferreira', { zoom: 1, cx: 0.5, cy: 0.444 }),
   v('wagner-mendonca', 'Wagner Mendonça', { zoom: 1.051, cx: 0.5242, cy: 0.3883 }),
@@ -65,6 +69,6 @@ export function getVendedor(id) {
 }
 
 /** Primeiro nome — o que o card mostra por padrão, como nas referências ("ITALO"). */
-export function primeiroNome(nome) {
+function primeiroNome(nome) {
   return (nome || '').trim().split(/\s+/)[0] || '';
 }
