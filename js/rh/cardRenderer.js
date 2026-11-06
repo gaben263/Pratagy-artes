@@ -174,19 +174,33 @@ export function desenharFaixa(ctx, ajuste, { topo, cores, raio }) {
 
 // ---------------------------------------------------------------- Card
 
+/** O texto da faixa do setor com a data ao lado, como na referência do RH. */
+export function setorComData(setor, data) {
+  const dataFinal = (data || '').trim();
+  return dataFinal ? `${setor.trim()} | ${dataFinal}` : setor.trim();
+}
+
 /**
  * Mede um card (sem desenhar): ajustes das faixas e altura total. `fits` é
  * false quando nome ou setor não coube nem com todas as reduções; `aviso`
  * diz qual.
  */
 export function medirCard(ctx, colaborador, medidas) {
-  const { fotoDiametro, fonteNome, fonteSetor, larguraCard, gapFoto, gapFaixas } = medidas;
+  const { fotoDiametro, fonteNome, fonteSetor, larguraCard, larguraCelula, gapFoto, gapFaixas } = medidas;
   const larguraMax = Math.round(larguraCard * FAIXA.larguraMaxDoCard);
   const nome = (colaborador.nome || '').trim();
-  const setor = (colaborador.setor || '').trim();
+  // Só com `dataPorPessoa`: a lista de pessoas sobrevive à troca de template,
+  // e a data digitada no Aniversariantes não pode vazar para o Bem Vindos.
+  const comData = Boolean(medidas.dataPorPessoa && colaborador.data?.trim());
+  const setor = comData ? setorComData(colaborador.setor || '', colaborador.data) : (colaborador.setor || '').trim();
 
   const faixaNome = nome ? ajustarFaixa(ctx, nome, { fonteBase: fonteNome, larguraMax, permiteQuebra: true }) : null;
-  const faixaSetor = setor ? ajustarFaixa(ctx, setor, { fonteBase: fonteSetor, larguraMax, permiteQuebra: false }) : null;
+  // Com a data, a faixa fica mais longa que qualquer setor sozinho: usa a coluna
+  // inteira e, se ainda não couber, quebra em duas linhas (a grade reduz as
+  // fotos para acomodar). "Departamento Pessoal | 08/11" não pode travar a arte.
+  const faixaSetor = setor
+    ? ajustarFaixa(ctx, setor, { fonteBase: fonteSetor, larguraMax: comData ? larguraCelula - 6 : larguraMax, permiteQuebra: comData })
+    : null;
 
   let aviso = null;
   if (nome && !faixaNome) aviso = `O nome “${nome}” não cabe no card, mesmo reduzido e em duas linhas.`;

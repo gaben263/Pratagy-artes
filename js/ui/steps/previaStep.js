@@ -1,4 +1,5 @@
 import { getSetor, getFormato } from '../../data/models.js';
+import { setorComData } from '../../rh/cardRenderer.js';
 import { getState, goToStep } from '../../state.js';
 import { icon } from '../icons.js';
 import { escapeHtml, toTitleCase } from '../../utils.js';
@@ -85,7 +86,9 @@ export function renderPreviaStep(container) {
                 // `linha` já escapa; escapar aqui de novo mostrava "&amp;" em
                 // "Alimentos & Bebidas" e um "<br>" literal entre as pessoas.
                 // O <dd> é `whitespace-pre-wrap`: a quebra de linha vira linha.
-                state.rh.colaboradores.map((c) => `${c.nome} · ${c.setor}`).join('\n'),
+                state.rh.colaboradores
+                  .map((c) => `${c.nome} · ${formato.dataPorPessoa ? setorComData(c.setor, c.data) : c.setor}`)
+                  .join('\n'),
                 { destaque: true }
               )
             : formato.semTexto

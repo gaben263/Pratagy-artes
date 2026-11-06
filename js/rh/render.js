@@ -243,7 +243,11 @@ function renderAniversariantes(ctx, formato, colaboradores) {
   // reduz só as fotos, passo a passo, até caber (os nomes ficam legíveis).
   let medidas, medidos, grade;
   for (const escala of ESCALAS_FOTO) {
-    medidas = { ...medidasPorLinhas(linhas, area.x1 - area.x0, colunas, escala, formato.grade), cores: formato.cores };
+    medidas = {
+      ...medidasPorLinhas(linhas, area.x1 - area.x0, colunas, escala, formato.grade),
+      cores: formato.cores,
+      dataPorPessoa: formato.dataPorPessoa,
+    };
     medidos = colaboradores.map((c) => medirCard(ctx, c, medidas));
     grade = distribuir(n, medidos.map((m) => m.altura), area, medidas);
     if (grade.cabe) break;

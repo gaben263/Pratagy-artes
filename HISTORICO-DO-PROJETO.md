@@ -1549,6 +1549,34 @@ lido pelo mesmo leitor do sistema (mammoth).
 
 ---
 
+### 3.30 Aniversariantes: data do aniversário ao lado do setor
+
+O RH não tinha onde pôr a data, e na sexta publica também os aniversários do fim de semana. Pedido
+de Gabriel, com print de referência: um campo de texto por colaborador e, na arte, a data na faixa
+azul do setor, separada por barra vertical (`Lazer | 06/11`).
+
+Uma primeira versão, com selo branco sobre a foto, foi feita e descartada antes de ir para
+produção: a referência do RH resolve na própria faixa, sem elemento novo na arte.
+
+**O campo** é texto livre, opcional e por pessoa, abaixo do Setor. Em branco, a faixa sai só com o
+setor, exatamente como antes: o teste apaga a data e confere a arte idêntica pixel a pixel. Só o
+Aniversariantes declara `dataPorPessoa`; Destaque e Bem Vindos usam o mesmo editor e a lista de
+pessoas sobrevive à troca de template, por isso é o flag que manda, não a existência de `c.data`.
+
+**Uma regressão evitada.** A faixa do setor nunca quebrava linha, e com a data `Departamento Pessoal
+| 08/11` deixava de caber com 1, 2 e 7 a 9 pessoas, travando a exportação. A faixa com data agora
+pode usar a coluna inteira (menos 6 px) e, se ainda não couber, quebra em duas linhas com a data
+junto do setor; a grade já reduz as fotos para acomodar. Sem data, a regra do setor segue a mesma.
+
+**Limite conhecido:** 9 pessoas com nome e setor longos ao mesmo tempo não cabem, e a arte bloqueia
+pedindo para abreviar. O teste usou 9 vezes `Alexssandro Davis de Souza` + `Departamento Pessoal`.
+
+**Testes (Playwright, pela interface):** o exemplo do print; 1 a 9 pessoas com os setores mais longos
+e data, sem aviso de encaixe; data em só uma pessoa; resumo da Prévia; Bem Vindos, Destaque, Talento
+e Plantão sem o campo; troca Aniversariantes → Bem Vindos sem a data; nenhum erro de JS.
+
+---
+
 ## 4. Bugs que eu mesmo introduzi
 
 Registro porque são os que mais ensinam sobre o código:

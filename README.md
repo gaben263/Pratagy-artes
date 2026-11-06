@@ -8,7 +8,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Sete módulos:
 | **Manutenção** | Catálogo buscável de 22 avisos e sinalizações prontos para baixar. Só consulta — não gera arte |
 | **Hospitalidade** | 8 artes prontas (cartões de hóspede, check-out, QR Code) mais o gerador da carta de boas-vindas manuscrita em A4 |
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
-| **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
+| **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente, com a data do aniversário ao lado do setor). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
 | **Esportes e Lazer** | Catálogo da programação mensal de lazer (shows, música ao vivo, piscina, fitness, bingo, cinema, programação infantil de 4 a 6 e de 7 a 12 anos): 50 peças de novembro de 2026, em A4 para impressão e nos formatos de tela (TV vertical e horizontal, stories, feed, banner do app). Peças de tela baixam só a imagem; as A4 também em PDF |
 | **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 50K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto |
 

@@ -526,6 +526,10 @@ export const FORMATOS_RH = [
     imagem: 'assets/images/rh/aniversariantes.png',
     editor: 'aniversariantes',
     maxColaboradores: 9,
+    // Data do aniversário por pessoa, na faixa do setor ("Lazer | 06/11"): na
+    // sexta o RH publica também o fim de semana. Só este template declara —
+    // Destaque e Bem Vindos usam o mesmo editor e não têm data.
+    dataPorPessoa: true,
     // LARGURA (3.17.2): o balão azul-claro da direita começa em x 942 e desce de
     // y 792 até ~1200, então x 940 é o limite físico; espelhado no centro (540),
     // dá 140–940 (800 px). Era 169–911 (742) — a faixa de setor mais larga é o

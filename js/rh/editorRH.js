@@ -17,7 +17,7 @@ import { debounce, escapeHtml } from '../utils.js';
 import { montarEditorFoto } from './photoEditor.js';
 import { TIPOS_PLANTAO, camposDoEncontro } from './templates.js';
 
-const novoColaborador = () => ({ nome: '', setor: '', foto: null });
+const novoColaborador = () => ({ nome: '', setor: '', foto: null, data: '' });
 
 // Repinta a prévia no próximo frame, no máximo uma vez por frame: arrastar a
 // foto dispara dezenas de eventos por segundo.
@@ -114,7 +114,7 @@ export function wireCampoData(container) {
 
 const DICA_CARD = 'As faixas crescem com o texto; se o nome for muito longo, ele quebra em duas linhas.';
 
-function linhaColaborador(indice, colaborador, { forma, mostrarNumero, dica = DICA_CARD }) {
+function linhaColaborador(indice, colaborador, { forma, mostrarNumero, dica = DICA_CARD, comData = false }) {
   return `
     <div data-colaborador="${indice}" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       ${mostrarNumero ? `<p class="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Colaborador ${indice + 1}</p>` : ''}
@@ -133,10 +133,22 @@ function linhaColaborador(indice, colaborador, { forma, mostrarNumero, dica = DI
               placeholder="Ex: Recepção"
               class="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm font-semibold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
           </label>
-          <p class="text-[11px] leading-snug text-slate-400">${dica}</p>
+          ${comData ? campoData(colaborador) : ''}
+          <p class="text-[11px] leading-snug text-slate-400">${comData ? `${dica} A data entra na faixa do setor, ao lado dele.` : dica}</p>
         </div>
       </div>
     </div>
+  `;
+}
+
+function campoData(colaborador) {
+  return `
+          <label class="block">
+            <span class="mb-1 block text-xs font-bold text-slate-600">Data do aniversário</span>
+            <input type="text" data-campo="data" value="${escapeHtml(colaborador.data || '')}" maxlength="10" autocomplete="off"
+              placeholder="Ex: 06/11"
+              class="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm font-semibold text-brand-deep outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-light" />
+          </label>
   `;
 }
 
@@ -183,7 +195,7 @@ export function bodyRH(formato, state) {
     <div data-rh-root data-editor="aniversariantes" class="space-y-4">
       ${max > 1 ? blocoQuantidade(max, atual.length, formato.grade) : ''}
       <div data-lista class="space-y-3">
-        ${atual.map((c, i) => linhaColaborador(i, c, { forma: 'circulo', mostrarNumero: max > 1 })).join('')}
+        ${atual.map((c, i) => linhaColaborador(i, c, { forma: 'circulo', mostrarNumero: max > 1, comData: formato.dataPorPessoa })).join('')}
       </div>
     </div>
   `;
@@ -318,7 +330,7 @@ export function wireRH(container, formato) {
       });
     } else {
       for (let i = atual; i < n; i += 1) {
-        lista.insertAdjacentHTML('beforeend', linhaColaborador(i, colaboradores[i], { forma: 'circulo', mostrarNumero: true }));
+        lista.insertAdjacentHTML('beforeend', linhaColaborador(i, colaboradores[i], { forma: 'circulo', mostrarNumero: true, comData: formato.dataPorPessoa }));
         ligarLinha(lista.lastElementChild, formato);
       }
     }
