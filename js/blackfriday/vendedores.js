@@ -61,7 +61,7 @@ export const VENDEDORES = [
   v('time-b2b', 'Time B2B', { zoom: 1, cx: 0.5, cy: 0.51 }, 'Time B2B'),
   v('time-my-pratagy', 'Time My Pratagy', { zoom: 1.15, cx: 0.518, cy: 0.495 }, 'Time My Pratagy'),
   v('veronica-bulamah', 'Veronica Bulamah', { zoom: 1.605, cx: 0.5025, cy: 0.4815 }),
-  v('victoria-ferreira', 'Victória Ferreira', { zoom: 1, cx: 0.5, cy: 0.444 }),
+  v('victoria-ferreira', 'Victória Ferreira', { zoom: 1.649, cx: 0.5085, cy: 0.4078 }),
   v('wagner-mendonca', 'Wagner Mendonça', { zoom: 1.051, cx: 0.5242, cy: 0.3883 }),
 ];
 
