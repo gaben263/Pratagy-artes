@@ -6,6 +6,7 @@ import { loadLibrary, searchLibrary, getLoadedLibrary } from '../../data/docxLib
 import { modoDeEdicao, EDITORES_COM_CARDS } from '../../rh/templates.js';
 import { bodyRH, wireRH, prontoRH, prontoPlantao, camposEncontro, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
 import { bodyBF, wireBF, prontoBF } from '../../blackfriday/editorBF.js';
+import { adicionarEAbrirFolha } from './folhaBottonStep.js';
 
 // Listener único (registrado uma vez) que fecha o dropdown de busca ao
 // clicar fora dele, evitando acumular listeners a cada remontagem do passo.
@@ -41,9 +42,12 @@ function updateContinueState(container) {
   const hasText = pronto.ok;
   const enabled = hasText && state.fits;
 
-  btn.disabled = !enabled;
-  btn.classList.toggle('opacity-40', !enabled);
-  btn.classList.toggle('cursor-not-allowed', !enabled);
+  for (const b of [btn, container.querySelector('[data-add-folha]')]) {
+    if (!b) continue;
+    b.disabled = !enabled;
+    b.classList.toggle('opacity-40', !enabled);
+    b.classList.toggle('cursor-not-allowed', !enabled);
+  }
 
   const hint = container.querySelector('[data-continue-hint]');
   if (hint) {
@@ -73,7 +77,9 @@ function medidaDoFormato(formato) {
 function shell({ setor, formato, bodyHtml, comCards = false }) {
   const isComunicado = setor.tipoTexto === 'comunicado' || COMUNICADOS.has(formato.editor);
   const titulo =
-    formato.editor === 'blackfriday'
+    formato.botton
+      ? 'Monte o botton'
+      : formato.editor === 'blackfriday'
       ? formato.slots.length > 1
         ? 'Escolha os vendedores'
         : 'Escolha o vendedor'
@@ -101,15 +107,30 @@ function shell({ setor, formato, bodyHtml, comCards = false }) {
         ${bodyHtml}
       </div>
 
-      <div class="mt-5 flex items-center gap-4">
+      <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
         <button type="button" data-continue disabled
           class="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 py-3 font-fibra font-extrabold text-white opacity-40 shadow-sm transition-colors hover:bg-brand-deep">
           Ir para a prévia ${icon('arrowRight', { size: 18 })}
         </button>
+        ${
+          // Botton: atalho para montar a folha A4 com várias pessoas sem passar
+          // por Prévia e Download a cada uma.
+          formato.folhaBottons
+            ? `<button type="button" data-add-folha disabled
+                class="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl border-2 border-[#d9a930] bg-white px-5 py-2.5 font-fibra font-extrabold text-brand-deep opacity-40 transition-colors hover:bg-[#fdf3d7]">
+                ${icon('layers', { size: 17 })} Adicionar à folha A4${folhaBottonsResumo()}
+              </button>`
+            : ''
+        }
         <p data-continue-hint class="max-w-[220px] text-xs text-slate-400"></p>
       </div>
     </div>
   `;
+}
+
+function folhaBottonsResumo() {
+  const n = getState().folhaBottons.reduce((soma, b) => soma + b.quantidade, 0);
+  return n ? ` <span class="text-xs font-bold text-slate-500">(${n} na folha)</span>` : '';
 }
 
 function wireCommon(container) {
@@ -118,6 +139,10 @@ function wireCommon(container) {
   continueBtn.addEventListener('click', () => {
     if (continueBtn.disabled) return;
     goToStep('previa');
+  });
+  const addFolha = container.querySelector('[data-add-folha]');
+  addFolha?.addEventListener('click', () => {
+    if (!addFolha.disabled) adicionarEAbrirFolha();
   });
 }
 
@@ -450,7 +475,7 @@ export function renderEdicaoStep(container) {
   container.innerHTML = shell({ setor, formato, bodyHtml, comCards: comCards || modo === 'blackfriday' });
   wireCommon(container);
 
-  if (modo === 'blackfriday') wireBF(container);
+  if (modo === 'blackfriday') wireBF(container, formato);
   else if (modo === 'busca') wireBuscaAB(container, state);
   else if (comCards) wireRH(container, formato);
   else if (!formato?.semTexto) wireTextoLivre(container, state);

@@ -96,3 +96,13 @@ body {
     animation: none;
   }
 }
+
+/* Folha A4 de bottons (Black Friday): a mesa de corte na cor da campanha —
+   o fundo escuro dos cards com a grade em dourado, no lugar do azul do A&B. */
+.folha-base-bf {
+  background-color: #17131d;
+  background-image: radial-gradient(circle at 50% 35%, rgba(163, 18, 12, 0.35), transparent 70%),
+    linear-gradient(rgba(217, 169, 48, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(217, 169, 48, 0.12) 1px, transparent 1px);
+  background-size: auto, 14.29px 14.29px, 14.29px 14.29px;
+}

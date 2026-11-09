@@ -27,3 +27,7 @@
 # Servidor de desenvolvimento local: não é usado pela Vercel e pode confundir
 # a detecção automática de framework.
 /server.js
+
+# Pasta de trabalho dos bottons da Black Friday (fotos originais, HEIC). As
+# versões usadas pelo site vivem em assets/images/blackfriday/bottons/.
+/Bottons-black/

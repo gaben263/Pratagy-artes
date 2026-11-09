@@ -6,8 +6,9 @@ import { ensureFontsReady } from '../../canvas/engine.js';
 import { updatePreview } from '../previewPanel.js';
 import { showToast, confirmModal, motivoNaoCoube } from '../common.js';
 import { comemorar } from '../confetti.js';
-import { exportLotePDF, calcularGrade } from '../../canvas/lote.js';
+import { exportLotePDF, calcularGrade, unidadeDe } from '../../canvas/lote.js';
 import { abrirLoteModal } from '../loteModal.js';
+import { adicionarEAbrirFolha } from './folhaBottonStep.js';
 
 async function handleExport(kind, formato, nomeArquivo, btn) {
   const original = btn.innerHTML;
@@ -55,7 +56,8 @@ async function handleLote(formato, quantidade) {
 
     await exportLotePDF(canvas, formato, quantidade, `pratagy-lote-${formato.id}-${quantidade}un`);
     setState({ exported: true });
-    showToast(`Folha A4 com ${quantidade} ${quantidade === 1 ? 'placa' : 'placas'} exportada.`, { type: 'success' });
+    const u = unidadeDe(formato);
+    showToast(`Folha A4 com ${quantidade} ${quantidade === 1 ? u.um : u.varios} exportada.`, { type: 'success' });
     comemorar();
   } catch (err) {
     showToast('Não foi possível gerar a folha A4. Tente novamente.', { type: 'error' });
@@ -73,6 +75,9 @@ async function handleNovaPlaca() {
   });
   if (ok) resetApp();
 }
+
+/** Milímetros como se escreve em português: 49,1 e não 49.1. */
+const mm = (v) => String(v).replace('.', ',');
 
 function cardExport({ kind, iconName, titulo, descricao, habilitado, classe = '' }) {
   return `
@@ -154,7 +159,11 @@ export function renderDownloadStep(container) {
           kind: 'png',
           iconName: 'image',
           titulo: 'Baixar PNG',
-          descricao: formato.digital ? 'WhatsApp, murais e redes sociais' : 'Telas, TVs e redes sociais',
+          descricao: formato.botton
+            ? `Arquivo para a gráfica, ${formato.largura} px`
+            : formato.digital
+            ? 'WhatsApp, murais e redes sociais'
+            : 'Telas, TVs e redes sociais',
           habilitado: state.fits,
         })}
         ${cardExport({
@@ -163,20 +172,42 @@ export function renderDownloadStep(container) {
           titulo: 'Baixar PDF',
           descricao: formato.digital
             ? 'Versão para imprimir e afixar'
-            : `Impressão em ${formato.mmLargura}×${formato.mmAltura} mm`,
+            : `Impressão em ${mm(formato.mmLargura)}×${mm(formato.mmAltura)} mm`,
           habilitado: state.fits,
         })}
         ${
-          setor.permiteLote
+          setor.permiteLote || formato.permiteLote
             ? cardExport({
                 kind: 'lote',
                 iconName: 'layers',
                 titulo: 'Impressão em lote',
-                descricao: `Até ${calcularGrade(formato).max} placas numa folha A4 para imprimir aqui no resort`,
+                descricao: `Até ${calcularGrade(formato).max} ${unidadeDe(formato).varios} numa folha A4, em tamanho real`,
                 habilitado: state.fits,
                 classe: 'sm:col-span-2',
-              }) +
-              cardExport({
+              })
+            : ''
+        }
+        ${
+          formato.folhaBottons
+            ? cardExport({
+                kind: 'folha-bottons',
+                iconName: 'plus',
+                titulo: 'Adicionar à folha A4 de bottons',
+                descricao: (() => {
+                  const n = state.folhaBottons.reduce((s, b) => s + b.quantidade, 0);
+                  return n
+                    ? `A folha já tem ${n} ${n === 1 ? 'botton' : 'bottons'}. Junte este e imprima todos de uma vez`
+                    : 'Junte bottons de pessoas diferentes na mesma folha para imprimir';
+                })(),
+                habilitado: state.fits,
+                classe: 'sm:col-span-2',
+              })
+            : ''
+        }
+        ${
+          // A folha montada mistura pratos e tamanhos do A&B: só vale para o setor.
+          setor.permiteLote
+            ? cardExport({
                 kind: 'folha',
                 iconName: 'plus',
                 titulo: 'Adicionar a uma folha A4',
@@ -203,6 +234,10 @@ export function renderDownloadStep(container) {
       if (btn.disabled) return;
       if (btn.dataset.export === 'lote') {
         abrirLoteModal(formato, (quantidade) => handleLote(formato, quantidade));
+        return;
+      }
+      if (btn.dataset.export === 'folha-bottons') {
+        adicionarEAbrirFolha();
         return;
       }
       if (btn.dataset.export === 'folha') {

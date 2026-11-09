@@ -5,7 +5,7 @@
 // formato atual. Trocar o formato e reabrir já mostra o novo máximo, e fechar
 // descarta tudo — não há nada para "limpar".
 
-import { calcularGrade, posicoes, MARGEM_MM } from '../canvas/lote.js';
+import { calcularGrade, posicoes, MARGEM_MM, unidadeDe } from '../canvas/lote.js';
 import { icon } from './icons.js';
 import { openModal } from './common.js';
 
@@ -24,7 +24,9 @@ function diagramaSvg(formato, quantidade) {
   const retangulos = todas
     .map(({ x, y }, i) => {
       const usada = i < quantidade;
-      return `<rect x="${x}" y="${y}" width="${formato.mmLargura}" height="${formato.mmAltura}" rx="1.5"
+      // O botton é um disco: o diagrama desenha o que vai ser cortado.
+      const rx = formato.botton ? formato.mmLargura / 2 : 1.5;
+      return `<rect x="${x}" y="${y}" width="${formato.mmLargura}" height="${formato.mmAltura}" rx="${rx}"
         fill="${usada ? '#008BCE' : 'none'}" stroke="${usada ? '#004F9F' : '#CBD5E1'}"
         stroke-width="${usada ? 0.6 : 0.8}" ${usada ? '' : 'stroke-dasharray="2 2"'} />`;
     })
@@ -34,7 +36,7 @@ function diagramaSvg(formato, quantidade) {
   // e deitada; a folha se ajusta dentro dela.
   return `
     <svg viewBox="-2 -2 ${largura + 4} ${altura + 4}" role="img"
-      aria-label="Folha ${ORIENTACAO[grade.orientacao]} com ${quantidade} de ${grade.max} placas"
+      aria-label="Folha ${ORIENTACAO[grade.orientacao]} com ${quantidade} de ${grade.max} ${unidadeDe(formato).varios}"
       class="mx-auto h-56 w-auto max-w-full">
       <rect x="0" y="0" width="${largura}" height="${altura}" rx="2" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1" />
       <rect x="${MARGEM_MM}" y="${MARGEM_MM}" width="${largura - 2 * MARGEM_MM}" height="${altura - 2 * MARGEM_MM}"
@@ -49,7 +51,7 @@ function modalHtml(formato, grade) {
     <header class="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
       <div class="min-w-0">
         <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Impressão em lote</p>
-        <h3 class="mt-1 font-fibra text-xl font-extrabold leading-tight text-brand-deep">Várias placas numa folha A4</h3>
+        <h3 class="mt-1 font-fibra text-xl font-extrabold leading-tight text-brand-deep">${unidadeDe(formato).muitos} ${unidadeDe(formato).varios} numa folha A4</h3>
       </div>
       <button type="button" data-close aria-label="Fechar"
         class="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
@@ -61,7 +63,7 @@ function modalHtml(formato, grade) {
       <div class="space-y-4">
         <div>
           <label for="lote-quantidade" class="mb-1.5 block text-sm font-bold text-slate-700">
-            Quantas placas por folha A4?
+            ${unidadeDe(formato).quantos} ${unidadeDe(formato).varios} por folha A4?
           </label>
           <input id="lote-quantidade" type="number" inputmode="numeric" data-quantidade
             min="1" max="${grade.max}" step="1" value="${grade.max}"
@@ -70,13 +72,13 @@ function modalHtml(formato, grade) {
         </div>
 
         <dl class="space-y-1.5 rounded-xl border border-brand-vivid/30 bg-brand-light/25 p-4 text-sm">
-          <div class="flex justify-between gap-3"><dt class="text-slate-500">Placa</dt><dd class="font-extrabold text-brand-deep">${formato.nome} · ${formato.mmLargura}×${formato.mmAltura} mm</dd></div>
-          <div class="flex justify-between gap-3"><dt class="text-slate-500">Máximo por folha</dt><dd class="font-extrabold text-brand-deep" data-max>${grade.max} placas</dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-slate-500">Peça</dt><dd class="font-extrabold text-brand-deep">${formato.nome} · ${formato.mmLargura}×${formato.mmAltura} mm</dd></div>
+          <div class="flex justify-between gap-3"><dt class="text-slate-500">Máximo por folha</dt><dd class="font-extrabold text-brand-deep" data-max>${grade.max} ${unidadeDe(formato).varios}</dd></div>
           <div class="flex justify-between gap-3"><dt class="text-slate-500">Distribuição</dt><dd class="text-slate-600">${grade.colunas} × ${grade.linhas} · ${ORIENTACAO[grade.orientacao]}</dd></div>
         </dl>
 
         <p class="text-xs leading-relaxed text-slate-500">
-          Imprima em <strong>tamanho real (100%)</strong>, sem “ajustar à página”. As placas ficam alinhadas
+          Imprima em <strong>tamanho real (100%)</strong>, sem “ajustar à página”. As peças ficam alinhadas
           no canto superior esquerdo, com 3 mm de respiro entre elas para cortar com tesoura.
           ${grade.orientacao === 'landscape' ? 'A folha sai <strong>deitada</strong>: o leitor de PDF já escolhe a orientação certa ao imprimir.' : ''}
         </p>

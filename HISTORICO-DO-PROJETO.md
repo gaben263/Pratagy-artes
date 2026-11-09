@@ -1575,6 +1575,32 @@ pedindo para abreviar. O teste usou 9 vezes `Alexssandro Davis de Souza` + `Depa
 e data, sem aviso de encaixe; data em só uma pessoa; resumo da Prévia; Bem Vindos, Destaque, Talento
 e Plantão sem o campo; troca Aniversariantes → Bem Vindos sem a data; nenhum erro de JS.
 
+### 3.31 Black Friday: Botton
+
+Quinta peça do setor, e a primeira de impressão: o botton dos colaboradores da campanha, sobre a
+moldura de lâmpadas entregue pelo Marketing (pasta `Bottons-black`).
+
+**Tamanho:** 6,5 cm de diâmetro, com 0,5 cm de margem em volta que dobra na prensa. A face visível
+(o aro) tem 5,5 cm. O arquivo é um disco de 1536 px (600 DPI) com cantos transparentes; a moldura
+entra ampliada 2,5× para o aro medido (raio 260 px no PNG de 580) dar 55 mm. Fora do aro o fundo é
+escuro, para a lateral do botton não sair branca.
+
+**A arte:** foto no furo, por trás da moldura; nome livre em Intro Black numa pílula dourada que
+atravessa o aro embaixo, como as pílulas dos cards. Nome longo reduz e depois quebra em duas linhas;
+se nem assim couber, a exportação bloqueia.
+
+**As fotos:** as 59 da pasta (JPG, PNG e HEIC) convertidas como as dos vendedores, numa lista à
+parte (`colaboradores.js`), com o rosto detectado e posicionado acima da pílula. Rebeca Santos e os
+dois times usam o enquadramento manual dos vendedores. Também dá para enviar uma foto do computador
+(só em memória).
+
+**Saída:** PNG e PDF de um botton; lote da mesma arte numa A4; e o passo novo **Folha A4**, com
+bottons de pessoas diferentes, como a folha montada do A&B (mesmo `montarFolhas`): 8 por folha
+(2 × 4), folhas extras automáticas, PDF em JPEG com cantos brancos para não pesar dezenas de MB.
+
+**Verificação:** sem navegador automatizado disponível nesta sessão; a geometria foi conferida por
+mockup em Python com as mesmas medidas e fonte, e os módulos por carga em Node.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi

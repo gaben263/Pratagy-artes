@@ -1,5 +1,5 @@
-// Impressão em lote: várias placas do A&B numa folha A4, para a equipe imprimir
-// na impressora do resort e cortar com tesoura.
+// Impressão em lote: várias placas do A&B (ou bottons da Black Friday) numa
+// folha A4, para a equipe imprimir na impressora do resort e cortar.
 //
 // Não é arquivo de gráfica: sem marcas de corte, sem sangria. A folha é A4 de
 // verdade (210×297 mm) e cada placa é colocada no seu tamanho físico exato,
@@ -22,6 +22,11 @@ export const MARGEM_MM = 10;
 // calha branca marcam o corte sem marca de corte e toleram 1–2 mm de tremida
 // da tesoura sem comer a faixa da vizinha.
 export const GAP_MM = 3;
+
+/** Como chamar as peças da folha: placas no A&B, bottons na Black Friday. */
+export function unidadeDe(formato) {
+  return formato?.unidade || { um: 'placa', varios: 'placas', muitos: 'Várias', quantos: 'Quantas' };
+}
 
 function contar(medidaUtil, medidaPeca) {
   // Quantas peças cabem numa dimensão: n peças + (n − 1) calhas ≤ útil.
@@ -203,7 +208,7 @@ export function montarFolhas(itens) {
  * no lote, repetir a mesma arte aponta para a imagem já embutida, inclusive
  * entre páginas.
  */
-export function exportFolhasPDF(folhas, imagens, nomeArquivo) {
+export function exportFolhasPDF(folhas, imagens, nomeArquivo, tipoImagem = 'PNG') {
   const { jsPDF } = window.jspdf;
   const aliases = new Map([...imagens.keys()].map((chave, i) => [chave, `arte-${i}`]));
 
@@ -211,7 +216,7 @@ export function exportFolhasPDF(folhas, imagens, nomeArquivo) {
   folhas.forEach((folha, i) => {
     if (i > 0) pdf.addPage('a4', folha.orientacao);
     for (const { chave, x, y, mmLargura, mmAltura } of folha.pecas) {
-      pdf.addImage(imagens.get(chave), 'PNG', x, y, mmLargura, mmAltura, aliases.get(chave), 'FAST');
+      pdf.addImage(imagens.get(chave), tipoImagem, x, y, mmLargura, mmAltura, aliases.get(chave), 'FAST');
     }
   });
 

@@ -17,12 +17,16 @@ const FLUXO_CATALOGO_GERADOR = ['setor', 'catalogo', ...GERADOR];
 const FLUXO_LAZER = ['setor', 'catalogo', 'lazer'];
 // A&B: do catálogo para a montagem da folha A4 com peças diferentes.
 const FLUXO_FOLHA = ['setor', 'catalogo', 'folha'];
+// Botton da Black Friday: o gerador normal, com a folha A4 de bottons de pessoas
+// diferentes como passo final (alcançável só depois de pôr o primeiro nela).
+const FLUXO_BOTTON = [...FLUXO_GERADOR, 'folhaBotton'];
 
 export const STEP_LABELS = {
   setor: 'Setor',
   catalogo: 'Catálogo',
   lazer: 'Editar programação',
   folha: 'Montar folha',
+  folhaBotton: 'Folha A4',
   formato: 'Formato',
   modelo: 'Modelo',
   edicao: 'Texto',
@@ -63,6 +67,11 @@ function initialState() {
     // de `texto`/`formatoId` para sobreviver à criação de outras artes no meio
     // do caminho; só "Nova arte" ou recarregar a página esvazia a folha.
     folha: [],
+    // Folha A4 de bottons: { id, nome, vendedorId, foto, quantidade } por
+    // botton. A foto é um retrato do enquadramento no momento em que entrou na
+    // folha (a imagem em memória + zoom/cx/cy); editar o próximo botton não
+    // mexe nos que já estão nela. Só memória, como as fotos do RH.
+    folhaBottons: [],
     exported: false,
   };
 }
@@ -99,6 +108,7 @@ export function getStepOrder(s = state) {
     return s.modo === 'gerador' ? FLUXO_CATALOGO_GERADOR : FLUXO_CATALOGO;
   }
 
+  if (setor.formatos.find((f) => f.id === s.formatoId)?.folhaBottons) return FLUXO_BOTTON;
   return FLUXO_GERADOR;
 }
 
@@ -169,6 +179,16 @@ export function gravarFolha(pecas) {
 export function entrarNaFolha(peca = null) {
   if (peca) gravarFolha([...state.folha, peca]);
   setState({ modo: 'folha', step: 'folha', maxStepIndex: Math.max(state.maxStepIndex, FLUXO_FOLHA.indexOf('folha')) });
+}
+
+/** Grava a lista da folha de bottons (sem fundir: cada linha é um botton). */
+export function gravarFolhaBottons(lista) {
+  setState({ folhaBottons: lista, exported: false });
+}
+
+/** Abre a folha A4 de bottons (passo final do fluxo do botton). */
+export function entrarNaFolhaBottons() {
+  setState({ step: 'folhaBotton', maxStepIndex: Math.max(state.maxStepIndex, FLUXO_BOTTON.indexOf('folhaBotton')) });
 }
 
 /**

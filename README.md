@@ -10,7 +10,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Sete módulos:
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 | **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente, com a data do aniversário ao lado do setor). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
 | **Esportes e Lazer** | Catálogo da programação mensal de lazer (shows, música ao vivo, piscina, fitness, bingo, cinema, programação infantil de 4 a 6 e de 7 a 12 anos): 50 peças de novembro de 2026, em A4 para impressão e nos formatos de tela (TV vertical e horizontal, stories, feed, banner do app). Peças de tela baixam só a imagem; as A4 também em PDF |
-| **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 50K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto |
+| **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 50K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto. E o **Botton** (6,5 cm, para impressão): foto do colaborador na moldura de lâmpadas + nome livre numa pílula dourada, um arquivo por botton ou vários colaboradores na mesma folha A4 |
 
 > Cada setor mostra uma categoria só, definida em `categoriaCatalogo`. `fluxo: 'catalogo'` abre
 > direto na busca; `fluxo: 'gerador'` (Acqua Park) vai direto para o Canvas. Hospitalidade e A&B
@@ -65,6 +65,9 @@ js/
     vendedores.js            lista de vendedores com foto e enquadramento inicial
     render.js                compositor: arte + fotos mascaradas + textos, devolve `fits`
     editorBF.js              seletor de vendedor com foto, nome na arte e conquista
+    botton.js                compositor do botton: foto no furo da moldura, pílula dourada, nome em 1 ou 2 linhas
+    colaboradores.js         colaboradores com foto para o botton (pasta Bottons-black)
+    (ui/steps/folhaBottonStep.js: folha A4 com bottons de pessoas diferentes)
   rh/
     templates.js             os 3 templates do RH (medições em px, áreas seguras, cores das faixas)
     cardRenderer.js          card de colaborador: foto (círculo/quadrado), faixas que crescem com o texto
@@ -100,6 +103,18 @@ As tipografias são locais, não vêm de CDN: **Fibra One** (interface e artes),
 Para incluir alguém: converta a foto para JPG (lado menor até 1000 px, nome ASCII sem espaço), salve em `assets/images/blackfriday/vendedores/<id>.jpg`, gere a miniatura de 160 px em `.../thumbs/<id>.jpg` e acrescente a linha em `js/blackfriday/vendedores.js` com o enquadramento inicial (`zoom`, `cx`, `cy` — `{ zoom: 1, cx: 0.5, cy: 0.4 }` serve de partida para foto de meio corpo). HEIC/HEIF precisa ser convertido: o Chrome e o Edge não abrem.
 
 > **Privacidade:** diferente das peças do RH (fotos só em memória), as fotos dos vendedores ficam em `assets/` e vão para o deploy, porque o seletor precisa delas. Se o site for público, qualquer pessoa com o link vê as fotos. Para tirá-las do site, acrescente `/assets/images/blackfriday/vendedores/` ao `.vercelignore` e rode o sistema localmente.
+
+## Bottons da Black Friday
+
+Em **Black Friday › Botton**: escolha a foto na lista (as 59 fotos da pasta `Bottons-black/fotos`, já enquadradas no rosto) ou envie uma do computador, e escreva o nome.
+
+- **Tamanho:** 6,5 cm de diâmetro = 5,5 cm de face (o aro de lâmpadas) + 0,5 cm de margem escura em volta, que dobra na prensa. O arquivo é um disco de 1536 px (600 DPI); a borda do disco é a linha de corte.
+- **Um arquivo por botton:** no Download, PNG (cantos transparentes) ou PDF em 65×65 mm. "Impressão em lote" repete o mesmo botton numa A4 (até 8).
+- **Vários bottons de pessoas diferentes numa A4:** "Adicionar à folha A4" (na tela do botton ou no Download) leva o botton para o passo **Folha A4**. De lá, "Adicionar outro botton" volta para a tela com o campo limpo. Cada botton tem quantidade; cabem 8 por folha (2 × 4) e as folhas extras abrem sozinhas. "Gerar PDF" baixa todas as folhas em tamanho real.
+
+As fotos e a folha ficam só em memória: recarregar a página ou "Nova arte" esvazia tudo.
+
+Para incluir alguém: mesmo processo dos vendedores, mas em `assets/images/blackfriday/bottons/` e uma linha em `js/blackfriday/colaboradores.js`.
 
 ## Atualizando os modelos oficiais
 

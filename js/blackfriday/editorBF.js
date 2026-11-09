@@ -16,8 +16,14 @@ import { getState, setState } from '../state.js';
 import { icon } from '../ui/icons.js';
 import { escapeHtml, normalizeSearch } from '../utils.js';
 import { montarEditorFoto } from '../rh/photoEditor.js';
-import { VENDEDORES, getVendedor } from './vendedores.js';
+import { VENDEDORES } from './vendedores.js';
+import { COLABORADORES_BOTTON } from './colaboradores.js';
 import { CONQUISTAS, ROTULOS_SLOT } from './templates.js';
+
+// Os cards escolhem entre os vendedores; o botton, entre todos os
+// colaboradores da pasta Bottons-black (ver colaboradores.js).
+export const pessoasDo = (formato) => (formato?.botton ? COLABORADORES_BOTTON : VENDEDORES);
+export const acharPessoa = (formato, id) => pessoasDo(formato).find((p) => p.id === id) || null;
 
 // Clique fora fecha o seletor aberto. Registrado uma vez, como o da busca do A&B.
 document.addEventListener('click', (e) => {
@@ -36,20 +42,22 @@ function commit() {
   });
 }
 
-// Fotos já carregadas, por vendedor: trocar de pessoa e voltar não baixa de novo.
+// Fotos já carregadas, por arquivo: trocar de pessoa e voltar não baixa de
+// novo. A chave é o caminho, não o id — a mesma pessoa pode estar nas duas
+// listas com fotos diferentes.
 const fotosCarregadas = new Map();
 function carregarFoto(vendedor) {
-  if (!fotosCarregadas.has(vendedor.id)) {
+  if (!fotosCarregadas.has(vendedor.foto)) {
     const p = new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
       img.onerror = () => reject(new Error(`Foto de ${vendedor.nome} não encontrada.`));
       img.src = vendedor.foto;
     });
-    p.catch(() => fotosCarregadas.delete(vendedor.id));
-    fotosCarregadas.set(vendedor.id, p);
+    p.catch(() => fotosCarregadas.delete(vendedor.foto));
+    fotosCarregadas.set(vendedor.foto, p);
   }
-  return fotosCarregadas.get(vendedor.id);
+  return fotosCarregadas.get(vendedor.foto);
 }
 
 /** Slots do card que mostram o nome na arte (o Top 3 só mostra as fotos). */
@@ -59,6 +67,13 @@ const slotsComNome = (formato) => new Set(formato.textos.filter((t) => t.fonte =
 
 export function prontoBF(state, formato) {
   const pessoas = state.bf?.pessoas || {};
+  // Botton: vale foto da pasta ou enviada do computador; o nome é livre.
+  if (formato.botton) {
+    const p = pessoas[formato.slots[0]];
+    if (!p?.foto?.img) return { ok: false, hint: 'Escolha a foto do colaborador ou envie uma do computador.' };
+    if (!p.nome.trim()) return { ok: false, hint: 'Escreva o nome que vai no botton.' };
+    return { ok: true, hint: '' };
+  }
   const comNome = slotsComNome(formato);
   for (const slot of formato.slots) {
     const p = pessoas[slot];
@@ -89,28 +104,42 @@ function avatar(vendedor, tamanho) {
         style="width:${tamanho}px;height:${tamanho}px">${icon('user', { size: Math.round(tamanho / 2.2) })}</span>`;
 }
 
-function conteudoBotao(vendedor, slot) {
+function rotuloVazio(slot) {
+  if (slot === 'ajudante') return 'Escolha o colega';
+  if (slot === 'botton') return 'Escolha da pasta de fotos';
+  return 'Escolha o vendedor';
+}
+
+function conteudoBotao(vendedor, slot, formato, { enviada = false } = {}) {
   return `
     ${avatar(vendedor, 44)}
     <span class="min-w-0 flex-1 text-left">
       <span class="block truncate font-fibra font-extrabold ${vendedor ? 'text-brand-deep' : 'text-slate-400'}">
-        ${vendedor ? escapeHtml(vendedor.nome) : slot === 'ajudante' ? 'Escolha o colega' : 'Escolha o vendedor'}
+        ${vendedor ? escapeHtml(vendedor.nome) : enviada ? 'Foto enviada do computador' : rotuloVazio(slot)}
       </span>
-      ${vendedor ? '' : `<span class="block text-xs text-slate-400">${VENDEDORES.length} pessoas com foto</span>`}
+      ${
+        vendedor
+          ? ''
+          : `<span class="block text-xs text-slate-400">${
+              enviada ? 'Abra para trocar por uma da pasta' : `${pessoasDo(formato).length} pessoas com foto`
+            }</span>`
+      }
     </span>
     <span class="text-slate-400">${icon('chevronDown', { size: 18 })}</span>
   `;
 }
 
-function opcoes(slot, filtro = '') {
+function opcoes(slot, formato, filtro = '') {
   const pessoas = getState().bf.pessoas;
   const ocupados = new Map(
     Object.entries(pessoas)
-      .filter(([s, p]) => s !== slot && p?.vendedorId)
+      // Só as posições deste card: o estado guarda também as de outras peças
+      // (o botton de quem passou por ele antes de trocar de formato).
+      .filter(([s, p]) => s !== slot && formato.slots.includes(s) && p?.vendedorId)
       .map(([s, p]) => [p.vendedorId, ROTULOS_SLOT[s].titulo])
   );
   const termo = normalizeSearch(filtro);
-  const lista = VENDEDORES.filter((v) => !termo || normalizeSearch(v.nome).includes(termo));
+  const lista = pessoasDo(formato).filter((v) => !termo || normalizeSearch(v.nome).includes(termo));
   if (!lista.length) return `<li class="px-3 py-4 text-center text-sm text-slate-400">Ninguém com esse nome.</li>`;
   return lista
     .map((v) => {
@@ -134,8 +163,10 @@ function opcoes(slot, filtro = '') {
 
 function blocoPessoa(slot, formato, comNome) {
   const pessoa = getState().bf.pessoas[slot];
-  const vendedor = getVendedor(pessoa?.vendedorId);
+  const vendedor = acharPessoa(formato, pessoa?.vendedorId);
   const rotulo = ROTULOS_SLOT[slot];
+  const botton = Boolean(formato.botton);
+  const enviada = botton && !vendedor && Boolean(pessoa?.foto?.img);
   return `
     <div data-slot="${slot}" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="mb-3 flex items-baseline justify-between gap-3">
@@ -147,7 +178,7 @@ function blocoPessoa(slot, formato, comNome) {
         <button type="button" data-picker-btn role="combobox" aria-haspopup="listbox" aria-expanded="false"
           aria-controls="lista-${slot}" aria-label="${rotulo.titulo}: escolher pessoa"
           class="flex w-full items-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-[#d9a930] focus-visible:border-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light">
-          ${conteudoBotao(vendedor, slot)}
+          ${conteudoBotao(vendedor, slot, formato, { enviada })}
         </button>
         <div data-picker-pop class="absolute z-30 mt-1.5 hidden w-full rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
           <div class="relative mb-1.5">
@@ -160,19 +191,37 @@ function blocoPessoa(slot, formato, comNome) {
         </div>
       </div>
 
-      <div data-detalhe class="${vendedor ? '' : 'hidden'} mt-4 grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-[auto_minmax(0,1fr)]">
+      ${
+        botton
+          ? `<button type="button" data-enviar
+              class="mt-2 inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-xs font-bold text-slate-500 underline decoration-slate-300 underline-offset-2 transition-colors hover:text-brand-blue hover:decoration-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light">
+              ${icon('camera', { size: 13 })} Ou envie uma foto do computador
+            </button>`
+          : ''
+      }
+
+      <div data-detalhe class="${vendedor || botton ? '' : 'hidden'} mt-4 grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-[auto_minmax(0,1fr)]">
         <div data-foto-slot></div>
         <div class="space-y-1.5">
           ${
             comNome
               ? `<label class="block">
                   <span class="mb-1 block text-xs font-bold text-slate-600">Nome na arte</span>
-                  <input type="text" data-nome maxlength="24" autocomplete="off" value="${escapeHtml(pessoa?.nome || '')}" class="${CAMPO}" />
+                  <input type="text" data-nome maxlength="${botton ? 32 : 24}" autocomplete="off" value="${escapeHtml(pessoa?.nome || '')}"
+                    ${botton ? 'placeholder="Como o colaborador é chamado"' : ''} class="${CAMPO}" />
                 </label>
-                <p class="text-[11px] leading-snug text-slate-400">Sai em maiúsculas. Vem com o primeiro nome; acrescente o sobrenome se quiser.</p>`
+                <p class="text-[11px] leading-snug text-slate-400">${
+                  botton
+                    ? 'Sai em maiúsculas na pílula dourada. Nome longo quebra em duas linhas.'
+                    : 'Sai em maiúsculas. Vem com o primeiro nome; acrescente o sobrenome se quiser.'
+                }</p>`
               : `<p class="text-[11px] leading-snug text-slate-400">No Top 3 a arte mostra só as fotos.</p>`
           }
-          <p class="text-[11px] leading-snug text-slate-400">A foto já vem enquadrada no rosto. Arraste ou use o zoom se quiser ajustar.</p>
+          <p class="text-[11px] leading-snug text-slate-400">${
+            botton
+              ? 'As fotos da pasta já vêm enquadradas no rosto. Arraste ou use o zoom para ajustar dentro do círculo.'
+              : 'A foto já vem enquadrada no rosto. Arraste ou use o zoom se quiser ajustar.'
+          }</p>
         </div>
       </div>
     </div>
@@ -225,20 +274,31 @@ function fecharPicker(picker) {
   picker.querySelector('[data-picker-btn]').setAttribute('aria-expanded', 'false');
 }
 
-function montarFoto(bloco, slot) {
+function montarFoto(bloco, slot, formato) {
   montarEditorFoto(bloco.querySelector('[data-foto-slot]'), {
     forma: 'circulo',
     aspecto: 1,
     getFoto: () => getState().bf.pessoas[slot]?.foto || null,
     setFoto: (foto) => {
-      const p = getState().bf.pessoas[slot];
-      if (p) p.foto = foto;
+      const pessoas = getState().bf.pessoas;
+      if (!formato.botton) {
+        if (pessoas[slot]) pessoas[slot].foto = foto;
+        return;
+      }
+      // Botton: o editor de foto é também o caminho do upload. Uma foto nova
+      // vinda dele desvincula a pessoa da pasta (o seletor passa a dizer
+      // "Foto enviada do computador"); o nome digitado fica.
+      const p = pessoas[slot] || (pessoas[slot] = { vendedorId: null, nome: '', foto: null });
+      if (foto?.img && foto.img !== p.foto?.img) p.vendedorId = null;
+      p.foto = foto;
+      const enviada = Boolean(foto?.img) && !p.vendedorId;
+      bloco.querySelector('[data-picker-btn]').innerHTML = conteudoBotao(acharPessoa(formato, p.vendedorId), slot, formato, { enviada });
     },
     onChange: commit,
   });
 }
 
-function ligarPessoa(bloco, root) {
+function ligarPessoa(bloco, root, formato) {
   const slot = bloco.dataset.slot;
   const picker = bloco.querySelector('[data-picker]');
   const botao = picker.querySelector('[data-picker-btn]');
@@ -259,7 +319,7 @@ function ligarPessoa(bloco, root) {
     busca.setAttribute('aria-activedescendant', todos[ativo].id);
   };
   const pintarLista = () => {
-    lista.innerHTML = opcoes(slot, busca.value);
+    lista.innerHTML = opcoes(slot, formato, busca.value);
     ativo = -1;
     busca.removeAttribute('aria-activedescendant');
   };
@@ -276,18 +336,23 @@ function ligarPessoa(bloco, root) {
   };
 
   const escolher = async (id) => {
-    const vendedor = getVendedor(id);
+    const vendedor = acharPessoa(formato, id);
     if (!vendedor) return;
     fecharPicker(picker);
     botao.focus();
-    botao.innerHTML = conteudoBotao(vendedor, slot);
+    botao.innerHTML = conteudoBotao(vendedor, slot, formato);
 
     const pessoas = getState().bf.pessoas;
-    const pessoa = { vendedorId: id, nome: vendedor.nomeArte, foto: null };
+    const anterior = pessoas[slot];
+    // No botton o nome é livre: só é sugerido se o campo estiver vazio ou
+    // ainda com a sugestão da pessoa anterior — o que foi digitado fica.
+    const sugestaoAnterior = acharPessoa(formato, anterior?.vendedorId)?.nomeArte || '';
+    const manterNome = formato.botton && anterior?.nome.trim() && anterior.nome !== sugestaoAnterior;
+    const pessoa = { vendedorId: id, nome: manterNome ? anterior.nome : vendedor.nomeArte, foto: null };
     pessoas[slot] = pessoa;
     if (nomeInput) nomeInput.value = pessoa.nome;
     detalhe.classList.remove('hidden');
-    montarFoto(bloco, slot);
+    montarFoto(bloco, slot, formato);
     commit();
 
     try {
@@ -300,7 +365,7 @@ function ligarPessoa(bloco, root) {
       // Sem a foto o card sai com as iniciais (placeholder) — e o editor
       // oferece "Escolher foto" para subir uma do computador.
     }
-    montarFoto(bloco, slot);
+    montarFoto(bloco, slot, formato);
     commit();
   };
 
@@ -339,18 +404,25 @@ function ligarPessoa(bloco, root) {
   });
 
   nomeInput?.addEventListener('input', () => {
-    const p = getState().bf.pessoas[slot];
+    const pessoas = getState().bf.pessoas;
+    // Botton: dá para escrever o nome antes de escolher a foto.
+    if (!pessoas[slot] && formato.botton) pessoas[slot] = { vendedorId: null, nome: '', foto: null };
+    const p = pessoas[slot];
     if (!p) return;
     p.nome = nomeInput.value;
     commit();
   });
 
-  if (getState().bf.pessoas[slot]?.vendedorId) montarFoto(bloco, slot);
+  bloco.querySelector('[data-enviar]')?.addEventListener('click', () => {
+    bloco.querySelector('[data-foto-slot] [data-arquivo]')?.click();
+  });
+
+  if (getState().bf.pessoas[slot]?.vendedorId || formato.botton) montarFoto(bloco, slot, formato);
 }
 
-export function wireBF(container) {
+export function wireBF(container, formato) {
   const root = container.querySelector('[data-bf-root]');
-  root.querySelectorAll('[data-slot]').forEach((bloco) => ligarPessoa(bloco, root));
+  root.querySelectorAll('[data-slot]').forEach((bloco) => ligarPessoa(bloco, root, formato));
 
   const conquista = root.querySelector('[data-conquista]');
   conquista?.addEventListener('change', () => {

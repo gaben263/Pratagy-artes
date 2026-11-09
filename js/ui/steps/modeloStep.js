@@ -50,8 +50,8 @@ export function renderModeloStep(container) {
       <div class="mb-5 flex items-start gap-2.5 rounded-xl border border-brand-vivid/30 bg-brand-light/25 px-4 py-3 text-sm text-brand-deep">
         ${icon('sparkles', { size: 17, className: 'mt-0.5' })}
         <p>${
-          setor.dicaModelo
-            ? setor.dicaModelo
+          formato.dicaModelo || setor.dicaModelo
+            ? formato.dicaModelo || setor.dicaModelo
             : formato.digital
             ? 'O texto é posicionado automaticamente dentro do cartão branco, sem encostar no título impresso nem na fita e na logo do parque.'
             : 'O texto é posicionado automaticamente dentro da área segura, sem sobrepor as ondas, o sol ou as palmeiras do fundo.'

@@ -6,7 +6,7 @@ import { escapeHtml, toTitleCase } from '../../utils.js';
 import { motivoNaoCoube } from '../common.js';
 import { camposDoEncontro } from '../../rh/templates.js';
 import { ROTULOS_SLOT } from '../../blackfriday/templates.js';
-import { getVendedor } from '../../blackfriday/vendedores.js';
+import { acharPessoa } from '../../blackfriday/editorBF.js';
 
 function linha(label, valor, { destaque = false } = {}) {
   return `
@@ -34,7 +34,7 @@ function linhasBF(formato, state) {
   const pessoas = formato.slots
     .map((slot) => {
       const p = state.bf.pessoas[slot];
-      const nome = getVendedor(p?.vendedorId)?.nome || '';
+      const nome = acharPessoa(formato, p?.vendedorId)?.nome || (p?.foto?.img ? 'Foto enviada do computador' : '');
       const naArte = comNome.has(slot) ? ` (na arte: ${p.nome.trim().toLocaleUpperCase('pt-BR')})` : '';
       return linha(ROTULOS_SLOT[slot].titulo, nome + naArte, { destaque: true });
     })

@@ -130,6 +130,45 @@ export const FORMATOS_BF = [
   safeAreaMm: caixaDasFotos(f),
 }));
 
+// Botton: peça de impressão, não card. Um colaborador por botton, escolhido da
+// pasta de fotos ou enviado do computador, e o nome digitado livremente.
+// O desenho está em botton.js; `imagem` é a moldura (o que a prévia carrega).
+// 65 mm de diâmetro (55 mm de face + 5 mm de margem em volta) em 1536 px =
+// 600 DPI. Os números repetem os de botton.js, que importa este arquivo.
+const LADO_BOTTON = 1536;
+const MM_BOTTON = 65;
+const RAIO_FACE = 650; // 27,5 mm
+// O guia da área segura (engine.js) converte mm em px a 300 DPI, para todas as
+// peças; aqui a margem é dada nessa mesma convenção, não no mm físico do botton.
+const PX_POR_MM_GUIA = 300 / 25.4;
+const margemGuia = (LADO_BOTTON / 2 - RAIO_FACE) / PX_POR_MM_GUIA;
+FORMATOS_BF.push({
+  id: 'botton',
+  nome: 'Botton',
+  descricao: 'Foto do colaborador na moldura de lâmpadas, com o nome',
+  editor: 'blackfriday',
+  botton: true,
+  imagem: `${PASTA}/botton-moldura.png`,
+  largura: LADO_BOTTON,
+  altura: LADO_BOTTON,
+  mmLargura: MM_BOTTON,
+  mmAltura: MM_BOTTON,
+  slots: ['botton'],
+  fotos: [],
+  textos: [{ fonte: 'nome', slot: 'botton' }],
+  mmFace: 55,
+  // A folha A4 com o mesmo botton repetido (js/canvas/lote.js) vale para esta
+  // peça, não para o setor inteiro: os cards são digitais. A folha com bottons
+  // de pessoas diferentes é o passo `folhaBotton` (js/ui/steps/folhaBottonStep.js).
+  permiteLote: true,
+  folhaBottons: true,
+  unidade: { um: 'botton', varios: 'bottons', muitos: 'Vários', quantos: 'Quantos' },
+  dicaModelo:
+    'A foto entra no círculo, por trás da moldura de lâmpadas, e o nome vai na pílula dourada, na fonte da campanha. O botton sai com 6,5 cm: 5,5 cm de face e 0,5 cm de margem escura em volta, que dobra na prensa.',
+  // Guia: a face visível do botton (o aro de 55 mm).
+  safeAreaMm: { top: margemGuia, bottom: margemGuia, left: margemGuia, right: margemGuia },
+});
+
 function caixaDasFotos(f) {
   const PX_POR_MM = 300 / 25.4;
   const x0 = Math.min(...f.fotos.map((p) => p.cx - p.d / 2));
@@ -151,6 +190,7 @@ export const ROTULOS_SLOT = {
   top1: { titulo: '1º lugar', ajuda: 'Círculo maior, no centro.' },
   top2: { titulo: '2º lugar', ajuda: 'Círculo da direita.' },
   top3: { titulo: '3º lugar', ajuda: 'Círculo da esquerda.' },
+  botton: { titulo: 'Colaborador', ajuda: 'Escolha da pasta de fotos ou envie uma do computador.' },
 };
 
 /** Estado inicial do setor: nada escolhido. Fotos ficam só em memória. */
