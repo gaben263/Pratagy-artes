@@ -79,6 +79,8 @@ function shell({ setor, formato, bodyHtml, comCards = false }) {
   const titulo =
     formato.botton
       ? 'Monte o botton'
+      : formato.retrato
+      ? 'Monte o retrato'
       : formato.editor === 'blackfriday'
       ? formato.slots.length > 1
         ? 'Escolha os vendedores'

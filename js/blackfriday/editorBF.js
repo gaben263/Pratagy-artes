@@ -17,12 +17,20 @@ import { icon } from '../ui/icons.js';
 import { escapeHtml, normalizeSearch } from '../utils.js';
 import { montarEditorFoto } from '../rh/photoEditor.js';
 import { VENDEDORES } from './vendedores.js';
-import { COLABORADORES_BOTTON } from './colaboradores.js';
+import { COLABORADORES_BOTTON, COLABORADORES_RETRATO } from './colaboradores.js';
+import { ASPECTO_RETRATO } from './retrato.js';
 import { CONQUISTAS, ROTULOS_SLOT } from './templates.js';
 
-// Os cards escolhem entre os vendedores; o botton, entre todos os
-// colaboradores da pasta Bottons-black (ver colaboradores.js).
-export const pessoasDo = (formato) => (formato?.botton ? COLABORADORES_BOTTON : VENDEDORES);
+// Os cards escolhem entre os vendedores; o botton e o retrato, entre todos os
+// colaboradores (ver colaboradores.js) — o retrato com a foto grande e o
+// enquadramento no aspecto da moldura A4.
+export const pessoasDo = (formato) =>
+  formato?.retrato ? COLABORADORES_RETRATO : formato?.botton ? COLABORADORES_BOTTON : VENDEDORES;
+
+// Botton e retrato: uma pessoa, qualquer colaborador, foto da pasta ou do
+// computador e o nome digitado livremente. Os cards são de vendedor, por seletor.
+const pecaLivre = (formato) => Boolean(formato?.botton || formato?.retrato);
+const nomeDaPeca = (formato) => (formato.retrato ? 'retrato' : 'botton');
 export const acharPessoa = (formato, id) => pessoasDo(formato).find((p) => p.id === id) || null;
 
 // Clique fora fecha o seletor aberto. Registrado uma vez, como o da busca do A&B.
@@ -67,11 +75,11 @@ const slotsComNome = (formato) => new Set(formato.textos.filter((t) => t.fonte =
 
 export function prontoBF(state, formato) {
   const pessoas = state.bf?.pessoas || {};
-  // Botton: vale foto da pasta ou enviada do computador; o nome é livre.
-  if (formato.botton) {
+  // Botton e retrato: vale foto da pasta ou enviada do computador; o nome é livre.
+  if (pecaLivre(formato)) {
     const p = pessoas[formato.slots[0]];
     if (!p?.foto?.img) return { ok: false, hint: 'Escolha a foto do colaborador ou envie uma do computador.' };
-    if (!p.nome.trim()) return { ok: false, hint: 'Escreva o nome que vai no botton.' };
+    if (!p.nome.trim()) return { ok: false, hint: `Escreva o nome que vai no ${nomeDaPeca(formato)}.` };
     return { ok: true, hint: '' };
   }
   const comNome = slotsComNome(formato);
@@ -106,7 +114,7 @@ function avatar(vendedor, tamanho) {
 
 function rotuloVazio(slot) {
   if (slot === 'ajudante') return 'Escolha o colega';
-  if (slot === 'botton') return 'Escolha da pasta de fotos';
+  if (slot === 'botton' || slot === 'retrato') return 'Escolha da pasta de fotos';
   return 'Escolha o vendedor';
 }
 
@@ -165,7 +173,7 @@ function blocoPessoa(slot, formato, comNome) {
   const pessoa = getState().bf.pessoas[slot];
   const vendedor = acharPessoa(formato, pessoa?.vendedorId);
   const rotulo = ROTULOS_SLOT[slot];
-  const botton = Boolean(formato.botton);
+  const botton = pecaLivre(formato);
   const enviada = botton && !vendedor && Boolean(pessoa?.foto?.img);
   return `
     <div data-slot="${slot}" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -212,14 +220,16 @@ function blocoPessoa(slot, formato, comNome) {
                 </label>
                 <p class="text-[11px] leading-snug text-slate-400">${
                   botton
-                    ? 'Sai em maiúsculas na pílula dourada. Nome longo quebra em duas linhas.'
+                    ? `Sai em maiúsculas na pílula dourada${formato.retrato ? ', no pé da foto' : ''}. Nome longo quebra em duas linhas.`
                     : 'Sai em maiúsculas. Vem com o primeiro nome; acrescente o sobrenome se quiser.'
                 }</p>`
               : `<p class="text-[11px] leading-snug text-slate-400">No Top 3 a arte mostra só as fotos.</p>`
           }
           <p class="text-[11px] leading-snug text-slate-400">${
             botton
-              ? 'As fotos da pasta já vêm enquadradas no rosto. Arraste ou use o zoom para ajustar dentro do círculo.'
+              ? `As fotos da pasta já vêm enquadradas no rosto. Arraste ou use o zoom para ajustar dentro ${
+                  formato.retrato ? 'da moldura' : 'do círculo'
+                }.`
               : 'A foto já vem enquadrada no rosto. Arraste ou use o zoom se quiser ajustar.'
           }</p>
         </div>
@@ -276,12 +286,12 @@ function fecharPicker(picker) {
 
 function montarFoto(bloco, slot, formato) {
   montarEditorFoto(bloco.querySelector('[data-foto-slot]'), {
-    forma: 'circulo',
-    aspecto: 1,
+    forma: formato.retrato ? 'quadrado' : 'circulo',
+    aspecto: formato.retrato ? ASPECTO_RETRATO : 1,
     getFoto: () => getState().bf.pessoas[slot]?.foto || null,
     setFoto: (foto) => {
       const pessoas = getState().bf.pessoas;
-      if (!formato.botton) {
+      if (!pecaLivre(formato)) {
         if (pessoas[slot]) pessoas[slot].foto = foto;
         return;
       }
@@ -347,7 +357,7 @@ function ligarPessoa(bloco, root, formato) {
     // No botton o nome é livre: só é sugerido se o campo estiver vazio ou
     // ainda com a sugestão da pessoa anterior — o que foi digitado fica.
     const sugestaoAnterior = acharPessoa(formato, anterior?.vendedorId)?.nomeArte || '';
-    const manterNome = formato.botton && anterior?.nome.trim() && anterior.nome !== sugestaoAnterior;
+    const manterNome = pecaLivre(formato) && anterior?.nome.trim() && anterior.nome !== sugestaoAnterior;
     const pessoa = { vendedorId: id, nome: manterNome ? anterior.nome : vendedor.nomeArte, foto: null };
     pessoas[slot] = pessoa;
     if (nomeInput) nomeInput.value = pessoa.nome;
@@ -406,7 +416,7 @@ function ligarPessoa(bloco, root, formato) {
   nomeInput?.addEventListener('input', () => {
     const pessoas = getState().bf.pessoas;
     // Botton: dá para escrever o nome antes de escolher a foto.
-    if (!pessoas[slot] && formato.botton) pessoas[slot] = { vendedorId: null, nome: '', foto: null };
+    if (!pessoas[slot] && pecaLivre(formato)) pessoas[slot] = { vendedorId: null, nome: '', foto: null };
     const p = pessoas[slot];
     if (!p) return;
     p.nome = nomeInput.value;
@@ -417,7 +427,7 @@ function ligarPessoa(bloco, root, formato) {
     bloco.querySelector('[data-foto-slot] [data-arquivo]')?.click();
   });
 
-  if (getState().bf.pessoas[slot]?.vendedorId || formato.botton) montarFoto(bloco, slot, formato);
+  if (getState().bf.pessoas[slot]?.vendedorId || pecaLivre(formato)) montarFoto(bloco, slot, formato);
 }
 
 export function wireBF(container, formato) {

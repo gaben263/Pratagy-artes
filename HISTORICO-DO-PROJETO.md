@@ -1601,6 +1601,27 @@ bottons de pessoas diferentes, como a folha montada do A&B (mesmo `montarFolhas`
 **Verificação:** sem navegador automatizado disponível nesta sessão; a geometria foi conferida por
 mockup em Python com as mesmas medidas e fonte, e os módulos por carga em Node.
 
+### 3.32 Black Friday: Retrato A4
+
+Sexta peça do setor: a moldura de retratos da campanha (`VISUALIZAÇÃO/moldura-retratos.png` da
+pasta de trabalho, agora `assets/images/blackfriday/retrato-moldura.png`), A4 retrato em
+2480×3508 px (300 DPI).
+
+**A arte:** a moldura é um PNG com a janela da foto transparente — medida pelo alfa, x 325–2206 ·
+y 541–3120 (1882×2580, aspecto 0,729). A foto entra por trás, então o selo, a polaroid e o brilho
+do selo ficam por cima dela, como na arte. O nome vai na mesma pílula dourada do botton,
+atravessando o pé da foto. A pílula e o encaixe do nome saíram de `botton.js` para `pilula.js`,
+usados pelas duas peças (o botton não mudou de desenho).
+
+**As fotos:** mesmas pessoas do botton, mas com a foto grande em `retratos/` (lado menor até
+1800 px; a de 1000 px do botton sairia mole em A4) e enquadramento próprio no aspecto do furo:
+janela de 5,2× a altura do rosto, rosto a 34% do topo, abaixo do selo e da polaroid. Rebeca Santos
+e os dois times, à mão. Entraram 4 pessoas novas da pasta `fotos` (Bruna, Iara, Julia, Maria Clara),
+que valem também para o botton. A lista de vendedores dos cards não mudou.
+
+**Saída:** PNG e PDF A4. **Verificação:** prévias geradas no Chrome headless (Playwright) com
+foto individual, time, nome longo em duas linhas e o botton de uma pessoa nova.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi

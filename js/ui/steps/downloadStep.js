@@ -161,6 +161,8 @@ export function renderDownloadStep(container) {
           titulo: 'Baixar PNG',
           descricao: formato.botton
             ? `Arquivo para a gráfica, ${formato.largura} px`
+            : formato.retrato
+            ? `Arquivo para a gráfica, ${formato.largura}×${formato.altura} px (A4, 300 DPI)`
             : formato.digital
             ? 'WhatsApp, murais e redes sociais'
             : 'Telas, TVs e redes sociais',

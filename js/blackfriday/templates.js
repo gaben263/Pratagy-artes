@@ -169,6 +169,31 @@ FORMATOS_BF.push({
   safeAreaMm: { top: margemGuia, bottom: margemGuia, left: margemGuia, right: margemGuia },
 });
 
+// Retrato: peça de impressão A4, a foto do colaborador na moldura de retratos
+// da campanha e o nome na pílula dourada. O desenho está em retrato.js; os
+// números (furo, pílula) são medidos lá, sobre a moldura de 2480×3508 px
+// (210×297 mm a 300 DPI). Mesmas pessoas do botton, com a foto grande.
+FORMATOS_BF.push({
+  id: 'retrato',
+  nome: 'Retrato',
+  descricao: 'Foto do colaborador na moldura A4 da campanha, com o nome',
+  editor: 'blackfriday',
+  retrato: true,
+  imagem: `${PASTA}/retrato-moldura.png`,
+  largura: 2480,
+  altura: 3508,
+  mmLargura: 210,
+  mmAltura: 297,
+  slots: ['retrato'],
+  fotos: [],
+  textos: [{ fonte: 'nome', slot: 'retrato' }],
+  dicaModelo:
+    'A foto entra na janela da moldura, por trás do selo e da polaroid, e o nome vai na pílula dourada no pé da foto, na fonte da campanha. Sai em A4 (21×29,7 cm), pronto para imprimir.',
+  // Guia: o furo da foto (x 325–2206 · y 541–3120). O guia converte mm em px
+  // a 300 DPI, que aqui é a resolução real da peça.
+  safeAreaMm: { top: 541 / (300 / 25.4), bottom: (3508 - 3121) / (300 / 25.4), left: 325 / (300 / 25.4), right: (2480 - 2207) / (300 / 25.4) },
+});
+
 function caixaDasFotos(f) {
   const PX_POR_MM = 300 / 25.4;
   const x0 = Math.min(...f.fotos.map((p) => p.cx - p.d / 2));
@@ -191,6 +216,7 @@ export const ROTULOS_SLOT = {
   top2: { titulo: '2º lugar', ajuda: 'Círculo da direita.' },
   top3: { titulo: '3º lugar', ajuda: 'Círculo da esquerda.' },
   botton: { titulo: 'Colaborador', ajuda: 'Escolha da pasta de fotos ou envie uma do computador.' },
+  retrato: { titulo: 'Colaborador', ajuda: 'Escolha da pasta de fotos ou envie uma do computador.' },
 };
 
 /** Estado inicial do setor: nada escolhido. Fotos ficam só em memória. */

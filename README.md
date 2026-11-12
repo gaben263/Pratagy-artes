@@ -10,7 +10,7 @@ Sistema interno de artes oficiais do Pratagy Beach. Sete módulos:
 | **Acqua Park** | Gera comunicados 1080×1440 px (WhatsApp) sobre fundo azul ou branco |
 | **RH** | Três peças 1080×1440 px: **Atenção** (comunicado só-texto), **Talento do Mês** (foto no polaroid + nome e setor) e **Aniversariantes do Dia** (de 1 a 9 colaboradores com foto circular, distribuídos automaticamente, com a data do aniversário ao lado do setor). Fotos e nomes ficam só em memória — recarregar apaga (LGPD) |
 | **Esportes e Lazer** | Catálogo da programação mensal de lazer (shows, música ao vivo, piscina, fitness, bingo, cinema, programação infantil de 4 a 6 e de 7 a 12 anos): 50 peças de novembro de 2026, em A4 para impressão e nos formatos de tela (TV vertical e horizontal, stories, feed, banner do app). Peças de tela baixam só a imagem; as A4 também em PDF |
-| **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 50K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto. E o **Botton** (6,5 cm, para impressão): foto do colaborador na moldura de lâmpadas + nome livre numa pílula dourada, um arquivo por botton ou vários colaboradores na mesma folha A4 |
+| **Black Friday** | Quatro cards 1080×1440 px de comemoração de vendedor da campanha 2026: **Já Vendi** (vendedor + conquista de 50K a 2MI), **Meta Batida**, **Meta com Ajuda** (vendedor + o colega que ajudou) e **Top 3**. Vendedor escolhido num seletor com foto; a foto já vem enquadrada no rosto. E o **Botton** (6,5 cm, para impressão): foto do colaborador na moldura de lâmpadas + nome livre numa pílula dourada, um arquivo por botton ou vários colaboradores na mesma folha A4. E o **Retrato** (A4): a foto do colaborador na moldura de retratos da campanha, com o nome na pílula dourada |
 
 > Cada setor mostra uma categoria só, definida em `categoriaCatalogo`. `fluxo: 'catalogo'` abre
 > direto na busca; `fluxo: 'gerador'` (Acqua Park) vai direto para o Canvas. Hospitalidade e A&B
@@ -66,7 +66,9 @@ js/
     render.js                compositor: arte + fotos mascaradas + textos, devolve `fits`
     editorBF.js              seletor de vendedor com foto, nome na arte e conquista
     botton.js                compositor do botton: foto no furo da moldura, pílula dourada, nome em 1 ou 2 linhas
-    colaboradores.js         colaboradores com foto para o botton (pasta Bottons-black)
+    retrato.js               compositor do retrato A4: foto no furo da moldura, pílula com o nome
+    pilula.js                pílula dourada + nome em 1 ou 2 linhas (botton e retrato)
+    colaboradores.js         colaboradores com foto para o botton e o retrato
     (ui/steps/folhaBottonStep.js: folha A4 com bottons de pessoas diferentes)
   rh/
     templates.js             os 3 templates do RH (medições em px, áreas seguras, cores das faixas)

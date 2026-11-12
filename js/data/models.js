@@ -285,7 +285,7 @@ export const SETORES = {
     titleCase: false,
     tituloFormato: 'Qual peça da Black Friday?',
     subtituloFormato:
-      'Os cards de comemoração saem em 1080×1440 px, para WhatsApp e redes. O botton sai no tamanho de impressão, avulso ou numa folha A4.',
+      'Os cards de comemoração saem em 1080×1440 px, para WhatsApp e redes. O botton sai no tamanho de impressão, avulso ou numa folha A4, e o retrato em A4.',
     dicaModelo: 'A foto entra no círculo, atrás das faixas, e os nomes e o valor nas faixas da arte, na fonte da campanha.',
     formatos: FORMATOS_BF,
   },

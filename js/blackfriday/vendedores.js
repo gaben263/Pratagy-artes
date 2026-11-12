@@ -35,6 +35,8 @@ const v = (id, nome, enquadramento, nomeArte = primeiroNome(nome)) => ({
 });
 
 export const VENDEDORES = [
+  // Bruna entrou depois, da mesma pasta (a foto é a do botton, também 1000 px).
+  v('bruna', 'Bruna', { zoom: 1.482, cx: 0.4495, cy: 0.3798 }),
   v('bruno-carvalho', 'Bruno Carvalho', { zoom: 1.037, cx: 0.518, cy: 0.4145 }),
   v('cuca-deri', 'Cuca Deri', { zoom: 1, cx: 0.5, cy: 0.5 }),
   v('denise-helena', 'Denise Helena', { zoom: 1, cx: 0.5, cy: 0.3852 }),

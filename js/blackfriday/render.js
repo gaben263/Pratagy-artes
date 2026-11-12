@@ -5,6 +5,7 @@
 import { janelaDaFoto } from '../rh/cardRenderer.js';
 import { FONTE_BF, ALTURA_MAIUSCULA, CONQUISTAS } from './templates.js';
 import { renderBotton } from './botton.js';
+import { renderRetrato } from './retrato.js';
 
 const fonte = (px) => `${px}px ${FONTE_BF}`;
 
@@ -76,6 +77,9 @@ const maiusculas = (t) => (t || '').trim().toLocaleUpperCase('pt-BR');
 export function renderBF(canvas, { image, formato, bf, mascaras }) {
   if (formato.botton) {
     return renderBotton(canvas, { image, pessoa: bf?.pessoas?.[formato.slots[0]], janelaDaFoto });
+  }
+  if (formato.retrato) {
+    return renderRetrato(canvas, { image, pessoa: bf?.pessoas?.[formato.slots[0]], janelaDaFoto });
   }
   const { largura, altura } = formato;
   canvas.width = largura;
