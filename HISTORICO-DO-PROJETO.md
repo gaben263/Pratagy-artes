@@ -1328,7 +1328,9 @@ contrário das fotos do RH, que ficam só em memória. Ver README.
 **Times.** Time My Pratagy e Time B2B entraram depois (27ª e 28ª opções do seletor). São equipes: a foto usa
 enquadramento aberto e `nomeArte` traz o nome completo, porque a regra do primeiro nome deixaria só "TIME".
 Em 16/11 entraram o Time B2C (foto de grupo larga, 1280×1157, sem zoom para não cortar as pontas) e o
-Time Acqua Park (mosaico quadrado de quatro fotos), nos cards, no botton e no retrato.
+Time Acqua Park, nos cards, no botton e no retrato. A foto do Acqua Park foi trocada no mesmo dia por
+um círculo com cinco pessoas (PNG com cantos transparentes, preenchidos com o escuro das artes), e o
+Gleydson Silva ganhou foto nova (PNG 4032×3024), reenquadrada pelo rosto com os parâmetros de sempre.
 
 **Super e mega meta (16/11).** Meta Batida e Meta com Ajuda ganharam o nível da meta (`bf.nivel`:
 `meta`, `super` ou `mega`, em `NIVEIS_META`), escolhido em três botões no topo da tela. O título da

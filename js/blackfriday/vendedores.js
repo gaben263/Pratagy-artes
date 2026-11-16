@@ -41,7 +41,8 @@ export const VENDEDORES = [
   v('cuca-deri', 'Cuca Deri', { zoom: 1, cx: 0.5, cy: 0.5 }),
   v('denise-helena', 'Denise Helena', { zoom: 1, cx: 0.5, cy: 0.3852 }),
   v('erivaldo-inacio', 'Erivaldo Inacio', { zoom: 1.156, cx: 0.4438, cy: 0.3782 }),
-  v('gleydson-silva', 'Gleydson Silva', { zoom: 1.285, cx: 0.4812, cy: 0.389 }),
+  // Foto nova em 16/11 (PNG 4032×3024, braços cruzados), enquadrada do mesmo jeito.
+  v('gleydson-silva', 'Gleydson Silva', { zoom: 1.265, cx: 0.482, cy: 0.2885 }),
   v('gustavo-hendrick', 'Gustavo Hendrick', { zoom: 1, cx: 0.5, cy: 0.3444 }),
   v('italo-alves', 'Italo Alves', { zoom: 1, cx: 0.5, cy: 0.3967 }),
   v('joao-lucas-menezes', 'João Lucas Menezes', { zoom: 1.285, cx: 0.4641, cy: 0.2918 }),
