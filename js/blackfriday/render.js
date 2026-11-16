@@ -3,7 +3,7 @@
 // Continuar e o Download bloquearem pelo mecanismo que já existe.
 
 import { janelaDaFoto } from '../rh/cardRenderer.js';
-import { FONTE_BF, ALTURA_MAIUSCULA, CONQUISTAS } from './templates.js';
+import { FONTE_BF, ALTURA_MAIUSCULA, CONQUISTAS, nivelMeta } from './templates.js';
 import { renderBotton } from './botton.js';
 import { renderRetrato } from './retrato.js';
 
@@ -100,6 +100,12 @@ export function renderBF(canvas, { image, formato, bf, mascaras }) {
   for (const t of formato.textos) {
     if (t.fixo) {
       linha(ctx, t.fixo, t);
+      continue;
+    }
+    // Título da pílula de cima: META / SUPER META / MEGA META BATIDA!
+    if (t.fonte === 'nivel') {
+      const titulo = nivelMeta(bf?.nivel).titulo;
+      if (!linha(ctx, titulo, t)) problemas.push(`O título “${titulo}” não cabe na pílula dourada.`);
       continue;
     }
     const texto = t.fonte === 'conquista' ? conquista : maiusculas(pessoas[t.slot]?.nome);

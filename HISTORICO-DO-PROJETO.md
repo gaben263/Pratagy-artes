@@ -1327,6 +1327,15 @@ contrário das fotos do RH, que ficam só em memória. Ver README.
 
 **Times.** Time My Pratagy e Time B2B entraram depois (27ª e 28ª opções do seletor). São equipes: a foto usa
 enquadramento aberto e `nomeArte` traz o nome completo, porque a regra do primeiro nome deixaria só "TIME".
+Em 16/11 entraram o Time B2C (foto de grupo larga, 1280×1157, sem zoom para não cortar as pontas) e o
+Time Acqua Park (mosaico quadrado de quatro fotos), nos cards, no botton e no retrato.
+
+**Super e mega meta (16/11).** Meta Batida e Meta com Ajuda ganharam o nível da meta (`bf.nivel`:
+`meta`, `super` ou `mega`, em `NIVEIS_META`), escolhido em três botões no topo da tela. O título da
+pílula dourada de cima deixou de ser fixo (`fonte: 'nivel'`): "SUPER META BATIDA!" e "MEGA META
+BATIDA!" não cabem no corpo do "META BATIDA!", então reduzem até a largura da pílula (640 px no Meta
+Batida, 510 no Meta com Ajuda) e ficam em uma linha. O "META BATIDA!" continua no corpo da
+referência. O nível entra na prévia e no nome do arquivo (`arte-bf-2026-super-meta-batida-…`).
 
 **Testes.** Fluxo completo nos quatro cards no Chrome (Playwright): 26 pessoas no seletor, escolha por
 teclado e por clique, conquistas 100K→2MI na ordem, bloqueios (sem vendedor, sem conquista, nome

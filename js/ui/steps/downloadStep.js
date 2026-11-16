@@ -9,6 +9,7 @@ import { comemorar } from '../confetti.js';
 import { exportLotePDF, calcularGrade, unidadeDe } from '../../canvas/lote.js';
 import { abrirLoteModal } from '../loteModal.js';
 import { adicionarEAbrirFolha } from './folhaBottonStep.js';
+import { nivelMeta } from '../../blackfriday/templates.js';
 
 async function handleExport(kind, formato, nomeArquivo, btn) {
   const original = btn.innerHTML;
@@ -131,7 +132,10 @@ export function renderDownloadStep(container) {
       ? [state.bf.pessoas[formato.slots[0]]?.nome, formato.comConquista ? state.bf.conquista : ''].filter(Boolean).join(' ')
       : '';
   const identificador = bf || resumoTexto || primeiroNome || state.rh.data.trim();
-  const nomeArquivo = `arte-${setor.sigla}-${formato.nome}-${identificador}`;
+  // Super/mega meta entram no nome da peça: "arte-bf-2026-super-meta-batida-italo".
+  const prefixoNivel = formato.comNivel ? nivelMeta(state.bf.nivel).prefixo : '';
+  const nomePeca = prefixoNivel ? `${prefixoNivel} ${formato.nome}` : formato.nome;
+  const nomeArquivo = `arte-${setor.sigla}-${nomePeca}-${identificador}`;
 
   container.innerHTML = `
     <div>

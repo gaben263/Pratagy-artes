@@ -19,7 +19,7 @@ import { montarEditorFoto } from '../rh/photoEditor.js';
 import { VENDEDORES } from './vendedores.js';
 import { COLABORADORES_BOTTON, COLABORADORES_RETRATO } from './colaboradores.js';
 import { ASPECTO_RETRATO } from './retrato.js';
-import { CONQUISTAS, ROTULOS_SLOT } from './templates.js';
+import { CONQUISTAS, ROTULOS_SLOT, NIVEIS_META, nivelMeta } from './templates.js';
 
 // Os cards escolhem entre os vendedores; o botton e o retrato, entre todos os
 // colaboradores (ver colaboradores.js) — o retrato com a foto grande e o
@@ -265,10 +265,39 @@ function blocoConquista() {
   `;
 }
 
+// Meta Batida e Meta com Ajuda: qual meta foi batida. Rádios nativos (teclado e
+// leitor de tela de graça) com o visual de botões; o estado marcado é só CSS,
+// então trocar não remonta a tela.
+function blocoNivel() {
+  const atual = nivelMeta(getState().bf.nivel).id;
+  return `
+    <fieldset class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <legend class="sr-only">Qual meta foi batida</legend>
+      <p class="mb-1 flex items-center gap-1.5 font-fibra font-extrabold text-brand-deep">
+        ${icon('trophy', { size: 16, className: 'text-[#b8860b]' })} Qual meta foi batida?
+      </p>
+      <p class="mb-3 text-[11px] text-slate-400">Muda o título da pílula dourada.</p>
+      <div class="grid grid-cols-3 gap-2">
+        ${NIVEIS_META.map(
+          (n) => `
+          <label class="cursor-pointer">
+            <input type="radio" name="nivel-meta" value="${n.id}" data-nivel class="peer sr-only" ${n.id === atual ? 'checked' : ''} />
+            <span class="flex h-full flex-col items-center justify-center rounded-xl border-2 border-slate-200 px-2 py-2.5 text-center transition-colors hover:border-[#d9a930] peer-checked:border-[#d9a930] peer-checked:bg-[#fdf3d7] peer-focus-visible:ring-2 peer-focus-visible:ring-brand-light">
+              <span class="font-fibra text-sm font-extrabold text-brand-deep">${escapeHtml(n.rotulo)}</span>
+              <span class="mt-0.5 text-[10px] font-semibold leading-tight text-slate-400">${escapeHtml(n.titulo)}</span>
+            </span>
+          </label>`
+        ).join('')}
+      </div>
+    </fieldset>
+  `;
+}
+
 export function bodyBF(formato) {
   const comNome = slotsComNome(formato);
   return `
     <div data-bf-root class="space-y-4">
+      ${formato.comNivel ? blocoNivel() : ''}
       ${formato.slots.map((slot) => blocoPessoa(slot, formato, comNome.has(slot))).join('')}
       ${formato.comConquista ? blocoConquista() : ''}
     </div>
@@ -433,6 +462,12 @@ function ligarPessoa(bloco, root, formato) {
 export function wireBF(container, formato) {
   const root = container.querySelector('[data-bf-root]');
   root.querySelectorAll('[data-slot]').forEach((bloco) => ligarPessoa(bloco, root, formato));
+
+  root.querySelectorAll('[data-nivel]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (radio.checked) setState({ bf: { ...getState().bf, nivel: nivelMeta(radio.value).id } });
+    });
+  });
 
   const conquista = root.querySelector('[data-conquista]');
   conquista?.addEventListener('change', () => {

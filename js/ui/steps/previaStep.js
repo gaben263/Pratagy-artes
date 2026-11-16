@@ -5,7 +5,7 @@ import { icon } from '../icons.js';
 import { escapeHtml, toTitleCase } from '../../utils.js';
 import { motivoNaoCoube } from '../common.js';
 import { camposDoEncontro } from '../../rh/templates.js';
-import { ROTULOS_SLOT } from '../../blackfriday/templates.js';
+import { ROTULOS_SLOT, nivelMeta } from '../../blackfriday/templates.js';
 import { acharPessoa } from '../../blackfriday/editorBF.js';
 
 function linha(label, valor, { destaque = false } = {}) {
@@ -39,7 +39,8 @@ function linhasBF(formato, state) {
       return linha(ROTULOS_SLOT[slot].titulo, nome + naArte, { destaque: true });
     })
     .join('');
-  return pessoas + (formato.comConquista ? linha('Conquista', state.bf.conquista, { destaque: true }) : '');
+  const nivel = formato.comNivel ? linha('Meta', nivelMeta(state.bf.nivel).rotulo, { destaque: true }) : '';
+  return nivel + pessoas + (formato.comConquista ? linha('Conquista', state.bf.conquista, { destaque: true }) : '');
 }
 
 export function renderPreviaStep(container) {

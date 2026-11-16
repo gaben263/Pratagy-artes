@@ -51,6 +51,17 @@ export const CONQUISTAS = MILHARES.map((m) => {
   return { valor: `${mi}MI`, rotulo: `${mi}MI · R$ ${mi} ${m === 1000 ? 'milhão' : 'milhões'}` };
 });
 
+// Nível da meta, nos cards Meta Batida e Meta com Ajuda: o título da pílula
+// dourada de cima. "SUPER META BATIDA!" e "MEGA META BATIDA!" não cabem no corpo
+// do "META BATIDA!" da referência; o texto reduz até caber na pílula (`larguraMax`)
+// e fica em uma linha, como o resto dos cards. `prefixo` entra no nome do arquivo.
+export const NIVEIS_META = [
+  { id: 'meta', rotulo: 'Meta', titulo: 'META BATIDA!', prefixo: '' },
+  { id: 'super', rotulo: 'Super meta', titulo: 'SUPER META BATIDA!', prefixo: 'Super' },
+  { id: 'mega', rotulo: 'Mega meta', titulo: 'MEGA META BATIDA!', prefixo: 'Mega' },
+];
+export const nivelMeta = (id) => NIVEIS_META.find((n) => n.id === id) || NIVEIS_META[0];
+
 const foto = (slot, n, { x, y, cx, cy, d }) => ({ slot, mascara: `${PASTA}/${n}`, x, y, cx, cy, d });
 
 export const FORMATOS_BF = [
@@ -76,12 +87,14 @@ export const FORMATOS_BF = [
     ...BASE,
     id: 'meta-batida',
     nome: 'Meta Batida',
-    descricao: 'Vendedor que bateu a meta',
+    descricao: 'Vendedor que bateu a meta, a super meta ou a mega meta',
     imagem: `${PASTA}/meta-batida.png`,
     slots: ['vendedor'],
+    comNivel: true,
     fotos: [foto('vendedor', 'meta-batida-mascara-1.png', { x: 257, y: 314, cx: 541.5, cy: 596, d: 564 })],
     textos: [
-      { fixo: 'META BATIDA!', cx: 557.5, cy: 940.5, corpo: 82, cor: COR.dourado },
+      // Pílula dourada x 190–922 · y 860–1025.
+      { fonte: 'nivel', cx: 557.5, cy: 940.5, corpo: 82, piso: 50, larguraMax: 640, cor: COR.dourado },
       // Faixa vermelha x 321–788 · y 1016–1102.
       { fonte: 'nome', slot: 'vendedor', cx: 555.5, cy: 1056, corpo: 61, piso: 38, larguraMax: 420, cor: COR.vermelho },
     ],
@@ -90,15 +103,17 @@ export const FORMATOS_BF = [
     ...BASE,
     id: 'meta-com-ajuda',
     nome: 'Meta com Ajuda',
-    descricao: 'Vendedor + o colega que ajudou a bater a meta',
+    descricao: 'Vendedor + o colega que ajudou a bater a meta (meta, super ou mega)',
     imagem: `${PASTA}/meta-com-ajuda.png`,
     slots: ['vendedor', 'ajudante'],
+    comNivel: true,
     fotos: [
       foto('vendedor', 'meta-com-ajuda-mascara-1.png', { x: 309, y: 267, cx: 545, cy: 501.5, d: 469 }),
       foto('ajudante', 'meta-com-ajuda-mascara-2.png', { x: 209, y: 970, cx: 341.5, cy: 1099.5, d: 260 }),
     ],
     textos: [
-      { fixo: 'META BATIDA!', cx: 557, cy: 791.5, corpo: 61, cor: COR.dourado },
+      // Pílula dourada x 252–862 · y 720–860.
+      { fonte: 'nivel', cx: 557, cy: 791.5, corpo: 61, piso: 40, larguraMax: 510, cor: COR.dourado },
       // Faixa vermelha x 362–750 · y 852–923; a referência usa corpo 33.
       { fonte: 'nome', slot: 'vendedor', cx: 557, cy: 885.5, corpo: 33, piso: 26, larguraMax: 350, cor: COR.vermelho },
       { fixo: 'BATI A META COM AJUDA DE', cx: 663.5, cy: 1018, corpo: 27, cor: COR.vermelho },
@@ -221,5 +236,5 @@ export const ROTULOS_SLOT = {
 
 /** Estado inicial do setor: nada escolhido. Fotos ficam só em memória. */
 export function estadoBFInicial() {
-  return { pessoas: {}, conquista: '' };
+  return { pessoas: {}, conquista: '', nivel: 'meta' };
 }

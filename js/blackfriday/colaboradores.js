@@ -94,7 +94,9 @@ export const COLABORADORES_BOTTON = [
   c('talita-peixoto', 'Talita Peixoto', { zoom: 1.368, cx: 0.471, cy: 0.434 }),
   c('tayna-peixoto', 'Tayna Peixoto', { zoom: 1.724, cx: 0.535, cy: 0.5431 }),
   c('thales-athalimar', 'Thales Athalimar', { zoom: 1.526, cx: 0.532, cy: 0.3804 }),
+  c('time-acqua-park', 'Time Acqua Park', { zoom: 1, cx: 0.5, cy: 0.5 }, 'Time Acqua Park'),
   c('time-b2b', 'Time B2B', { zoom: 1, cx: 0.5, cy: 0.51 }, 'Time B2B'),
+  c('time-b2c', 'Time B2C', { zoom: 1, cx: 0.48, cy: 0.5 }, 'Time B2C'),
   c('time-my-pratagy', 'Time My Pratagy', { zoom: 1.15, cx: 0.518, cy: 0.495 }, 'Time My Pratagy'),
   c('veronica-bulamah', 'Veronica Bulamah', { zoom: 1.742, cx: 0.502, cy: 0.5094 }),
   c('victoria-ferreira', 'Victória Ferreira', { zoom: 1.787, cx: 0.5075, cy: 0.4471 }),
@@ -170,7 +172,11 @@ const RETRATO = {
   'talita-peixoto': { zoom: 1.006, cx: 0.4711, cy: 0.5034 },
   'tayna-peixoto': { zoom: 1.254, cx: 0.5363, cy: 0.5998 },
   'thales-athalimar': { zoom: 1.182, cx: 0.5311, cy: 0.4339 },
+  'time-acqua-park': { zoom: 1, cx: 0.5, cy: 0.5 },
   'time-b2b': { zoom: 1, cx: 0.5, cy: 0.5 },
+  // Foto larga: no aspecto da moldura A4 as pontas do grupo ficam de fora;
+  // quem usa ajusta o zoom/arraste se quiser outro recorte.
+  'time-b2c': { zoom: 1, cx: 0.48, cy: 0.5 },
   'time-my-pratagy': { zoom: 1, cx: 0.5, cy: 0.5 },
   'veronica-bulamah': { zoom: 1.282, cx: 0.5, cy: 0.5642 },
   'victoria-ferreira': { zoom: 1.366, cx: 0.5092, cy: 0.4965 },

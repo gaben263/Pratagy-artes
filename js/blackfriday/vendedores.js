@@ -8,9 +8,9 @@
 //
 // O nome é o do arquivo original, sem acento inventado: "Erivaldo Inacio" e
 // "Italo Alves" estão assim na origem. O card mostra só o primeiro nome por
-// padrão; a tela deixa editar ("João Lucas", por exemplo). Time B2B e Time My
-// Pratagy são equipes, não pessoas: declaram o nome completo em `nomeArte`,
-// senão a arte sairia só com "TIME".
+// padrão; a tela deixa editar ("João Lucas", por exemplo). Os times (Acqua
+// Park, B2B, B2C e My Pratagy) são equipes, não pessoas: declaram o nome
+// completo em `nomeArte`, senão a arte sairia só com "TIME".
 //
 // ENQUADRAMENTO: as fotos são de meio corpo ou corpo inteiro, e o recorte
 // central do círculo mostraria o tronco. `enquadramento` é o ponto de partida
@@ -60,7 +60,11 @@ export const VENDEDORES = [
   v('renata-lira', 'Renata Lira', { zoom: 1, cx: 0.5, cy: 0.3751 }),
   v('rodrigo-montenegro', 'Rodrigo Montenegro', { zoom: 1.089, cx: 0.5408, cy: 0.3253 }),
   v('simone-dos-santos', 'Simone dos Santos', { zoom: 1.415, cx: 0.52, cy: 0.4432 }),
+  // Time Acqua Park: mosaico quadrado de quatro fotos, cabe inteiro no círculo.
+  v('time-acqua-park', 'Time Acqua Park', { zoom: 1, cx: 0.5, cy: 0.5 }, 'Time Acqua Park'),
   v('time-b2b', 'Time B2B', { zoom: 1, cx: 0.5, cy: 0.51 }, 'Time B2B'),
+  // Time B2C: foto de grupo larga (1280×1157); sem zoom, para não cortar as pontas.
+  v('time-b2c', 'Time B2C', { zoom: 1, cx: 0.48, cy: 0.5 }, 'Time B2C'),
   v('time-my-pratagy', 'Time My Pratagy', { zoom: 1.15, cx: 0.518, cy: 0.495 }, 'Time My Pratagy'),
   v('veronica-bulamah', 'Veronica Bulamah', { zoom: 1.605, cx: 0.5025, cy: 0.4815 }),
   v('victoria-ferreira', 'Victória Ferreira', { zoom: 1.649, cx: 0.5085, cy: 0.4078 }),
