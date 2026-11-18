@@ -16,7 +16,7 @@
 import { normalizeSearch } from '../utils.js';
 
 const DOCX_PATH = 'assets/docx/biblioteca_ab.docx';
-const DOCX_VERSION_TAG = 'biblioteca_ab-v4';
+const DOCX_VERSION_TAG = 'biblioteca_ab-v5';
 
 // Itens que vinham dos cardápios oficiais e saíram na revisão de setembro/2026.
 // Mesclados de volta com a tradução anterior, marcados como `legado` para que

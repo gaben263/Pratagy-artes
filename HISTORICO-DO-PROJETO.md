@@ -1661,6 +1661,16 @@ de 2026) para que tudo o que o buffet usa possa ser buscado no sistema.
 extração: 922 linhas nas 12 categorias certas, zero avisos, 923 entradas únicas com os legados. Não
 foi testado no navegador nem aberto no Word.
 
+**Correção no mesmo dia: nomes simples (923 → 1014 entradas).** Gabriel testou no ar: "cuscuz" e
+"tortilete" só traziam variações ("Cuscuz recheado", "Tortilete de limão"), e a placa de um prato
+que muda de sabor precisa do nome sozinho. Levantei todas as famílias da biblioteca com 2+ variações
+e sem nome simples e entraram 91 (`Cuscuz`, `Tortilete`, `Bolo`, `Torta`, `Folheado`, `Mousse`,
+`Pudim`, `Escondidinho`, `Frango`, `Peixe`, `Arroz`, `Feijão`, `Suco`…), cada um na categoria da
+família. Ficaram de fora os vagos demais sozinhos ("Isca", "Creme", "Doce", "Calda") e os utensílios.
+`DOCX_VERSION_TAG` → `v5`. Verificado com o `searchLibrary` real do app sobre o `.docx` lido pelo
+mammoth: em 9 buscas ("cuscuz", "tortilete", "bolo", "torta"…) o nome simples vem em 1º, porque a
+busca já ordena pelo nome mais curto.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
@@ -1761,7 +1771,7 @@ assets/
 - **35 artes prontas** no catálogo — 22 operacionais, 8 de hospitalidade, 5 de A&B
 - **35 miniaturas** geradas (~1,4 MB)
 - **5 módulos**, 28 arquivos JavaScript
-- **923 entradas** na biblioteca A&B (922 linhas em 12 categorias no `.docx`, menos 2 repetidas, mais 3 legados dos cardápios de 2025)
+- **1014 entradas** na biblioteca A&B (1013 linhas em 12 categorias no `.docx`, menos 2 repetidas, mais 3 legados dos cardápios de 2025)
 
 ### Commits desta fase
 
