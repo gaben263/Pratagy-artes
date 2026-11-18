@@ -1633,6 +1633,34 @@ que valem também para o botton. A lista de vendedores dos cards não mudou.
 **Saída:** PNG e PDF A4. **Verificação:** prévias geradas no Chrome headless (Playwright) com
 foto individual, time, nome longo em duas linhas e o botton de uma pessoa nova.
 
+### 3.33 Biblioteca de pratos: 467 → 923 entradas (cardápios oficiais do buffet)
+
+**Pedido.** O analista de alimentos mandou os 5 documentos oficiais de A&B (`A&B/cardapios/`,
+IF-A&B-01 a 05: serviços, café regional/petiscos/pizzas/ações, café da manhã, almoço e jantar, todos
+de 2026) para que tudo o que o buffet usa possa ser buscado no sistema.
+
+**Decisões.**
+- 456 itens novos no próprio `.docx` (as duas cópias), cada um no fim da tabela da sua categoria e
+  com o zebrado da tabela; totais por categoria e da tabela de resumo atualizados (466 → 922 linhas).
+  Os 466 itens antigos não foram tocados. `DOCX_VERSION_TAG` foi para `v4`.
+- Entraram pratos, guarnições, saladas, sobremesas, frutas, frios, pães, sachês, molhos e os drinks
+  da casa do IF-A&B-01. **Ficaram de fora:** marcas de cerveja e whisky, linhas compostas
+  ("Café/Leite/Suco", "Prato vegano do dia", "Frutas laminadas") e variações de um prato já
+  cadastrado (ex.: "Frango à passarinha", "Camarão alho e óleo", "Lagostin", "Canja", "Fritada de
+  legumes" = "Frittata de legumes"). Conferido por nome exato e por semelhança contra os 466.
+- Nomes normalizados ao entrar: "3 tipos de doce" virou 5 itens (`Doce de abóbora`, `de mamão`…);
+  os sabores soltos sob "BOLOS" viraram `Bolo formigueiro`, `Bolo mesclado` etc.; grafias corrigidas
+  (`Massa do cheff` → `Massa do chef`, `Croque monsier` → `Croque monsieur`, `Tortilede de banoffe`
+  → `Tortilete de banoffee`, `Arroz refolgado` → `Arroz refogado`, `Chiles com carne` → `Chili com
+  carne`, `arome` → `aroma`).
+- **Espanhol dos 456 itens não validado**, no mesmo padrão rio-platense (papas, panceta, maní,
+  frutilla, torreja). Nomes regionais sem equivalente ficaram em português com explicação curta
+  (`Baião de dois (arroz con frijoles y queso)`, `Cartola nordestina (plátano con queso y canela)`).
+
+**Verificação:** o `.docx` gerado foi lido com o mesmo mammoth 1.8.0 do app e a mesma regra de
+extração: 922 linhas nas 12 categorias certas, zero avisos, 923 entradas únicas com os legados. Não
+foi testado no navegador nem aberto no Word.
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
@@ -1733,7 +1761,7 @@ assets/
 - **35 artes prontas** no catálogo — 22 operacionais, 8 de hospitalidade, 5 de A&B
 - **35 miniaturas** geradas (~1,4 MB)
 - **5 módulos**, 28 arquivos JavaScript
-- **424 pratos** na biblioteca A&B (12 categorias; 3 legados dos cardápios de 2025)
+- **923 entradas** na biblioteca A&B (922 linhas em 12 categorias no `.docx`, menos 2 repetidas, mais 3 legados dos cardápios de 2025)
 
 ### Commits desta fase
 
@@ -1791,6 +1819,8 @@ persistir algo indexado por setor, este parágrafo é o lembrete de que a migra�
 
 **Espanhol das proteínas genéricas.** Os 43 pratos da 3.29 foram traduzidos sem validação da
 tradutora; Gabriel vai enviar para revisão. Correções: alterar no `.docx` e subir a `DOCX_VERSION_TAG`.
+O mesmo vale para os 456 itens dos cardápios oficiais (3.33). Um nome a confirmar com a cozinha:
+`Pescado com ameixas` — no cardápio de jantar está "Pescado de ameixas".
 
 **Legados da biblioteca.** `Filé de peixe`, `Coxinha frita` e `Costelinha ao barbecue` estão em
 `LEGADOS` (`docxLibrary.js`) porque saíram do `.docx` novo sem confirmação da cozinha. O arquivo
