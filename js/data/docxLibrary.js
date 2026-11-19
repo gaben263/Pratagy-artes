@@ -14,6 +14,7 @@
 // invalida o cache no navegador de cada pessoa da equipe.
 
 import { normalizeSearch } from '../utils.js';
+import { getProvisorios } from '../ab/provisorios.js';
 
 const DOCX_PATH = 'assets/docx/biblioteca_ab.docx';
 const DOCX_VERSION_TAG = 'biblioteca_ab-v5';
@@ -191,11 +192,24 @@ export function loadLibrary(onProgress) {
 }
 
 /**
- * Devolve a biblioteca já carregada em memória, ou null se ainda não estiver
+ * Devolve a biblioteca já carregada em memória — a oficial mais os pratos
+ * provisórios (js/ab/provisorios.js) —, ou null se a oficial ainda não estiver
  * pronta. Permite que a UI renderize o campo de busca já habilitado, sem
  * esperar por uma promise, quando o carregamento já ocorreu.
+ *
+ * O provisório cujo nome já existe no .docx é descartado: foi incorporado à
+ * biblioteca oficial e não pode aparecer duas vezes na busca.
  */
 export function getLoadedLibrary() {
+  if (!memoryCache) return null;
+  const provisorios = getProvisorios();
+  if (!provisorios.length) return memoryCache;
+  const oficiais = new Set(memoryCache.map((e) => normalizeSearch(e.pt)));
+  return [...memoryCache, ...provisorios.filter((p) => !oficiais.has(normalizeSearch(p.pt)))];
+}
+
+/** Só a biblioteca oficial, revisada (base do tradutor e do corretor). */
+export function getBibliotecaOficial() {
   return memoryCache;
 }
 

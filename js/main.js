@@ -3,6 +3,7 @@ import { renderStepper } from './ui/stepper.js';
 import { mountPreviewPanel, updatePreview } from './ui/previewPanel.js';
 import { ensureFontsReady } from './canvas/engine.js';
 import { loadLibrary } from './data/docxLibrary.js';
+import { carregarProvisorios } from './ab/provisorios.js';
 import { icon } from './ui/icons.js';
 import { confirmModal } from './ui/common.js';
 import { renderSetorStep } from './ui/steps/setorStep.js';
@@ -21,6 +22,8 @@ import { renderFolhaBottonStep } from './ui/steps/folhaBottonStep.js';
 // acontece uma única vez por sessão (depois vem do IndexedDB / memória).
 ensureFontsReady();
 loadLibrary().catch((err) => console.warn('Biblioteca A&B indisponível no momento:', err));
+// Pratos provisórios da planilha: entram na busca assim que chegarem.
+carregarProvisorios();
 
 const STEP_RENDERERS = {
   setor: renderSetorStep,

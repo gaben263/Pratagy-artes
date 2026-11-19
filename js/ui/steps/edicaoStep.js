@@ -7,6 +7,8 @@ import { modoDeEdicao, EDITORES_COM_CARDS } from '../../rh/templates.js';
 import { bodyRH, wireRH, prontoRH, prontoPlantao, camposEncontro, wireCampoData, prontoEncontro } from '../../rh/editorRH.js';
 import { bodyBF, wireBF, prontoBF } from '../../blackfriday/editorBF.js';
 import { adicionarEAbrirFolha } from './folhaBottonStep.js';
+import { abrirCadastroPrato } from '../../ab/cadastroPrato.js';
+import { atualizarProvisoriosSeAntigos } from '../../ab/provisorios.js';
 
 // Listener único (registrado uma vez) que fecha o dropdown de busca ao
 // clicar fora dele, evitando acumular listeners a cada remontagem do passo.
@@ -150,24 +152,44 @@ function wireCommon(container) {
 
 // ---------- Setor A&B: busca com autocomplete ----------
 
-export function renderAutocompleteResults(entries) {
-  if (!entries.length) {
-    return `<p class="px-4 py-3 text-sm text-slate-400">Prato não encontrado. Peça a inclusão ao Setor de Marketing.</p>`;
-  }
-  return entries
-    .map(
-      (e) => `
+const SELO_PROVISORIO =
+  '<span class="ml-1.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 align-middle text-[10px] font-bold text-amber-800">provisório</span>';
+
+/**
+ * Lista de resultados da busca de pratos. O último item é sempre o atalho
+ * para cadastrar um prato novo (js/ab/cadastroPrato.js): com o nome digitado
+ * quando nada foi encontrado, ou genérico quando há resultados mas talvez não
+ * o prato certo. Quem monta a lista liga o clique em [data-cadastrar].
+ */
+export function renderAutocompleteResults(entries, termo = '') {
+  const cadastrar = entries.length
+    ? `<button type="button" data-cadastrar
+        class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs font-bold text-brand-blue transition-colors hover:bg-brand-light/40">
+        ${icon('plus', { size: 14 })} Não achou? Cadastrar prato novo
+      </button>`
+    : `<div class="px-4 py-3">
+        <p class="text-sm text-slate-500">Prato não encontrado na biblioteca.</p>
+        <button type="button" data-cadastrar
+          class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-brand-blue px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-deep">
+          ${icon('plus', { size: 14 })} Cadastrar ${termo.trim() ? `“${escapeHtml(termo.trim())}”` : 'prato novo'}
+        </button>
+      </div>`;
+  return (
+    entries
+      .map(
+        (e) => `
       <button type="button" data-entry="${e.id}"
-        class="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-2.5 text-left transition-colors last:border-0 hover:bg-brand-light/40">
+        class="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-2.5 text-left transition-colors hover:bg-brand-light/40">
         <span>
-          <span class="block text-sm font-bold text-brand-deep">${escapeHtml(e.pt)}</span>
+          <span class="block text-sm font-bold text-brand-deep">${escapeHtml(e.pt)}${e.provisorio ? SELO_PROVISORIO : ''}</span>
           <span class="block text-xs text-slate-500">${escapeHtml(e.es)}</span>
         </span>
         <span class="shrink-0 text-[10px] text-slate-400">${escapeHtml(e.categoria)}</span>
       </button>
     `
-    )
-    .join('');
+      )
+      .join('') + cadastrar
+  );
 }
 
 /**
@@ -213,8 +235,11 @@ function wireBuscaAB(container, initialState) {
   const ptInput = container.querySelector('[data-pt-input]');
   const esInput = container.querySelector('[data-es-input]');
 
+  const avisoProvisorio = container.querySelector('[data-aviso-provisorio]');
+  atualizarProvisoriosSeAntigos();
   ptInput.value = initialState.texto;
   esInput.value = initialState.textoEs;
+  avisoProvisorio.classList.toggle('hidden', !String(initialState.libraryEntryId || '').startsWith('prov-'));
 
   // Os campos de nome e tradução são somente leitura de propósito: o texto da
   // arte de A&B só pode vir da biblioteca oficial, para não entrar no buffet
@@ -223,9 +248,19 @@ function wireBuscaAB(container, initialState) {
     ptInput.value = entry.pt;
     esInput.value = entry.es;
     setState({ texto: entry.pt, textoEs: entry.es, libraryEntryId: entry.id });
+    avisoProvisorio.classList.toggle('hidden', !entry.provisorio);
     results.classList.add('hidden');
     searchInput.value = '';
   }
+
+  // Prato de última hora: cadastro com revisão e tradução, que já preenche a
+  // placa. É a única porta para um nome fora da biblioteca oficial.
+  const abrirCadastro = () => {
+    const nome = searchInput.value;
+    results.classList.add('hidden');
+    abrirCadastroPrato({ nome, tela: 'edicao', aoEscolher: selectEntry });
+  };
+  container.querySelector('[data-abrir-cadastro]').addEventListener('click', abrirCadastro);
 
   const runSearch = debounce((query) => {
     const library = getLoadedLibrary();
@@ -234,7 +269,7 @@ function wireBuscaAB(container, initialState) {
       results.innerHTML = '';
       return;
     }
-    results.innerHTML = renderAutocompleteResults(searchLibrary(library, query));
+    results.innerHTML = renderAutocompleteResults(searchLibrary(library, query), query);
     results.classList.remove('hidden');
   }, 120);
 
@@ -243,6 +278,7 @@ function wireBuscaAB(container, initialState) {
     if (e.target.value.trim()) runSearch(e.target.value);
   });
   results.addEventListener('click', (e) => {
+    if (e.target.closest('[data-cadastrar]')) return abrirCadastro();
     const btn = e.target.closest('[data-entry]');
     const library = getLoadedLibrary();
     if (!btn || !library) return;
@@ -288,6 +324,10 @@ function bodyAB() {
         </div>
         <div data-search-results
           class="absolute z-20 mt-1 hidden max-h-72 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"></div>
+        <button type="button" data-abrir-cadastro
+          class="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-brand-blue transition-colors hover:text-brand-deep">
+          ${icon('plus', { size: 13 })} Prato de última hora? Cadastrar prato novo
+        </button>
       </div>
 
       <div class="border-t border-slate-100 pt-4">
@@ -299,6 +339,9 @@ function bodyAB() {
         </label>
         <input type="text" data-pt-input readonly tabindex="-1" placeholder="Selecione um item na busca acima"
           class="w-full cursor-default select-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600 outline-none" />
+        <p data-aviso-provisorio class="mt-1.5 hidden text-xs font-semibold text-amber-700">
+          Prato provisório: cadastrado pela equipe e aguardando revisão do Marketing.
+        </p>
       </div>
 
       <div>

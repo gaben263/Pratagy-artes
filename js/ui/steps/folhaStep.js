@@ -16,6 +16,8 @@ import { montarFolhas, exportFolhasPDF } from '../../canvas/lote.js';
 import { loadLibrary, searchLibrary, getLoadedLibrary } from '../../data/docxLibrary.js';
 import { getCachedImage } from '../previewPanel.js';
 import { renderAutocompleteResults } from './edicaoStep.js';
+import { abrirCadastroPrato } from '../../ab/cadastroPrato.js';
+import { atualizarProvisoriosSeAntigos } from '../../ab/provisorios.js';
 import { icon } from '../icons.js';
 import { showToast, confirmModal } from '../common.js';
 import { comemorar } from '../confetti.js';
@@ -310,6 +312,7 @@ async function gerarPDF(container) {
 }
 
 function ligarBusca(container) {
+  atualizarProvisoriosSeAntigos();
   const campo = container.querySelector('[data-search-input]');
   const resultados = container.querySelector('[data-search-results]');
   const fechar = () => {
@@ -329,7 +332,7 @@ function ligarBusca(container) {
 
   const mostrar = debounce((termo) => {
     if (!termo.trim()) return fechar();
-    resultados.innerHTML = renderAutocompleteResults(buscar(termo));
+    resultados.innerHTML = renderAutocompleteResults(buscar(termo), termo);
     resultados.classList.remove('hidden');
   }, 120);
 
@@ -342,6 +345,12 @@ function ligarBusca(container) {
     }
   });
   resultados.addEventListener('click', (e) => {
+    if (e.target.closest('[data-cadastrar]')) {
+      const nome = campo.value;
+      fechar();
+      abrirCadastroPrato({ nome, tela: 'folha', aoEscolher: escolher });
+      return;
+    }
     const botao = e.target.closest('[data-entry]');
     const entry = botao && getLoadedLibrary()?.find((it) => it.id === botao.dataset.entry);
     if (entry) escolher(entry);

@@ -1671,6 +1671,67 @@ família. Ficaram de fora os vagos demais sozinhos ("Isca", "Creme", "Doce", "Ca
 mammoth: em 9 buscas ("cuscuz", "tortilete", "bolo", "torta"…) o nome simples vem em 1º, porque a
 busca já ordena pelo nome mais curto.
 
+### 3.34 A&B: cadastro de prato de última hora, com corretor e tradutor
+
+**Pedido.** Pratos definidos na hora precisam virar placa sem esperar o Marketing incluir no
+`.docx`, mas sem voltar aos erros de grafia de antes do sistema. Restrição de Gabriel: **custo
+zero** além do Claude Pro usado na construção. Nada de API paga.
+
+**O que foi descartado e por quê.**
+- API do Claude: custo por uso. O Pro não tem chave de API e não pode servir de motor do site.
+- MyMemory (tradutor gratuito): devolveu vazio em 3 de 4 pratos testados.
+- Excel Online: gravar exige login da Microsoft; um site não grava lá anonimamente.
+
+**Como ficou.**
+- **Tradutor** (`js/ab/tradutor.js`): monta o espanhol a partir dos pares da biblioteca. Usa
+  trechos fixos ("ao molho de" → "con salsa de"), pratos inteiros (o trecho mais longo primeiro) e
+  palavra solta aprendida por coocorrência (Dice ≥ 0,5, com pelo menos 2 ocorrências, exceto
+  palavra igual nas duas línguas). Faz concordância de preparo com o prato ("Papas fritas"). O que
+  ele não conhece fica em português e vai para `lacunas`, para a pessoa completar. **Medição:**
+  tirando cada prato composto da biblioteca e traduzindo só com os outros, 60% saem idênticos ao
+  oficial (768 pratos). Boa parte do resto é variação aceitável ("en salsa" × "con salsa"); a
+  própria biblioteca usa as duas.
+- **Corretor** (`js/revisao/corretor.js`), em duas camadas:
+  1. vocabulário da casa (palavras da biblioteca + termos do resort), no navegador;
+  2. LanguageTool público (gratuito, sem chave, CORS aberto).
+
+  A sugestão da casa só vale se o LanguageTool também marcar a palavra, para evitar "goiaba" →
+  "goiabada". Sem o LanguageTool, só ficam as seguras (acento, ou uma letra em palavra de 5+).
+  Pega "Tortilede", "banoffe", "cheff", "monsier", "feijao" e "pure". **Escape conhecido:**
+  "refolgado" existe como palavra no LanguageTool, então a troca para "refogado" é vetada.
+- **Caixa de revisão** (`js/revisao/caixaRevisao.js`): é a ideia do Gabriel. Cada achado tem
+  Aceitar correção / Manter, há "Aceitar todas" e a prévia "Fica assim". Só avança depois de
+  decidir tudo. Pronta para o RH e o Acqua Park: `revisarComCaixa()` abre o próprio modal.
+- **Cadastro** (`js/ab/cadastroPrato.js`): nome e categoria (sugerida), depois os parecidos já
+  cadastrados (distância de edição; "Tortilede de banoffe" aponta o oficial "Tortilete de
+  banoffee"), depois a revisão e por fim o espanhol editável. Entra pela busca da edição e da folha
+  A4 ("Cadastrar …" quando nada é encontrado, "Não achou?" no fim da lista) e por um link fixo
+  abaixo da busca.
+- **Planilha** (`js/ab/provisorios.js` + `tools/apps-script/provisorios.gs`): Google Planilhas
+  com um Apps Script publicado como App da Web. A planilha pode ficar **Restrita**: o script grava
+  com a conta do dono. O POST vai como `text/plain` para evitar a consulta prévia de CORS. O prato
+  fica primeiro no `localStorage`, então a placa sai mesmo sem internet e o reenvio acontece a cada
+  visita. O script ignora duplicados (id ou nome). `PROVISORIOS_URL` vazio = modo só local.
+- **Busca:** `getLoadedLibrary()` devolve a oficial + provisórios, com o selo "provisório". O
+  provisório cujo nome já está no `.docx` é descartado sozinho. Por isso a orientação é limpar a
+  planilha só depois de publicar a biblioteca atualizada. Tradutor e corretor usam só a oficial
+  (`getBibliotecaOficial()`): um provisório não ensina grafia nem tradução.
+
+**Verificação (Edge via Playwright):**
+- Cadastro, 15 verificações: botão na busca vazia, categoria sugerida, parecido, caixa de revisão
+  bloqueando até decidir, espanhol, placa preenchida, aviso de provisório, selo na busca,
+  persistência após recarregar e entrada pela folha A4. O único erro no console é o
+  `favicon.ico`, que já faltava antes.
+- Planilha, contra um servidor falso que imita o Apps Script (inclusive o 302 do POST), 8
+  verificações: o computador A grava e o B encontra; com a planilha fora do ar, o prato fica local
+  e o aviso muda; quando volta, é reenviado uma vez só e a fila zera.
+- **Contra o Google de verdade**, depois que Gabriel publicou o script: um cadastro pelo navegador
+  gravou na planilha; um navegador novo leu o prato de volta em 1 a 2 s (3 rodadas); o mesmo prato
+  enviado duas vezes entrou uma vez só. Ficaram duas linhas de teste na planilha ("Teste do
+  sistema pode apagar" e "Tortilete de maracujá com coco"), que Gabriel deve apagar.
+- O teste mostrou que a planilha era lida só ao abrir a página. Agora as telas de busca do A&B a
+  releem ao abrir, se a última leitura tiver mais de 1 minuto (`atualizarProvisoriosSeAntigos`).
+
 ---
 
 ## 4. Bugs que eu mesmo introduzi
